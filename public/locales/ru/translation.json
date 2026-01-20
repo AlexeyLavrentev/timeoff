@@ -1,0 +1,81 @@
+{
+  "nav": {
+    "toggle": "Переключить навигацию",
+    "calendar": "Календарь",
+    "teamView": "Команда",
+    "employees": "Сотрудники",
+    "newAbsence": "Новый отпуск",
+    "notificationsEmpty": "Нет уведомлений",
+    "settings": "Настройки",
+    "general": "Общие",
+    "departments": "Отделы",
+    "groups": "Группы",
+    "bankHolidays": "Праздники",
+    "ldapConfig": "Настройка LDAP",
+    "apiConfig": "Настройка API",
+    "importEmployees": "Импорт сотрудников",
+    "emailsAudit": "Аудит писем",
+    "reports": "Отчёты",
+    "requests": "Заявки",
+    "feeds": "Ленты",
+    "logout": "Выход",
+    "login": "Вход",
+    "me": "Я"
+  },
+  "teamView": {
+    "title": "Командный обзор",
+    "teamLabel": "Команда {{name}}",
+    "exportTitle": "Экспорт командного обзора во внешние календари",
+    "all": "Все",
+    "byDepartment": "По отделам",
+    "departmentLabel": "Отдел",
+    "groupLabel": "Группа",
+    "compactMode": "Компактный режим",
+    "fullMode": "Полный режим",
+    "allDepartments": "Все отделы",
+    "allGroups": "Все группы",
+    "deductedDays": "В {{month}} {{name}} использовал(а) {{days}} дней отпуска"
+  },
+  "users": {
+    "title": "Сотрудники",
+    "companyStaff": "Сотрудники {{company}}",
+    "addEmployee": "Добавить сотрудника",
+    "importEmployees": "Импорт сотрудников",
+    "addSingleEmployee": "Добавить одного",
+    "allDepartments": "Все отделы",
+    "allGroups": "Все группы",
+    "name": "Имя",
+    "department": "Отдел",
+    "isAdmin": "Администратор?",
+    "availableAllowance": "Доступный лимит",
+    "daysUsed": "Использовано дней",
+    "yes": "Да",
+    "downloadCsv": ".csv",
+    "downloadCsvTooltip": "Скачать текущую страницу в формате .CSV",
+    "filterByGroup": "Фильтр по группам"
+  },
+  "departments": {
+    "criticalEmployees": "Критически важные сотрудники",
+    "maxCriticalOverlap": "Лимит пересечения",
+    "criticalHelp": "Выберите сотрудников, критичных для операций. Лимит пересечения применяется к ним.",
+    "overlapHelp": "Максимальное число критически важных сотрудников, которые могут одновременно быть в отпуске."
+  },
+  "groups": {
+    "title": "Группы",
+    "allGroups": "Все группы",
+    "addNew": "Добавить группу",
+    "name": "Название",
+    "members": "Участники",
+    "save": "Сохранить изменения",
+    "delete": "Удалить",
+    "noGroups": "Группы отсутствуют",
+    "details": "Детали группы",
+    "editMembers": "Участники группы"
+  },
+  "errors": {
+    "criticalOverlapExceeded": "Слишком много критически важных сотрудников уже в отпуске на эти даты."
+  },
+  "meta": {
+    "description": "Открытая система управления отпусками сотрудников"
+  }
+}
