@@ -30,11 +30,6 @@ router.get('/groups/', function(req, res){
       groups  : groups.sort((a, b) => sorter(a.name, b.name)),
       company : company,
     });
-  })
-  .catch(error => {
-    console.error('Failed to load groups overview: ' + error);
-    req.session.flash_error('Failed to load groups');
-    res.redirect_with_session('/settings/');
   });
 });
 
