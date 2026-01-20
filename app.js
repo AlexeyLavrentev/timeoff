@@ -7,6 +7,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
 const createSessionMiddleware = require('./lib/middleware/withSession');
+const i18nextMiddleware = require('i18next-express-middleware');
+const { initI18next } = require('./lib/i18n');
 
 var app = express();
 
@@ -32,6 +34,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+const i18next = initI18next();
+app.use(i18nextMiddleware.handle(i18next));
 
 
 
@@ -64,6 +69,8 @@ app.use(function(req,res,next){
   res.locals.logged_user = req.user;
   res.locals.url_to_the_site_root = '/';
   res.locals.requested_path = req.originalUrl;
+  res.locals.locale = req.language || 'en';
+  res.locals.req = req;
   // For book leave request modal
   res.locals.booking_start = today,
   res.locals.booking_end = today,
@@ -125,6 +132,7 @@ app.use(
 // '/settings/' path is quite big hence there are two modules providing handlers for it
 app.use('/settings/', require('./lib/route/departments'));
 app.use('/settings/', require('./lib/route/bankHolidays'));
+app.use('/settings/', require('./lib/route/groups'));
 
 app.use(
   '/users/',

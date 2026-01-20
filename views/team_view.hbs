@@ -1,14 +1,14 @@
 
 {{> header }}
 
-<h1>Team View</h1>
+<h1>{{t "teamView.title"}}</h1>
 
 <div class="row">
-  <div class="col-md-6 lead">{{logged_user.name}} {{logged_user.lastname}}'s team <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="Export Team View to external calendars"><span class="fa fa-rss"></span></a></div>
+  <div class="col-md-6 lead">{{t "teamView.teamLabel" name=(concatenate logged_user.name " " logged_user.lastname)}} <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="{{t "teamView.exportTitle"}}"><span class="fa fa-rss"></span></a></div>
   <div class="col-md-3 col-md-offset-3">
     <div class="btn-group btn-group-sm pull-right" role="group">
-      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 0 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#unless grouped_mode}}disabled=disabled{{/unless}}>All</a>
-      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 1 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#if grouped_mode}}disabled=disabled{{/if}}>By department</a>
+      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 0 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#unless grouped_mode}}disabled=disabled{{/unless}}>{{t "teamView.all"}}</a>
+      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 1 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#if grouped_mode}}disabled=disabled{{/if}}>{{t "teamView.byDepartment"}}</a>
     </div>
   </div>
 </div>
@@ -35,6 +35,53 @@
 
 <div class="row">&nbsp;</div>
 
+<div class="row">
+  <div class="col-md-3">
+    <div class="form-group">
+      <label class="control-label">{{t "teamView.departmentLabel"}}</label>
+      <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          {{#if current_department }}{{current_department.name}}{{else}}{{t "teamView.allDepartments"}}{{/if}}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="?{{> team_view_url_parameters current_department = null save_current_department = 1 }}">{{t "teamView.allDepartments"}}</a></li>
+          <li role="separator" class="divider"></li>
+          {{#each related_departments}}
+          <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_department = this save_current_department = 1 }}">{{this.name}}</a></li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="form-group">
+      <label class="control-label">{{t "teamView.groupLabel"}}</label>
+      <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
+          <li role="separator" class="divider"></li>
+          {{#each related_groups}}
+          <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_group = this save_current_group = 1 }}">{{this.name}}</a></li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="btn-group btn-group-sm pull-right" role="group">
+      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 0 save_compact_mode = 1 }}" class="btn btn-default" {{#unless compact_mode}}disabled=disabled{{/unless}}>{{t "teamView.fullMode"}}</a>
+      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 1 save_compact_mode = 1 }}" class="btn btn-default" {{#if compact_mode}}disabled=disabled{{/if}}>{{t "teamView.compactMode"}}</a>
+    </div>
+  </div>
+</div>
+
+<div class="row">&nbsp;</div>
+
 {{#if grouped_mode}}
 
 {{#each users_and_leaves_by_departments}}
@@ -56,9 +103,11 @@
           </div>
         </td>
 
-      {{#each this.users_and_leaves.0.days }}
-        <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
-      {{/each}}
+      {{#unless ../compact_mode}}
+        {{#each this.users_and_leaves.0.days }}
+          <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
+        {{/each}}
+      {{/unless}}
       </tr>
       </thead>
 
@@ -69,7 +118,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="In {{as_date_formatted ../../base_date 'MMMM, YYYY' }} {{#with this.user }}{{this.full_name}} used {{../../statistics.deducted_days }} days from allowance{{/with}}"
+              data-content="{{t "teamView.deductedDays" month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=this.user.full_name days=../../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -78,9 +127,11 @@
             {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
             </span>
           </td>
-          {{#each this.days}}
-            {{> calendar_cell day = this}}
-          {{/each}}
+          {{#unless ../../compact_mode}}
+            {{#each this.days}}
+              {{> calendar_cell day = this}}
+            {{/each}}
+          {{/unless}}
         </tr>
       {{/each}}
       </tbody>
@@ -99,24 +150,16 @@
       <thead>
       <tr>
         <td class="team-view-header" colspan="2">
-          <div class="dropdown pull-left">
-            <button class="btn btn-default dropdown-toggle left-column-cell" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              {{#if current_department }}{{current_department.name}}{{else}}All departments{{/if}}
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-              <li><a href="?{{> team_view_url_parameters current_department = null save_current_department = 1 }}">All</a></li>
-              <li role="separator" class="divider"></li>
-              {{#each related_departments}}
-              <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_department = this save_current_department = 1 }}">{{this.name}}</a></li>
-              {{/each}}
-            </ul>
+          <div class="pull-left">
+            {{#if current_department }}{{current_department.name}}{{else}}{{t "teamView.allDepartments"}}{{/if}}
           </div>
         </td>
 
-      {{#each users_and_leaves.0.days }}
-        <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
-      {{/each}}
+      {{#unless compact_mode}}
+        {{#each users_and_leaves.0.days }}
+          <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
+        {{/each}}
+      {{/unless}}
       </tr>
       </thead>
 
@@ -127,7 +170,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="In {{as_date_formatted ../base_date 'MMMM, YYYY' }} {{# with this.user }}{{this.full_name}} used {{../statistics.deducted_days }} days from allowance{{/with}}"
+              data-content="{{t "teamView.deductedDays" month=(as_date_formatted ../base_date 'MMMM, YYYY') name=this.user.full_name days=../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -136,9 +179,11 @@
             {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
             </span>
           </td>
-          {{#each this.days}}
-            {{> calendar_cell day = this}}
-          {{/each}}
+          {{#unless ../compact_mode}}
+            {{#each this.days}}
+              {{> calendar_cell day = this}}
+            {{/each}}
+          {{/unless}}
         </tr>
       {{/each}}
       </tbody>

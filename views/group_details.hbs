@@ -1,0 +1,59 @@
+
+{{> header }}
+
+<h1>{{t "groups.details"}}</h1>
+
+{{> show_flash_messages }}
+
+<form method="post" action="/settings/groups/delete/{{ group.id }}/">
+  <div class="row">
+    <div class="col-md-3 lead">
+      {{t "groups.details"}}
+    </div>
+    <div class="col-md-1 col-md-offset-8">
+      <button id="remove_btn" type="submit" class="pull-right btn btn-danger single-click" data-toggle="tooltip" data-placement="top" title="{{t "groups.delete"}}"><i class="fa fa-trash"></i> {{t "groups.delete"}}</button>
+    </div>
+  </div>
+</form>
+
+<div class="row">&nbsp;</div>
+
+<form method="POST" action="/settings/groups/edit/{{ group.id }}/" id="group_edit_form">
+
+<div class="col-md-7">
+
+  <ol class="breadcrumb">
+    <li><a href="/settings/groups/">{{t "groups.allGroups"}}</a></li>
+    <li class="active">{{ group.name }}</li>
+  </ol>
+
+  <div class="form-group">
+    <label for="name" class="control-label">{{t "groups.name"}}</label>
+    <input class="form-control" id="name" name="name" required value="{{group.name}}">
+  </div>
+
+  <div class="form-group">
+    <label class="control-label">{{t "groups.editMembers"}}</label>
+    <ul class="list-group no-bottom-space">
+      {{#each company.users}}
+        <li class="list-group-item">
+          <label>
+            <input type="checkbox" name="group_user_ids" value="{{this.id}}" {{#if (lookup ../group_user_map this.id)}}checked="checked"{{/if}}>
+            {{this.full_name}}
+          </label>
+        </li>
+      {{/each}}
+    </ul>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <button id="save_changes_btn" type="submit" class="btn btn-success pull-right single-click">{{t "groups.save"}}</button>
+    <a class="btn btn-link pull-right" href="/settings/groups/">{{t "groups.allGroups"}}</a>
+  </div>
+</div>
+
+</form>
+
+{{> footer }}

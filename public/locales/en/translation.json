@@ -1,0 +1,81 @@
+{
+  "nav": {
+    "toggle": "Toggle navigation",
+    "calendar": "Calendar",
+    "teamView": "Team View",
+    "employees": "Employees",
+    "newAbsence": "New absence",
+    "notificationsEmpty": "No notifications",
+    "settings": "Settings",
+    "general": "General",
+    "departments": "Departments",
+    "groups": "Groups",
+    "bankHolidays": "Bank Holidays",
+    "ldapConfig": "LDAP configuration",
+    "apiConfig": "API configuration",
+    "importEmployees": "Import employees",
+    "emailsAudit": "Emails audit",
+    "reports": "Reports",
+    "requests": "Requests",
+    "feeds": "Feeds",
+    "logout": "Logout",
+    "login": "Login",
+    "me": "Me"
+  },
+  "teamView": {
+    "title": "Team View",
+    "teamLabel": "{{name}}'s team",
+    "exportTitle": "Export Team View to external calendars",
+    "all": "All",
+    "byDepartment": "By department",
+    "departmentLabel": "Department",
+    "groupLabel": "Group",
+    "compactMode": "Compact mode",
+    "fullMode": "Full mode",
+    "allDepartments": "All departments",
+    "allGroups": "All groups",
+    "deductedDays": "In {{month}} {{name}} used {{days}} days from allowance"
+  },
+  "users": {
+    "title": "Staff",
+    "companyStaff": "{{company}}'s staff",
+    "addEmployee": "Add new employee",
+    "importEmployees": "Import employees",
+    "addSingleEmployee": "Add single employee",
+    "allDepartments": "All departments",
+    "allGroups": "All groups",
+    "name": "Name",
+    "department": "Department",
+    "isAdmin": "Is Administrator?",
+    "availableAllowance": "Available allowance",
+    "daysUsed": "Days used",
+    "yes": "Yes",
+    "downloadCsv": ".csv",
+    "downloadCsvTooltip": "Download current page as .CSV file",
+    "filterByGroup": "Filter by group"
+  },
+  "departments": {
+    "criticalEmployees": "Critical employees",
+    "maxCriticalOverlap": "Max critical overlap",
+    "criticalHelp": "Select employees that are critical for operations. Overlap limits apply to them.",
+    "overlapHelp": "Maximum number of critical employees allowed to have overlapping leave at the same time."
+  },
+  "groups": {
+    "title": "Groups",
+    "allGroups": "All groups",
+    "addNew": "Add new group",
+    "name": "Name",
+    "members": "Members",
+    "save": "Save changes",
+    "delete": "Delete",
+    "noGroups": "No group records",
+    "details": "Group details",
+    "editMembers": "Group members"
+  },
+  "errors": {
+    "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
+  },
+  "meta": {
+    "description": "Open source Staff Time off management system"
+  }
+}
