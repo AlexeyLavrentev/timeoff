@@ -1,88 +1,79 @@
-
 # TimeOff.Management
 
-Web application for managing employee absences.
+Веб‑приложение для управления отсутствиями сотрудников.
 
 <a href="https://travis-ci.org/timeoff-management/timeoff-management-application"><img align="right" src="https://travis-ci.org/timeoff-management/timeoff-management-application.svg?branch=master" alt="Build status" /></a>
 
-## Features
+## Возможности
 
-**Multiple views of staff absences**
+**Несколько представлений отсутствий**
 
-Calendar view, Team view, or Just plain list.
+Календарный вид, обзор команды или простой список.
 
-**Tune application to fit into your company policy**
+**Гибкая настройка под политику компании**
 
-Add custom absence types: Sickness, Maternity, Working from home, Birthday etc. Define if each uses vacation allowance.
+Добавляйте собственные типы отсутствий: больничный, декрет, удалённая работа, день рождения и т.д. Определяйте, влияет ли тип на отпускной баланс.
 
-Optionally limit the amount of days employees can take for each Leave type. E.g. no more than 10 Sick days per year.
+Опционально ограничивайте количество дней, доступных для каждого типа отсутствия (например, не более 10 больничных в год).
 
-Setup public holidays as well as company specific days off.
+Настраивайте государственные и корпоративные выходные.
 
-Group employees by departments: bring your organisational structure, set the supervisor for every department.
+Группируйте сотрудников по отделам, задавайте руководителя для каждого отдела.
 
-Customisable working schedule for company and individuals.
+Поддерживается индивидуальный рабочий график для компании и сотрудников.
 
-**Third Party Calendar Integration**
+**Интеграция с календарями**
 
-Broadcast employee whereabouts into external calendar providers: MS Outlook, Google Calendar, and iCal.
+Публикация отсутствий в MS Outlook, Google Calendar и iCal.
 
-Create calendar feeds for individuals, departments or entire company.
+Создавайте фиды для сотрудников, отделов или всей компании.
 
-**Three Steps Workflow**
+**Трёхшаговый процесс согласования**
 
-Employee requests time off or revokes existing one.
+Сотрудник запрашивает отпуск или отзывает его.
 
-Supervisor gets email notification and decides about upcoming employee absence.
+Руководитель получает уведомление по почте и принимает решение.
 
-Absence is accounted. Peers are informed via team view or calendar feeds.
+Отсутствие учитывается, коллеги видят его в командном обзоре и календарях.
 
-**Access control**
+**Контроль доступа**
 
-There are following types of users: employees, supervisors, and administrators.
+Есть роли: сотрудник, руководитель, администратор.
 
-Optional LDAP authentication: configure application to use your LDAP server for user authentication.
+Поддерживается LDAP‑аутентификация.
 
-**Ability to extract leave data into CSV**
+**Экспорт данных**
 
-Ability to back up entire company leave data into CSV file. So it could be used in any spreadsheet applications.
+Возможность выгрузки данных по отпускам в CSV для резервного копирования и работы в табличных редакторах.
 
-**Works on mobile phones**
+**Работа на мобильных устройствах**
 
-The most used customer paths are mobile friendly:
+Основные сценарии оптимизированы для мобильных:
 
-* employee is able to request new leave from mobile device
+* запрос нового отпуска;
+* согласование отпуска руководителем.
 
-* supervisor is able to record decision from the mobile as well.
+**Дополнительные улучшения**
 
-**Lots of other little things that would make life easier**
+* Интернационализация интерфейса (EN/RU) через i18next и шаблоны Handlebars.
+* Группы пользователей с CRUD‑управлением и фильтрами в интерфейсе.
+* Ограничение пересечения отпусков критически важных сотрудников по отделу.
 
-Manually adjust employee allowances
-e.g. employee has extra day in lieu.
-
-Upon creation employee receives pro-rated vacation allowance, depending on start date.
-
-Email notification to all involved parties.
-
-Optionally allow employees to see the time off information of entire company regardless of department structure.
-
-## Screenshots
+## Скриншоты
 
 ![TimeOff.Management Screenshot](https://raw.githubusercontent.com/timeoff-management/application/master/public/img/readme_screenshot.png)
 
-## Installation
+## Установка
 
-### Cloud hosting
+### Облачный хостинг
 
-Visit http://timeoff.management/
+Перейдите на http://timeoff.management/
 
-Create company account and use cloud based version.
+Создайте аккаунт компании и используйте облачную версию.
 
-### Self hosting
+### Самостоятельный хостинг
 
-Install TimeOff.Management application within your infrastructure:
-
-(make sure you have Node.js (>=4.0.0) and SQLite installed)
+Убедитесь, что установлены Node.js (>=13.0.0) и SQLite.
 
 ```bash
 git clone https://github.com/timeoff-management/application.git timeoff-management
@@ -90,29 +81,42 @@ cd timeoff-management
 npm install
 npm start
 ```
-Open http://localhost:3000/ in your browser.
 
-## Run tests
+Откройте http://localhost:3000/ в браузере.
 
-We have quite a wide test coverage, to make sure that the main user paths work as expected.
+## Работа через Docker
 
-Please run them frequently while developing the project.
+### Сборка образа
 
-Make sure you have Chrome driver installed in your path and Chrome browser for your platform.
+```bash
+docker build -t timeoff:local .
+```
 
-If you want to see the browser execute the interactions prefix with `SHOW_CHROME=1`
+### Запуск контейнера
+
+```bash
+docker run --rm -p 3000:3000 timeoff:local
+```
+
+После запуска приложение будет доступно на http://localhost:3000/.
+
+## Запуск тестов
+
+Тесты покрывают основные пользовательские сценарии.
+
+Убедитесь, что в системе установлен Chrome Driver и браузер Chrome.
+
+Чтобы увидеть выполнение сценариев в браузере, задайте `SHOW_CHROME=1`.
 
 ```bash
 USE_CHROME=1 npm test
 ```
 
-(make sure that application with default settings is up and running)
+(Приложение с настройками по умолчанию должно быть запущено.)
 
-Any bug fixes or enhancements should have good test coverage to get them into "master" branch.
+## Обновление существующей инсталляции
 
-## Updating existing instance with new code
-
-In case one needs to patch existing instance of TimeOff.Managenent application with new version:
+Если нужно обновить текущую установку новой версией:
 
 ```bash
 git fetch
@@ -122,38 +126,27 @@ npm run-script db-update
 npm start
 ```
 
-## How to?
+## Как настроить?
 
-There are some customizations available.
+Есть несколько параметров для кастомизации.
 
-## How to amend or extend colours available for colour picker?
-Follow instructions on [this page](docs/extend_colors_for_leave_type.md).
+### Локализация сортировки
 
-## Customization
+Если в компании есть сотрудники с именами на разных языках, может быть важно сортировать по соответствующему алфавиту.
 
-There are few options to configure an installation.
+Для этого в `config/app.json` есть параметр `locale_code_for_sorting`.
+По умолчанию значение `en` (английский), но можно указать `cs`, `fr`, `de` и т.д.
 
-### Make sorting sensitive to particular locale
+### Принудительный выбор типа отпуска
 
-Given the software could be installed for company with employees with non-English names there might be a need to
-respect the alphabet while sorting customer entered content.
+Некоторые организации требуют, чтобы сотрудник каждый раз выбирал тип отсутствия при создании заявки, чтобы избежать «ошибочных» отпусков.
 
-For that purpose the application config file has `locale_code_for_sorting` entry.
-By default the value is `en` (English). One can override it with other locales such as `cs`, `fr`, `de` etc.
+Для этого установите `is_force_to_explicitly_select_type_when_requesting_new_leave` в `true` в файле `config/app.json`.
 
-### Force employees to pick type each time new leave is booked
+## Использование Redis для сессий
 
-Some organizations require employees to explicitly pick the type of leave when booking time off. So employee makes a choice rather than relying on default settings.
-That reduce number of "mistaken" leaves, which are cancelled after.
+Следуйте инструкциям на [этой странице](docs/SessionStoreInRedis.md).
 
-In order to force employee to explicitly pick the leave type of the booked time off, change `is_force_to_explicitly_select_type_when_requesting_new_leave`
-flag to be `true` in the `config/app.json` file.
+## Обратная связь
 
-## Use Redis as a sessions storage
-
-Follow instructions on [this page](docs/SessionStoreInRedis.md).
-
-## Feedback
-
-Please report any issues or feedback to <a href="https://twitter.com/FreeTimeOffApp">twitter</a> or Email: pavlo at timeoff.management
-
+Сообщайте об ошибках или оставляйте отзывы через <a href="https://twitter.com/FreeTimeOffApp">twitter</a> или по email: pavlo at timeoff.management
