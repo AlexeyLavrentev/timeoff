@@ -36,17 +36,35 @@
     "create": "Создать",
     "save": "Сохранить",
     "delete": "Удалить",
+    "remove": "Удалить",
     "saveChanges": "Сохранить изменения",
     "loading": "Загрузка...",
     "from": "С",
     "to": "По",
+    "all": "Все",
     "selectOption": "выберите вариант",
+    "outOf": "из {{limit}}",
     "color": "Цвет {{number}}",
     "description": "Описание",
     "configuration": "Конфигурация",
     "moreDetails": "Подробнее",
     "yes": "Да",
     "no": "Нет"
+  },
+  "userPopup": {
+    "available": "Доступно",
+    "availableOutOf": "{{available}} дней из {{total}}",
+    "approvers": "Руководители"
+  },
+  "leavePopup": {
+    "dates": "Даты",
+    "employee": "Сотрудник",
+    "type": "Тип",
+    "status": "Статус",
+    "deductedDays": "Списано дней",
+    "approver": "Утвердил",
+    "requestedOn": "Запрошено",
+    "comments": "Комментарии"
   },
   "calendar": {
     "employeeCalendar": "Календарь сотрудника",
@@ -167,7 +185,16 @@
     "companyWideSuffix": ".",
     "moveToCompanyWide": "Перевести на общий график",
     "saveUserSpecific": "Сохранить индивидуальный график",
-    "overrideCompanyWide": "Переопределить общий график"
+    "overrideCompanyWide": "Переопределить общий график",
+    "weekdayShort": {
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб",
+      "sun": "Вс"
+    }
   },
   "login": {
     "title": "Вход",
@@ -411,6 +438,14 @@
     "downloadCsvTooltip": "Скачать текущую страницу в .CSV",
     "filterByGroup": "Фильтр по группе"
   },
+  "userAdd": {
+    "title": "Новый сотрудник",
+    "subtitle": "Добавление учетной записи сотрудника",
+    "detailsTitle": "Данные нового сотрудника",
+    "isAdminLabel": "Администратор",
+    "autoApproveHelp": "Включите, чтобы заявки этого сотрудника сразу переходили в статус «Утверждено».",
+    "passwordHelp": "Задайте пароль сотруднику."
+  },
   "usersImport": {
     "title": "Массовый импорт сотрудников",
     "subtitle": "Быстрый импорт сотрудников",
@@ -421,6 +456,14 @@
     "downloadSampleButton": "Скачать пример .CSV",
     "stepTwoText": "Отредактируйте .CSV файл, добавив сведения о новых сотрудниках.",
     "stepThreeText": "Загрузите .CSV файл:"
+  },
+  "leaveTypeModal": {
+    "title": "Добавить новый тип отсутствия",
+    "useAllowanceHelp": "Если отмечено, такие отсутствия будут учитываться в годовом лимите.",
+    "autoApproveHelp": "Если отмечено, такие отсутствия не требуют подтверждения руководителя.",
+    "pickColor": "Выберите цвет для нового типа",
+    "pickColorHelp": "Определяет, как этот тип будет подсвечиваться в календаре и командном обзоре.",
+    "limitHelp": "Если задано ненулевое значение, ограничивает максимум дней такого типа в год."
   },
   "generalSettings": {
     "title": "Общие настройки",
@@ -460,6 +503,8 @@
     "bankHolidaysLink": "здесь",
     "dangerZoneTitle": "Опасная зона",
     "removeCompanyTitle": "Удалить аккаунт компании",
+    "removeCompanyNameLabel": "Название компании",
+    "removeCompanyNameHelp": "Введите название компании, которую хотите удалить.",
     "removeCompanyHelp": "Полностью удалить данные, связанные с аккаунтом {{company}}.",
     "removeCompanyWarning": "Это действие нельзя отменить.",
     "removeCompanyBackupHint": "Настоятельно рекомендуется сначала",
@@ -470,6 +515,11 @@
   "departments": {
     "title": "Отделы",
     "allDepartments": "Все отделы",
+    "detailsTitle": "Детали отдела {{name}}",
+    "detailsLead": "Детали отдела",
+    "removeTooltip": "Удалить отдел",
+    "generalDetails": "Общие данные",
+    "employeesFromDepartment": "Сотрудники отдела",
     "criticalEmployees": "Критические сотрудники",
     "maxCriticalOverlap": "Макс. пересечение",
     "criticalHelp": "Выберите критических сотрудников. Ограничения пересечений применяются к ним.",
@@ -482,12 +532,24 @@
     "supervisor": "Руководитель",
     "noDepartments": "Нет записей об отделах",
     "manager": "Руководитель",
+    "managerHelp": "Руководитель отдела {{department}}. Основной менеджер.",
     "numberEmployees": "Количество сотрудников",
     "publicHolidays": "Праздничные дни",
+    "publicHolidaysHelpPrefix": "Определите, будут ли сотрудники отдела {{department}} получать",
+    "publicHolidaysHelpLink": "праздничные дни",
+    "publicHolidaysHelpSuffix": "в дополнение к лимиту.",
     "accruedAllowanceHelp": "Если выбрано «Да», отпускной лимит начинает накапливаться с первого дня работы. Он начисляется пропорционально годовому лимиту. Например, в девятом месяце работы сотрудник будет иметь 9/12 годового лимита.",
     "publicHolidaysHelp": "Если выбрано «Да», сотрудникам отдела добавляются праздничные дни сверх лимита.",
     "bulkEditTitle": "Массовое редактирование настроек отделов",
-    "overviewLink": "Обзор"
+    "overviewLink": "Обзор",
+    "secondarySupervisors": "Дополнительные руководители (BETA)",
+    "addSecondarySupervisor": "Добавить дополнительного руководителя",
+    "secondarySupervisorsHelp": "Список пользователей, которые также могут принимать решения по заявкам сотрудников отдела {{department}}.",
+    "saveChanges": "Сохранить изменения отдела",
+    "addSupervisorsPrefix": "Добавить руководителей в отдел",
+    "addSupervisorsSuffix": "",
+    "addSelectedEmployees": "Добавить выбранных сотрудников",
+    "noAvailableSupervisors": "Нет сотрудников, которых можно добавить как дополнительных руководителей."
   },
   "ldapAuth": {
     "title": "LDAP аутентификация",
@@ -541,6 +603,65 @@
       "deleted": "Группа удалена",
       "deleteFailed": "Не удалось удалить группу"
     }
+  },
+  "emailAudit": {
+    "title": "Журнал писем",
+    "subtitle": "Все письма, которые отправляла система",
+    "filterOptions": "Параметры фильтра",
+    "startDatePlaceholder": "Дата начала",
+    "endDatePlaceholder": "Дата окончания",
+    "employeeFilterPlaceholder": "Сотрудник для фильтра",
+    "filterButton": "Фильтр",
+    "resetButton": "Сброс",
+    "toEmployee": "Кому",
+    "subject": "Тема",
+    "dateAndTime": "Дата и время",
+    "toEmail": "Email получателя",
+    "noEmails": "Писем пока нет"
+  },
+  "reportsPage": {
+    "title": "Отчёты",
+    "subtitle": "Список доступных отчётов",
+    "allowanceByTime": "Использование лимита по времени",
+    "employeesLeaves": "Отсутствия сотрудников",
+    "allReports": "Все отчёты",
+    "downloadCsvTooltip": "Скачать отчёт в формате .CSV",
+    "updateResults": "Обновить результаты"
+  },
+  "reportsLeaves": {
+    "title": "Отсутствия",
+    "subtitle": "Показывает отсутствия за выбранный период",
+    "breadcrumbCurrent": "Отсутствия",
+    "filterTitle": "Фильтр",
+    "dateRangeLabel": "Диапазон дат",
+    "fromDay": "С какого дня",
+    "toDay": "По какой день",
+    "dateRangeHelp": "Диапазон должен включать дату начала или окончания отсутствия",
+    "leaveTypeLabel": "Тип отсутствия",
+    "downloadCsvTooltip": "Скачать отчёт в формате .CSV",
+    "updateResults": "Обновить результаты",
+    "resultsTitle": "Отсутствия",
+    "added": "Добавлено",
+    "approver": "Утвердил"
+  },
+  "reportsAllowanceByTime": {
+    "title": "Использование лимита",
+    "subtitle": "Показывает использование лимита за",
+    "breadcrumbCurrent": "Использование лимита по времени",
+    "filterTitle": "Фильтр",
+    "dateRangeLabel": "Диапазон дат в пределах одного года",
+    "fromMonth": "С месяца",
+    "toMonth": "По месяц",
+    "dateRangeHelp": "Диапазон должен быть в пределах одного года",
+    "reportTitle": "Отчёт",
+    "noUsers": "В выбранном отделе нет сотрудников",
+    "employeeFullName": "ФИО сотрудника",
+    "deductedDaysPrefix": "Списано из лимита за"
+  },
+  "pager": {
+    "previous": "Назад",
+    "next": "Вперёд",
+    "of": "из"
   },
   "notFound": {
     "title": "Страница не найдена",

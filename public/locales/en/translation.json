@@ -36,17 +36,35 @@
     "create": "Create",
     "save": "Save",
     "delete": "Delete",
+    "remove": "Remove",
     "saveChanges": "Save changes",
     "loading": "Loading...",
     "from": "From",
     "to": "To",
+    "all": "All",
     "selectOption": "select an option",
+    "outOf": "out of {{limit}}",
     "color": "Color {{number}}",
     "description": "Description",
     "configuration": "Configuration",
     "moreDetails": "More details",
     "yes": "Yes",
     "no": "No"
+  },
+  "userPopup": {
+    "available": "Available",
+    "availableOutOf": "{{available}} days out of {{total}}",
+    "approvers": "Approvers"
+  },
+  "leavePopup": {
+    "dates": "Dates",
+    "employee": "Employee",
+    "type": "Type",
+    "status": "Status",
+    "deductedDays": "Deducted days",
+    "approver": "Approver",
+    "requestedOn": "Requested on",
+    "comments": "Comments"
   },
   "calendar": {
     "employeeCalendar": "Employee calendar",
@@ -167,7 +185,16 @@
     "companyWideSuffix": "schedule.",
     "moveToCompanyWide": "Move employee to company wide schedule",
     "saveUserSpecific": "Save employee specific schedule",
-    "overrideCompanyWide": "Override company wide schedule"
+    "overrideCompanyWide": "Override company wide schedule",
+    "weekdayShort": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
   },
   "login": {
     "title": "Login",
@@ -411,6 +438,14 @@
     "downloadCsvTooltip": "Download current page as .CSV file",
     "filterByGroup": "Filter by group"
   },
+  "userAdd": {
+    "title": "New employee",
+    "subtitle": "Adding new employee account",
+    "detailsTitle": "Details of new employee",
+    "isAdminLabel": "Is administrator user",
+    "autoApproveHelp": "Set the flag ON to streamline leave requests from this employee directly into Approved state.",
+    "passwordHelp": "Define employee's password."
+  },
   "usersImport": {
     "title": "Employees bulk import",
     "subtitle": "Quick employees import",
@@ -421,6 +456,14 @@
     "downloadSampleButton": "Download .CSV sample file",
     "stepTwoText": "Amend .CSV file to contain new employees details.",
     "stepThreeText": "Upload .CSV file:"
+  },
+  "leaveTypeModal": {
+    "title": "Add new leave type",
+    "useAllowanceHelp": "If checked leaves of this type are going to be counted towards employee's annual holiday allowance.",
+    "autoApproveHelp": "If checked leaves of this type will not require supervisor approval.",
+    "pickColor": "Pick a color for the new type",
+    "pickColorHelp": "Determine how leaves of new type are going to be highlighted on Calendar/Team view pages.",
+    "limitHelp": "If set to non-zero value determines maximum number of days of new leave type each employee could take during the year."
   },
   "generalSettings": {
     "title": "General settings",
@@ -460,6 +503,8 @@
     "bankHolidaysLink": "here",
     "dangerZoneTitle": "Danger zone",
     "removeCompanyTitle": "Remove company account",
+    "removeCompanyNameLabel": "Company name",
+    "removeCompanyNameHelp": "Please type in the name of the company you wish to remove.",
     "removeCompanyHelp": "Completely erase data associated with {{company}}'s account.",
     "removeCompanyWarning": "This action cannot be reverted.",
     "removeCompanyBackupHint": "It is strongly recommended to",
@@ -470,6 +515,11 @@
   "departments": {
     "title": "Departments",
     "allDepartments": "All departments",
+    "detailsTitle": "{{name}} details",
+    "detailsLead": "Department details",
+    "removeTooltip": "Remove department",
+    "generalDetails": "General details",
+    "employeesFromDepartment": "Employees from department",
     "criticalEmployees": "Critical employees",
     "maxCriticalOverlap": "Max critical overlap",
     "criticalHelp": "Select employees that are critical for operations. Overlap limits apply to them.",
@@ -482,12 +532,24 @@
     "supervisor": "Supervisor",
     "noDepartments": "No department records",
     "manager": "Manager",
+    "managerHelp": "Head of {{department}} department. Main manager.",
     "numberEmployees": "Number of employees",
     "publicHolidays": "Public Holidays",
+    "publicHolidaysHelpPrefix": "Determine if employees from {{department}} have",
+    "publicHolidaysHelpLink": "bank holidays",
+    "publicHolidaysHelpSuffix": "in addition to their allowance.",
     "accruedAllowanceHelp": "If set to YES, holiday allowance starts to build up - or accrue - from the first day of employment. It accrues in proportion to the annual entitlement. E.g. an employee in the ninth month of employment would have built up 9/12ths (or three-quarters) of annual entitlement.",
     "publicHolidaysHelp": "If set to YES, employees from department have Bank Holidays added on top of their allowance",
     "bulkEditTitle": "Departments settings bulk edit",
-    "overviewLink": "Overview"
+    "overviewLink": "Overview",
+    "secondarySupervisors": "Secondary supervisors (BETA)",
+    "addSecondarySupervisor": "Add new secondary supervisor",
+    "secondarySupervisorsHelp": "List of users who also could decide on leave requests from {{department}} department's employees.",
+    "saveChanges": "Save changes to department",
+    "addSupervisorsPrefix": "Add supervisors to",
+    "addSupervisorsSuffix": "department",
+    "addSelectedEmployees": "Add selected employees",
+    "noAvailableSupervisors": "No employees available to be added as secondary supervisors."
   },
   "ldapAuth": {
     "title": "LDAP authentication",
@@ -541,6 +603,65 @@
       "deleted": "Group was removed",
       "deleteFailed": "Failed to delete group"
     }
+  },
+  "emailAudit": {
+    "title": "Emails audit",
+    "subtitle": "All emails ever been sent by the system",
+    "filterOptions": "Filter options",
+    "startDatePlaceholder": "Start Date",
+    "endDatePlaceholder": "End Date",
+    "employeeFilterPlaceholder": "Employee to filter by",
+    "filterButton": "Filter",
+    "resetButton": "Reset",
+    "toEmployee": "To Employee",
+    "subject": "Subject",
+    "dateAndTime": "Date and time",
+    "toEmail": "To Email",
+    "noEmails": "No emails recorded yet"
+  },
+  "reportsPage": {
+    "title": "Reports",
+    "subtitle": "List of available reports",
+    "allowanceByTime": "Allowance usage by time",
+    "employeesLeaves": "Employee absences",
+    "allReports": "All reports",
+    "downloadCsvTooltip": "Download report as .CSV file",
+    "updateResults": "Update results"
+  },
+  "reportsLeaves": {
+    "title": "Leaves",
+    "subtitle": "Shows absences in a given period",
+    "breadcrumbCurrent": "Absences",
+    "filterTitle": "Filter",
+    "dateRangeLabel": "Date range",
+    "fromDay": "From Day",
+    "toDay": "To Day",
+    "dateRangeHelp": "Date range that contains either start or end date of a leave",
+    "leaveTypeLabel": "Leave type",
+    "downloadCsvTooltip": "Download report as .CSV file",
+    "updateResults": "Update results",
+    "resultsTitle": "Leaves",
+    "added": "Added",
+    "approver": "Approver"
+  },
+  "reportsAllowanceByTime": {
+    "title": "Allowance usage",
+    "subtitle": "Shows allowance usage in",
+    "breadcrumbCurrent": "Allowance usage by time",
+    "filterTitle": "Filter",
+    "dateRangeLabel": "Date range within single year",
+    "fromMonth": "From Month",
+    "toMonth": "To Month",
+    "dateRangeHelp": "Date range must be within a single year",
+    "reportTitle": "Report",
+    "noUsers": "There are no users in selected department",
+    "employeeFullName": "Employee full name",
+    "deductedDaysPrefix": "Days deducted from allowance in"
+  },
+  "pager": {
+    "previous": "Prev",
+    "next": "Next",
+    "of": "of"
   },
   "notFound": {
     "title": "Page not found",
