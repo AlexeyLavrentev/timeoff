@@ -1,9 +1,9 @@
-Leave request decision is made
+{{t "emails.leaveDecisionSupervisor.subject"}}
 =====
-<p>Hello <strong>{{#with approver }}{{this.full_name}}{{/with}}</strong>,<p>
+<p>{{t "emails.greeting" name=approver.full_name}}</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>You just processed {{#if was_pended_revoke}}cancellation of {{/if}}leave request {{>leave_request_detail leave=leave }} for {{#with requester}}{{this.full_name}}{{/with}}: to {{action}}.</p>
+<p>{{#if_equal action 'approve'}}{{t "emails.leaveDecisionSupervisor.body" requester=requester.full_name action=(t "emails.actions.approve")}}{{else}}{{t "emails.leaveDecisionSupervisor.body" requester=requester.full_name action=(t "emails.actions.reject")}}{{/if_equal}} {{#if was_pended_revoke}}{{t "emails.leaveDecision.cancellation"}} {{/if}}{{>leave_request_detail leave=leave }}.</p>
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>

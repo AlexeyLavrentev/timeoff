@@ -6,6 +6,7 @@ var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
+var config       = require('./lib/config');
 const createSessionMiddleware = require('./lib/middleware/withSession');
 const i18nextMiddleware = require('i18next-express-middleware');
 const { initI18next } = require('./lib/i18n');
@@ -70,6 +71,8 @@ app.use(function(req,res,next){
   res.locals.url_to_the_site_root = '/';
   res.locals.requested_path = req.originalUrl;
   res.locals.locale = req.language || 'en';
+  res.locals.supported_languages = config.get('supported_languages') || ['en'];
+  res.locals.default_language = config.get('default_language') || 'en';
   res.locals.req = req;
   // For book leave request modal
   res.locals.booking_start = today,
@@ -90,6 +93,23 @@ app.use(function(req,res,next){
     ];
 
     next();
+});
+
+app.get('/language/:lng', function(req, res) {
+  const supportedLanguages = config.get('supported_languages') || ['en'];
+  const targetLanguage = req.params.lng;
+
+  if (!supportedLanguages.includes(targetLanguage)) {
+    return res.redirect(req.get('Referer') || '/');
+  }
+
+  if (req.i18n && req.i18n.changeLanguage) {
+    req.i18n.changeLanguage(targetLanguage);
+  }
+
+  res.cookie('i18next', targetLanguage);
+
+  return res.redirect(req.get('Referer') || '/');
 });
 
 // Enable flash messages within session

@@ -1,12 +1,12 @@
 
 {{> header }}
 
-<h1>Emails audit</h1>
+<h1>{{t "emailAudit.title"}}</h1>
 
 {{> show_flash_messages }}
 
 <div class="row">
-  <div class="col-md-6 lead">All emails ever been sent by the system</div>
+  <div class="col-md-6 lead">{{t "emailAudit.subtitle"}}</div>
 </div>
 
 <div class="row">&nbsp;</div>
@@ -17,7 +17,7 @@
       <table class="table table-hover all-departments">
         <thead>
           <tr>
-            <th>Filter options</th>
+            <th>{{t "emailAudit.filterOptions"}}</th>
           </tr>
         </thead>
         <tbody>
@@ -25,30 +25,30 @@
             <form action="/audit/email/" method="GET">
               <div class="form-group input-group">
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input type="text" name="start_date" class="form-control" id="start_date" placeholder="Start Date"
+                <input type="text" name="start_date" class="form-control" id="start_date" placeholder="{{t "emailAudit.startDatePlaceholder"}}"
                   data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1"
                   value="{{#if filter.start_date }}{{as_date filter.start_date }}{{/if}}"
                 >
               </div>
               <div class="form-group input-group">
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input type="text" name="end_date" class="form-control" id="end_date" placeholder="End Date"
+                <input type="text" name="end_date" class="form-control" id="end_date" placeholder="{{t "emailAudit.endDatePlaceholder"}}"
                   data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1"
                   value="{{#if filter.end_date }}{{as_date filter.end_date }}{{/if}}"
                 >
               </div>
               <div class="form-group">
                 <select class="form-control" id="employee" name="user_id">
-                  <option value="">Employee to filter by</option>
+                  <option value="">{{t "emailAudit.employeeFilterPlaceholder"}}</option>
                   {{#each all_users}}
                   <option value="{{this.id}}" {{# if_equal this.id ../filter.user_id }} selected="selected" {{/if_equal}} >{{this.full_name}}</option>
                   {{/each}}
                 </select>
               </div>
 
-              <button type="submit" class="btn btn-info single-click">Filter</button>
+              <button type="submit" class="btn btn-info single-click">{{t "emailAudit.filterButton"}}</button>
               {{# if show_reset_button }}
-              <a href="/audit/email/" class="btn btn-default">Reset</a>
+              <a href="/audit/email/" class="btn btn-default">{{t "emailAudit.resetButton"}}</a>
               {{/if}}
             </form>
           </td></tr>
@@ -60,9 +60,9 @@
       <table class="table table-hover" id="email_list">
         <thead>
           <tr>
-            <th>To Employee</th>
-            <th>Subject</th>
-            <th>Date And Time</th>
+            <th>{{t "emailAudit.toEmployee"}}</th>
+            <th>{{t "emailAudit.subject"}}</th>
+            <th>{{t "emailAudit.dateAndTime"}}</th>
           </tr>
         </thead>
         <tbody>
@@ -83,7 +83,7 @@
           <tr id="collapse_{{ this.id }}" class="collapse">
             <td colspan=3>
               <address>
-                <strong>To Email:</strong>
+                <strong>{{t "emailAudit.toEmail"}}:</strong>
                 <a href="mailto:#">{{this.email}}</a>
               </address>
               <pre>{{this.body_as_text}}</pre>
@@ -91,7 +91,7 @@
           </tr>
           {{else}}
           <tr><td colspan="3">
-            <div class="text-center">No emails recorded yet</div>
+            <div class="text-center">{{t "emailAudit.noEmails"}}</div>
           </td></tr>
           {{/each}}
         </tbody>
