@@ -76,6 +76,26 @@ label.label-plain {
   padding-right: 0;
   padding-left: 0; }
 
+.navbar-brand,
+.navbar-nav > li > a {
+  white-space: normal;
+  word-break: break-word; }
+
+.dropdown-menu > li > a {
+  white-space: normal; }
+
+.btn {
+  white-space: normal; }
+
+.modal-title {
+  white-space: normal;
+  word-break: break-word; }
+
+.table th,
+.table td {
+  white-space: normal;
+  word-break: break-word; }
+
 /* Space out the masthead */
 .header {
   margin-bottom: 30px; }

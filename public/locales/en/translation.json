@@ -49,7 +49,9 @@
     "configuration": "Configuration",
     "moreDetails": "More details",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "close": "Close",
+    "github": "GitHub"
   },
   "userPopup": {
     "available": "Available",
@@ -94,7 +96,14 @@
       "sat": "S",
       "sun": "S"
     },
-    "allAbsencesInYear": "All my absences in {{year}}"
+    "allAbsencesInYear": "All my absences in {{year}}",
+    "tooltip": {
+      "today": "Today",
+      "newAbsencePendingApproval": "New absence waiting approval",
+      "revokedPendingApproval": "Revoked waiting for approval",
+      "approvedAbsence": "Approved absence",
+      "bankHoliday": "Bank holiday: {{name}}"
+    }
   },
   "bankHolidays": {
     "title": "Bank holidays",
@@ -672,5 +681,84 @@
   },
   "meta": {
     "description": "Open source Staff Time off management system"
+  },
+  "brand": {
+    "name": "TimeOff.Management",
+    "nameLower": "TimeOff.management"
+  },
+  "footer": {
+    "copyrightPrefix": "©",
+    "copyrightYears": "2014-2022"
+  },
+  "reports": {
+    "dateFormatMonthHint": "(YYYY-MM)",
+    "dateFormatDayHint": "(YYYY-MM-DD)",
+    "csvSuffix": ".csv"
+  },
+  "emailFoobar": {
+    "subject": "Email subject goes here",
+    "greeting": "Hello {{name}}."
+  },
+  "datepicker": {
+    "days": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "daysShort": [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ],
+    "daysMin": [
+      "Su",
+      "Mo",
+      "Tu",
+      "We",
+      "Th",
+      "Fr",
+      "Sa"
+    ],
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "monthsShort": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
+    "today": "Today",
+    "monthsTitle": "Months",
+    "clear": "Clear",
+    "weekStart": 1,
+    "format": "dd/mm/yyyy"
   }
 }

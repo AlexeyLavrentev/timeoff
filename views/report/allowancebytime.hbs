@@ -48,13 +48,13 @@
                   data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months"
                   value="{{start_date_str}}"
                 >
-                <span class="input-group-addon">(YYYY-MM)</span>
+                <span class="input-group-addon">{{t "reports.dateFormatMonthHint"}}</span>
                 <span class="input-group-addon"><i class="fa fa-long-arrow-right"></i></span>
                 <input type="text" name="end_date" class="form-control" id="end_date" placeholder="{{t "reportsAllowanceByTime.toMonth"}}"
                   data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months"
                   value="{{end_date_str}}"
                 >
-                <span class="input-group-addon">(YYYY-MM)</span>
+                <span class="input-group-addon">{{t "reports.dateFormatMonthHint"}}</span>
               </div>
               <span class="help-block">{{t "reportsAllowanceByTime.dateRangeHelp"}}</span>
             </div>
@@ -70,7 +70,7 @@
                 data-placement="top"
                 data-toggle="popover"
                 data-trigger="focus hover"
-              ><i class="fa fa-download"></i> .csv</button>
+              ><i class="fa fa-download"></i> {{t "reports.csvSuffix"}}</button>
               <button class="btn btn-success" type="submit">{{t "reportsPage.updateResults"}}</button>
             </div>
           </div>
