@@ -1,0 +1,94 @@
+{
+  "brand": {
+    "name": "TimeOff.Management",
+    "nameLower": "TimeOff.management"
+  },
+  "footer": {
+    "copyrightPrefix": "©",
+    "copyrightYears": "2014-2022"
+  },
+  "common": {
+    "close": "Закрыть",
+    "github": "GitHub"
+  },
+  "calendar": {
+    "tooltip": {
+      "today": "Сегодня",
+      "newAbsencePendingApproval": "Новая заявка на отсутствие ожидает подтверждения",
+      "revokedPendingApproval": "Отзыв ожидает подтверждения",
+      "approvedAbsence": "Отсутствие подтверждено",
+      "bankHoliday": "Праздничный день: {{name}}"
+    }
+  },
+  "reports": {
+    "dateFormatMonthHint": "(YYYY-MM)",
+    "dateFormatDayHint": "(YYYY-MM-DD)",
+    "csvSuffix": ".csv"
+  },
+  "emailFoobar": {
+    "subject": "Тема письма здесь",
+    "greeting": "Здравствуйте, {{name}}."
+  },
+  "datepicker": {
+    "days": [
+      "Воскресенье",
+      "Понедельник",
+      "Вторник",
+      "Среда",
+      "Четверг",
+      "Пятница",
+      "Суббота"
+    ],
+    "daysShort": [
+      "Вс",
+      "Пн",
+      "Вт",
+      "Ср",
+      "Чт",
+      "Пт",
+      "Сб"
+    ],
+    "daysMin": [
+      "Вс",
+      "Пн",
+      "Вт",
+      "Ср",
+      "Чт",
+      "Пт",
+      "Сб"
+    ],
+    "months": [
+      "Январь",
+      "Февраль",
+      "Март",
+      "Апрель",
+      "Май",
+      "Июнь",
+      "Июль",
+      "Август",
+      "Сентябрь",
+      "Октябрь",
+      "Ноябрь",
+      "Декабрь"
+    ],
+    "monthsShort": [
+      "Янв",
+      "Фев",
+      "Мар",
+      "Апр",
+      "Май",
+      "Июн",
+      "Июл",
+      "Авг",
+      "Сен",
+      "Окт",
+      "Ноя",
+      "Дек"
+    ],
+    "today": "Сегодня",
+    "monthsTitle": "Месяцы",
+    "clear": "Очистить",
+    "weekStart": 1,
+    "format": "dd.mm.yyyy"
+  }
+}

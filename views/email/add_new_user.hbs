@@ -4,7 +4,7 @@
 
 <p>{{t "emails.addNewUser.body" admin=admin_user.full_name company=company.name}}</p>
 
-<p>{{t "emails.addNewUser.passwordContact" admin=admin_user.name}} {{> email/link href=(get_application_domain) text="TimeOff.Management" }}</p>
+<p>{{t "emails.addNewUser.passwordContact" admin=admin_user.name}} {{> email/link href=(get_application_domain) text=(t "brand.name") }}</p>
 
 <p>{{t "emails.addNewUser.alternative"}}:
 
