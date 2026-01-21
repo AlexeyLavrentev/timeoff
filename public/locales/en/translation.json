@@ -70,7 +70,25 @@
     "delete": "Delete",
     "noGroups": "No group records",
     "details": "Group details",
-    "editMembers": "Group members"
+    "editMembers": "Group members",
+    "messages": {
+      "loadFailed": "Failed to load groups",
+      "nameRequired": "Group name is required",
+      "duplicateName": "Group with the same name already exists",
+      "created": "Group was created",
+      "createFailed": "Failed to create group",
+      "invalidId": "Invalid group id",
+      "notFound": "Group not found",
+      "detailsFailed": "Failed to load group details",
+      "updated": "Group was updated",
+      "updateFailed": "Failed to update group",
+      "deleted": "Group was removed",
+      "deleteFailed": "Failed to delete group"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "Oops! We can't seem to find the page that you're looking for."
   },
   "errors": {
     "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
