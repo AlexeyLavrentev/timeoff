@@ -1,7 +1,7 @@
-Registration completed
+{{t "emails.registrationComplete.subject"}}
 =====
-<p>Hello <strong>{{user.name}}</strong>,</p>
+<p>{{t "emails.greeting" name=user.name}}</p>
 
-<p>Thank you for registering a new account on {{> email/link href=(get_application_domain) text="TimeOff.Management" }}</p>
+<p>{{t "emails.registrationComplete.body"}} {{> email/link href=(get_application_domain) text="TimeOff.Management" }}</p>
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>

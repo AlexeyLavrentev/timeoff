@@ -22,5 +22,7 @@
   "application_domain" : "http://app.timeoff.management",
   "promotion_website_domain" : "http://timeoff.management",
   "locale_code_for_sorting": "en",
+  "default_language": "en",
+  "supported_languages": ["en", "ru"],
   "force_to_explicitly_select_type_when_requesting_new_leave": false
 }

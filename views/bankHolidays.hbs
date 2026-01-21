@@ -1,22 +1,22 @@
 
 {{> header }}
 
-<h1>Bank holidays</h1>
+<h1>{{t "bankHolidays.title"}}</h1>
 
 <div class="row">
   <div class="col-md-6 lead">
-    Public holidays for {{company.name}}`s account in {{yearCurrent}}
+    {{t "bankHolidays.publicHolidaysForYear" company=company.name year=yearCurrent}}
   </div>
   <div class="col-md-3 col-md-offset-3">
     <div class="btn-group pull-right">
       <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span aria-hidden="true" class="fa fa-plus"></span> Add new
+        <span aria-hidden="true" class="fa fa-plus"></span> {{t "common.addNew"}}
         <span class="caret"></span>
-        <span class="sr-only">Toggle Dropdown</span>
+        <span class="sr-only">{{t "common.toggleDropdown"}}</span>
       </button>
       <ul class="dropdown-menu">
-        <li><a href="#" id="bankholiday-import-btn">Import default holidays for {{yearCurrent}}</a></li>
-        <li><a href="#" id="add_new_department" data-toggle="modal" data-target="#add_new_bank_holiday_modal">Add new bank holiday</a></li>
+        <li><a href="#" id="bankholiday-import-btn">{{t "bankHolidays.importDefault" year=yearCurrent}}</a></li>
+        <li><a href="#" id="add_new_department" data-toggle="modal" data-target="#add_new_bank_holiday_modal">{{t "bankHolidays.addNew"}}</a></li>
       </ul>
     </div>
   </div>
@@ -31,7 +31,7 @@
     <a class="btn btn-default" href="?year={{yearPrev}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{yearPrev}} </a>
   </div>
   <div class="col-xs-8 calendar-section-caption">
-    <strong>January - December {{yearCurrent}}</strong>
+    <strong>{{t "bankHolidays.monthRange" year=yearCurrent}}</strong>
   </div>
   <div class="col-xs-2">
     <a class="btn btn-default pull-right" href="?year={{yearNext}}">{{yearNext}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
@@ -51,13 +51,13 @@
               <td colspan="14">{{this.month}}</td>
             </tr>
             <tr>
-              <td colspan="2">M</td>
-              <td colspan="2">T</td>
-              <td colspan="2">W</td>
-              <td colspan="2">T</td>
-              <td colspan="2">F</td>
-              <td colspan="2">S</td>
-              <td colspan="2">S</td>
+              <td colspan="2">{{t "calendar.weekdayShort.mon"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.tue"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.wed"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.thu"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.fri"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.sat"}}</td>
+              <td colspan="2">{{t "calendar.weekdayShort.sun"}}</td>
             </tr>
           </thead>
           <tbody>
@@ -78,8 +78,8 @@
   <div class="col-md-4">
 
     <div class="row">
-      <div class="col-md-4"><label class="control-label">Date</label></div>
-      <div class="col-md-6"><label class="control-label">Holiday Name</label></div>
+      <div class="col-md-4"><label class="control-label">{{t "common.date"}}</label></div>
+      <div class="col-md-6"><label class="control-label">{{t "bankHolidays.holidayName"}}</label></div>
     </div>
 
     <div class="row">&nbsp;</div>
@@ -87,7 +87,7 @@
 
     {{#unless bankHolidays.length }}
     <div class="row">
-      <div class="col-md-12 tst-no-bank-holidays text-center">No Bank holiday records</div>
+      <div class="col-md-12 tst-no-bank-holidays text-center">{{t "bankHolidays.noRecords"}}</div>
     </div>
     {{/unless}}
 
@@ -122,9 +122,9 @@
       <div class="col-md-12">
         <div class="pull-right">
           {{!-- <button id="bankholiday-import-btn" class="btn btn-default" type="button">Import default holidays</button> --}}
-          <button class="btn btn-default" type="button" data-toggle="modal" data-target="#add_new_bank_holiday_modal" id="add_new_bank_holiday_btn">Add new</button>
+          <button class="btn btn-default" type="button" data-toggle="modal" data-target="#add_new_bank_holiday_modal" id="add_new_bank_holiday_btn">{{t "common.addNew"}}</button>
           {{#if bankHolidays.length}}
-            <button type="submit" class="btn btn-success single-click">Save changes</button>
+            <button type="submit" class="btn btn-success single-click">{{t "common.saveChanges"}}</button>
           {{/if}}
         </div>
       </div>

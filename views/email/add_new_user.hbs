@@ -1,17 +1,17 @@
-New TimeOff.Management account for {{#with new_user }}{{this.full_name}}{{/with}}
+{{t "emails.addNewUser.subject" name=new_user.full_name}}
 =====
-<p>Hello <strong>{{new_user.name}}</strong>,</p>
+<p>{{t "emails.greeting" name=new_user.name}}</p>
 
-<p><strong>{{#with admin_user}}{{this.full_name}}{{/with}}</strong> just registered new account for you as an employee of <strong>{{company.name}}</strong>.</p>
+<p>{{t "emails.addNewUser.body" admin=admin_user.full_name company=company.name}}</p>
 
-<p>Please contact <strong>{{admin_user.name}}</strong> about your new password and login at {{> email/link href=(get_application_domain) text="TimeOff.Management" }}</p>
+<p>{{t "emails.addNewUser.passwordContact" admin=admin_user.name}} {{> email/link href=(get_application_domain) text="TimeOff.Management" }}</p>
 
-<p>Alternatively follow the link below to set a new password:
+<p>{{t "emails.addNewUser.alternative"}}:
 
 {{# with new_user ~}}
-{{> email/link href=(concatenate (get_application_domain) '/reset-password/?t=' (this.get_reset_password_token)) text='Set new password'}}
+{{> email/link href=(concatenate (get_application_domain) '/reset-password/?t=' (this.get_reset_password_token)) text=(t "emails.addNewUser.action")}}
 {{/ with }}
 
 </p>
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>
