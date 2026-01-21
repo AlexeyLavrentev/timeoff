@@ -268,7 +268,7 @@ $(document).ready(function() {
           if (!data || !data.length) {
             badge.addClass('hidden');
             dropDown.empty();
-            dropDown.append('<li class="dropdown-header">No notifications</li>')
+            dropDown.append('<li class="dropdown-header">' + (translations.notificationsEmpty || 'No notifications') + '</li>')
 
             document.title = document.title.replace(/\(\d+\)\s*/, '');
 

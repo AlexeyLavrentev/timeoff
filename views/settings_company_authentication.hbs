@@ -1,32 +1,32 @@
 
 {{> header }}
 
-<h1>LDAP authentication</h1>
+<h1>{{t "ldapAuth.title"}}</h1>
 
-<p class="lead">LDAP authentication details</p>
+<p class="lead">{{t "ldapAuth.subtitle"}}</p>
 
 {{> show_flash_messages }}
 
 <div class="row main-row_header">
-  <p class="col-md-12">Description</p>
+  <p class="col-md-12">{{t "ldapAuth.descriptionTitle"}}</p>
 </div>
 
 <div class="row">
   <div class="col-md-8 col-md-offset-1">
-    <p>TimeOff.Management supports LDAP authentication for customers that want to integrate the application with the rest of their infrastructure. The obvious reason is to allow employees to reuse their Active directory credentials in TimeOff.Management.</p>
+    <p>{{t "ldapAuth.descriptionParagraph1"}}</p>
 
-    <p>This page allows you to setup the TimeOff.Management to communicate with a custom LDAP server.</p>
+    <p>{{t "ldapAuth.descriptionParagraph2"}}</p>
 
-    <p>Please note that employees have to use their <strong>LDAP email</strong> with <strong>LDAP password</strong> (rather than username). This is due to the multi-tenant nature of TimeOff.Management application that allows hosting more than one company within a single installation.</p>
+    <p>{{t "ldapAuth.descriptionParagraph3"}}</p>
 
-    <p>Form below has placeholders with examples how to setup TimeOff.Management to use free test LDAP server described <a href="http://www.forumsys.com/en/tutorials/integration-how-to/ldap/online-ldap-test-server/">here</a>.</p>
+    <p>{{t "ldapAuth.descriptionParagraph4"}} <a href="http://www.forumsys.com/en/tutorials/integration-how-to/ldap/online-ldap-test-server/">{{t "ldapAuth.descriptionLink"}}</a>.</p>
 
   </div>
 
 </div>
 
 <div class="row main-row_header">
-  <p class="col-md-12">Configuration</p>
+  <p class="col-md-12">{{t "ldapAuth.configurationTitle"}}</p>
 </div>
 
 <div class="row">
@@ -42,9 +42,9 @@
             id="ldap_auth_enabled"
             type="checkbox"
             {{# if company.ldap_auth_enabled }} checked="checked" {{/if}}
-            name="ldap_auth_enabled"
+           name="ldap_auth_enabled"
            />&nbsp;
-           Enable LDAP authentication
+           {{t "ldapAuth.enableLabel"}}
           </label>
         </div>
       </div>
@@ -52,11 +52,11 @@
       <hr/>
 
       <div class="form-group">
-        <label for="ldap_url" class="col-md-3 control-label">URL to LDAP server</label>
+        <label for="ldap_url" class="col-md-3 control-label">{{t "ldapAuth.urlLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="ldap_url" placeholder="ldap://ldap.forumsys.com:389" name="url" value="{{ldap_config.url}}" aria-describedby="ldap_url_help" >
         </div>
-        <span id="ldap_url_help" class="help-block">The URL must contain the protocol and port parts</span>
+        <span id="ldap_url_help" class="help-block">{{t "ldapAuth.urlHelp"}}</span>
         <div class="col-md-9 col-md-offset-3">
           <label for="allow_unauthorized_cert" class="control-label">
             <input
@@ -65,28 +65,28 @@
               {{# if ldap_config.allow_unauthorized_cert }} checked="checked" {{/if}}
               name="allow_unauthorized_cert"
             />&nbsp;
-            Allow unauthorized SSL certificate (if LDAPS is used)
+            {{t "ldapAuth.allowUnauthorizedCert"}}
           </label>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="ldap_bindn" class="col-md-3 control-label">BindDN</label>
+        <label for="ldap_bindn" class="col-md-3 control-label">{{t "ldapAuth.bindDnLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="ldap_bindn" placeholder="cn=read-only-admin,dc=example,dc=com" name="binddn" value="{{ ldap_config.binddn }}">
         </div>
       </div>
 
       <div class="form-group">
-        <label for="ldap_password" class="col-md-3 control-label">Bind Credentials</label>
+        <label for="ldap_password" class="col-md-3 control-label">{{t "ldapAuth.bindCredentialsLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="ldap_password" placeholder="" name="bindcredentials" value="{{ ldap_config.bindcredentials }}" type="password" aria-describedby="ldap_password_help">
         </div>
-        <span id="ldap_password_help" class="help-block">Password used for dealing with LDAP queries</span>
+        <span id="ldap_password_help" class="help-block">{{t "ldapAuth.bindCredentialsHelp"}}</span>
       </div>
 
       <div class="form-group">
-        <label for="ldap_search_base" class="col-md-3 control-label">Search Base</label>
+        <label for="ldap_search_base" class="col-md-3 control-label">{{t "ldapAuth.searchBaseLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="ldap_search_base" placeholder="dc=example,dc=com" name="searchbase" value="{{ ldap_config.searchbase }}">
         </div>
@@ -94,22 +94,22 @@
 
       <hr/>
 
-      <p class="col-md-offset-2">In order to prevent a situation where a company account locks itself out, the current administrator (<strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong>) has to enter the password associated with her/his email on the LDAP server.</p>
-      <p class="col-md-offset-2">This is to ensure that <strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong> can login into TimeOff.Management with new LDAP settings.</p>
+      <p class="col-md-offset-2">{{t "ldapAuth.adminPasswordNoticePrefix"}} <strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong> {{t "ldapAuth.adminPasswordNoticeSuffix"}}</p>
+      <p class="col-md-offset-2">{{t "ldapAuth.adminPasswordNoticeSecondPrefix"}} <strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong> {{t "ldapAuth.adminPasswordNoticeSecondSuffix"}}</p>
 
       <hr/>
 
       <div class="form-group">
-        <label for="current_user_password" class="col-md-3 control-label">My LDAP password</label>
+        <label for="current_user_password" class="col-md-3 control-label">{{t "ldapAuth.currentPasswordLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="current_user_password" placeholder="" name="password_to_check" value="" type="password" aria-describedby="current_user_password_help">
         </div>
-        <span id="current_user_password_help" class="help-block">Password for <strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong> in the new LDAP server.</span>
+        <span id="current_user_password_help" class="help-block">{{t "ldapAuth.currentPasswordHelpPrefix"}} <strong>{{# with logged_user}}{{this.full_name}}{{/with}}</strong> {{t "ldapAuth.currentPasswordHelpSuffix"}}</span>
       </div>
 
       <div class="form-group">
         <div class="col-md-offset-3 col-md-5">
-          <button id="submit_registration" type="submit" class="pull-right btn btn-success single-click">Save LDAP configuration</button>
+          <button id="submit_registration" type="submit" class="pull-right btn btn-success single-click">{{t "ldapAuth.saveButton"}}</button>
         </div>
       </div>
 
