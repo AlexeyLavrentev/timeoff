@@ -4,7 +4,7 @@
 <h1>{{t "teamView.title"}}</h1>
 
 <div class="row">
-  <div class="col-md-6 lead">{{t "teamView.teamLabel" name=(concatenate logged_user.name " " logged_user.lastname)}} <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="{{t "teamView.exportTitle"}}"><span class="fa fa-rss"></span></a></div>
+  <div class="col-md-6 lead">{{t "teamView.teamLabel" name=(concatenate logged_user.name " " logged_user.lastname)}} <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="{{t 'teamView.exportTitle'}}"><span class="fa fa-rss"></span></a></div>
   <div class="col-md-3 col-md-offset-3">
     <div class="btn-group btn-group-sm pull-right" role="group">
       <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 0 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#unless grouped_mode}}disabled=disabled{{/unless}}>{{t "teamView.all"}}</a>
@@ -118,7 +118,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="{{t "teamView.deductedDays" month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=this.user.full_name days=../../statistics.deducted_days }}"
+              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=this.user.full_name days=../../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -170,7 +170,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="{{t "teamView.deductedDays" month=(as_date_formatted ../base_date 'MMMM, YYYY') name=this.user.full_name days=../statistics.deducted_days }}"
+              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../base_date 'MMMM, YYYY') name=this.user.full_name days=../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"

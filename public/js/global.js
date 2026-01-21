@@ -53,10 +53,36 @@ $(document).ready(function(){
     clear       : "Clear",
     weekStart   : 1,
     format      : "dd/mm/yyyy"
-  }
+  };
+
+  a.fn.datepicker.dates["ru"] = {
+    days : [
+      "Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"
+    ],
+    daysShort : [
+      "Вс","Пн","Вт","Ср","Чт","Пт","Сб"
+    ],
+    daysMin : [
+      "Вс","Пн","Вт","Ср","Чт","Пт","Сб"
+    ],
+    months : [
+      "Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
+    ],
+    monthsShort : [
+      "Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"
+    ],
+    today       : "Сегодня",
+    monthsTitle : "Месяцы",
+    clear       : "Очистить",
+    weekStart   : 1,
+    format      : "dd.mm.yyyy"
+  };
 }(jQuery);
 
 $(function () {
+  if (window.timeoff && window.timeoff.locale) {
+    $.fn.datepicker.defaults.language = window.timeoff.locale;
+  }
   $('[data-toggle="tooltip"]').tooltip()
 })
 
@@ -170,8 +196,10 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
   $('.user-details-summary-trigger').popover({
-    title: 'Employee summary',
+    title: translations.employeeSummary || 'Employee summary',
     html: true,
     trigger: 'hover',
     placement: 'auto',
@@ -190,13 +218,15 @@ $(document).ready(function(){
       }
     });
 
-    return '<div id="'+ divId +'">Loading...</div>';
+    return '<div id="'+ divId +'">' + (translations.loading || 'Loading...') + '</div>';
   }
 });
 
 $(document).ready(function(){
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
   $('.leave-details-summary-trigger').popover({
-    title: 'Leave summary',
+    title: translations.leaveSummary || 'Leave summary',
     html: true,
     trigger: 'hover',
     placement: 'auto',
@@ -214,7 +244,7 @@ $(document).ready(function(){
         $('#'+divId).html(response);
       }
     });
-    return '<div id="'+ divId +'">Loading...</div>';
+    return '<div id="'+ divId +'">' + (translations.loading || 'Loading...') + '</div>';
   }
 });
 

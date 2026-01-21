@@ -9,18 +9,18 @@
 }}
 
 <dl>
-  <dt>Allowance breakdown
+  <dt>{{t "allowanceBreakdown.title"}}
     <i class="fa fa-question-circle"
-      data-content="This is explanation how we get the total allowance. Hover on each number to get details what does one mean."
+      data-content="{{t 'allowanceBreakdown.help'}}"
       data-placement="top"
       data-toggle="popover"
       data-trigger="focus hover"
     ></i>
   </dt>
     <dd>
-      <em>Nominal allowance </em>
+      <em>{{t "allowanceBreakdown.nominal"}}</em>
       <span class="pull-right"
-        data-content="Allowance derived from department current user belongs to."
+        data-content="{{t 'allowanceBreakdown.nominalHelp'}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
@@ -28,9 +28,9 @@
       >{{ user_allowance.nominal_allowance }}</span>
     </dd>
     <dd>
-      <em>Carried over from {{#if previous_year}}{{previous_year}}{{else}}previous year{{/if}}</em>
+      <em>{{#if previous_year}}{{t "allowanceBreakdown.carriedOver" year=previous_year}}{{else}}{{t "allowanceBreakdown.carriedOverPrevious"}}{{/if}}</em>
       <span class="pull-right"
-        data-content="Allowance carried over from previous year. Note: this amount is calculated on the very first day of the year."
+        data-content="{{t 'allowanceBreakdown.carriedOverHelp'}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
@@ -38,27 +38,27 @@
       >{{ user_allowance.carry_over }}</span>
     </dd>
     <dd>
-      <em>Individual adjustment</em>
+      <em>{{t "allowanceBreakdown.individualAdjustment"}}</em>
       <span class="pull-right"
-        data-content="Adjustment to allowance done by admin user."
+        data-content="{{t 'allowanceBreakdown.individualAdjustmentHelp'}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
       >{{ user_allowance.manual_adjustment }}</span>
     </dd>
     <dd>
-      <em>Start/end of employment</em>
+      <em>{{t "allowanceBreakdown.employmentRange"}}</em>
       <span class="pull-right"
-        data-content="Automatic adjustment to allowance based on employee's start and end day of employment."
+        data-content="{{t 'allowanceBreakdown.employmentRangeHelp'}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
       >{{ user_allowance.employement_range_adjustment }}</span>
     </dd>
     <dd>
-      <em>Used so far</em>
+      <em>{{t "allowanceBreakdown.usedSoFar"}}</em>
       <span class="pull-right"
-        data-content="Number of days already taken from allowance."
+        data-content="{{t 'allowanceBreakdown.usedSoFarHelp'}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
@@ -66,9 +66,9 @@
     </dd>
     {{# if user_allowance.is_accrued_allowance }}
       <dd>
-        <em>Locked so far</em>
+        <em>{{t "allowanceBreakdown.lockedSoFar"}}</em>
         <span class="pull-right"
-          data-content="Number of unavailable days in allowance due to accrual nature of vacation entitlement."
+          data-content="{{t 'allowanceBreakdown.lockedSoFarHelp'}}"
           data-placement="top"
           data-toggle="popover"
           data-trigger="focus hover"

@@ -1,25 +1,25 @@
 
 {{> header }}
 
-<h1>Integration API (beta)</h1>
+<h1>{{t "integrationApi.title"}}</h1>
 
-<p class="lead">Configure access to account data via integration API</p>
+<p class="lead">{{t "integrationApi.subtitle"}}</p>
 
 {{> show_flash_messages }}
 
 <div class="row main-row_header">
-  <p class="col-md-12">Description</p>
+  <p class="col-md-12">{{t "common.description"}}</p>
 </div>
 
 <div class="row">
   <div class="col-md-8 col-md-offset-1">
-    <p>TimeOff.Management supports sharing <strong>{{ company.name }}'s</strong> data to other software via REST API.</p>
-    <p>This page allows you to {{# if company.integration_api_enabled }}disable{{else}}enable{{/if}} access.</p>
+    <p>{{t "integrationApi.description" company=company.name}}</p>
+    <p>{{# if company.integration_api_enabled }}{{t "integrationApi.toggleDisable"}}{{else}}{{t "integrationApi.toggleEnable"}}{{/if}}</p>
   </div>
 </div>
 
 <div class="row main-row_header">
-  <p class="col-md-12">Configuration</p>
+  <p class="col-md-12">{{t "common.configuration"}}</p>
 </div>
 
 <div class="row">
@@ -34,23 +34,23 @@
             {{# if company.integration_api_enabled }} checked="checked" {{/if}}
             name="integration_api_enabled"
            />&nbsp;
-           Enable integration API
+           {{t "integrationApi.enable"}}
           </label>
         </div>
       </div>
       <hr/>
       <div class="form-group">
-        <label for="token" class="col-md-3 control-label">API access key</label>
+        <label for="token" class="col-md-3 control-label">{{t "integrationApi.accessKey"}}</label>
         <div class="col-md-5">
           <input class="form-control" readonly value="{{company.integration_api_token}}" aria-describedby="token_help" type="text" id="token-value">
         </div>
-        <span id="token_help" class="help-block">Token that allows access to {{company.name}}'s data. <span class="danger">Keep it secret.</span></span>
+        <span id="token_help" class="help-block">{{t "integrationApi.tokenHelp" company=company.name}} <span class="danger">{{t "integrationApi.keepSecret"}}</span></span>
       </div>
       <div class="form-group">
         <div class="col-md-offset-3 col-md-5">
           <div class="pull-right">
-            <button type="submit" class="btn btn-default single-click" id="regenerate_token_btn" name="regenerate_token" value=1>Regenerate token</button>
-            <button type="submit" class="btn btn-success single-click" id="save_settings_btn">Save integration API configuration</button>
+            <button type="submit" class="btn btn-default single-click" id="regenerate_token_btn" name="regenerate_token" value=1>{{t "integrationApi.regenerate"}}</button>
+            <button type="submit" class="btn btn-success single-click" id="save_settings_btn">{{t "integrationApi.save"}}</button>
           </div>
         </div>
       </div>

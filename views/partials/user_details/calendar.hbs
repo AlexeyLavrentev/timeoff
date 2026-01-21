@@ -27,8 +27,8 @@
       <dl>
         {{#with current_user }}
         <dt data-tom-days-available-in-allowance>{{ ../user_allowance.number_of_days_available_in_allowance }}</dt>
-        <dd>Days available</dd>
-        <dd>out of <span data-tom-total-days-in-allowance>{{ ../user_allowance.total_number_of_days_in_allowance }}</span> in allowance</dd>
+        <dd>{{t "calendar.daysAvailable"}}</dd>
+        <dd>{{t "calendar.outOfAllowance" total=../user_allowance.total_number_of_days_in_allowance}}</dd>
         {{/with}}
       </dl>
     </div>
@@ -39,7 +39,7 @@
 
     <div class="col-md-4 secondary-leave-type-statistics hidden-xs">
       <dl>
-        <dt>Used</dt>
+        <dt>{{t "calendar.usedSoFar"}}</dt>
 
         {{# if leave_type_statistics }}
           {{# each leave_type_statistics }}
@@ -47,7 +47,7 @@
           {{/each}}
         {{else}}
 
-          <dd class="text-muted">No approved requests so far.</dd>
+          <dd class="text-muted">{{t "calendar.noApprovedRequests"}}</dd>
         {{/if}}
       </dl>
     </div>
@@ -68,13 +68,13 @@
         <td colspan="14">{{this.month}}</td>
       </tr>
       <tr>
-        <td colspan="2">M</td>
-        <td colspan="2">T</td>
-        <td colspan="2">W</td>
-        <td colspan="2">T</td>
-        <td colspan="2">F</td>
-        <td colspan="2">S</td>
-        <td colspan="2">S</td>
+        <td colspan="2">{{t "calendar.weekdayShort.mon"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.tue"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.wed"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.thu"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.fri"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.sat"}}</td>
+        <td colspan="2">{{t "calendar.weekdayShort.sun"}}</td>
       </tr>
       </thead>
       <tbody>

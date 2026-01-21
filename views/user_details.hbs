@@ -1,13 +1,13 @@
 
 {{> header }}
 
-<h1>{{employee.name}} {{employee.lastname}}'s details {{#with employee }}{{#unless this.is_active}}<span class="badge alert-warning">Deactivated</span>{{/unless}}{{/with}}</h1>
+<h1>{{t "userDetails.title" name=employee.name lastname=employee.lastname}} {{#with employee }}{{#unless this.is_active}}<span class="badge alert-warning">{{t "userDetails.deactivated"}}</span>{{/unless}}{{/with}}</h1>
 
 <div class="row">
-    <div class="col-md-3 lead">Employee details</div>
-    <form id="add_new_user_frm" method="post" action="/users/delete/{{employee.id}}/" onsubmit="return confirm('Do you really want to delete the user {{employee.name}} {{employee.lastname}}?');">
+    <div class="col-md-3 lead">{{t "userDetails.sectionTitle"}}</div>
+    <form id="add_new_user_frm" method="post" action="/users/delete/{{employee.id}}/" onsubmit="return confirm('{{t 'userDetails.deleteConfirm' name=employee.name lastname=employee.lastname}}');">
         <div class="col-md-1 col-md-offset-8">
-        <button id="remove_btn" type="submit" class="pull-right btn btn-danger single-click" data-toggle="tooltip" data-placement="top" title="Remove employee"><i class="fa fa-trash"></i> Delete</button>
+        <button id="remove_btn" type="submit" class="pull-right btn btn-danger single-click" data-toggle="tooltip" data-placement="top" title="{{t 'userDetails.removeEmployee'}}"><i class="fa fa-trash"></i> {{t "common.delete"}}</button>
         </div>
     </form>
 </div>
@@ -17,10 +17,10 @@
 {{> show_flash_messages }}
 
 <div class="col-md-3 list-group">
-  <a href="/users/edit/{{employee.id}}/" class="list-group-item{{# if show_main_tab }} selected-item{{/if}}">General details</a>
-  <a href="/users/edit/{{employee.id}}/schedule/" class="list-group-item {{# if show_schedule_tab }} selected-item{{/if}}">Schedule</a>
-  <a href="/users/edit/{{employee.id}}/calendar/" class="list-group-item {{# if show_calendar_tab }} selected-item{{/if}}">Calendar</a>
-  <a href="/users/edit/{{employee.id}}/absences/" class="list-group-item{{# if show_absence_tab }} selected-item{{/if}}">Absences</a>
+  <a href="/users/edit/{{employee.id}}/" class="list-group-item{{# if show_main_tab }} selected-item{{/if}}">{{t "userDetails.generalDetails"}}</a>
+  <a href="/users/edit/{{employee.id}}/schedule/" class="list-group-item {{# if show_schedule_tab }} selected-item{{/if}}">{{t "userDetails.schedule"}}</a>
+  <a href="/users/edit/{{employee.id}}/calendar/" class="list-group-item {{# if show_calendar_tab }} selected-item{{/if}}">{{t "calendar.calendarTitle"}}</a>
+  <a href="/users/edit/{{employee.id}}/absences/" class="list-group-item{{# if show_absence_tab }} selected-item{{/if}}">{{t "userDetails.absences"}}</a>
 </div>
 
 {{# if show_absence_tab }}
