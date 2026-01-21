@@ -14,55 +14,55 @@
   {{> user_details/breadcrumb employee=employee }}
 
   <div class="form-group">
-    <label class="control-label">Overview</label>
+    <label class="control-label">{{t "absences.overview"}}</label>
     <div class="progress bigger">
       <div
         class="progress-bar progress-bar-success"
         style="width: {{ leave_statistics.used_so_far_percent }}%"
-        data-content="{{# with employee }}{{this.full_name }}{{/with}} in current year used {{ leave_statistics.used_so_far }} days from allowance"
+        data-content="{{t 'absences.usedSoFarPopover' name=employee.full_name days=leave_statistics.used_so_far}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
       >
-        {{ leave_statistics.used_so_far }} days used so far
+        {{t "absences.usedSoFarLabel" days=leave_statistics.used_so_far}}
       </div>
       <div
         class="progress-bar progress-bar-warning"
         style="width: {{ leave_statistics.remaining_percent }}%"
-        data-content="{{# with employee }}{{this.full_name }}{{/with}} in current year has {{ leave_statistics.remaining }} remaining days in allowance"
+        data-content="{{t 'absences.remainingPopover' name=employee.full_name days=leave_statistics.remaining}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
       >
-        {{ leave_statistics.remaining  }} days remaining in current year
+        {{t "absences.remainingLabel" days=leave_statistics.remaining}}
       </div>
     </div>
   </div>
 
   <div class="form-group">
-    <label class="control-label">Days available for {{ employee.name }} to take this year</label>
-    <p>{{ user_allowance.number_of_days_available_in_allowance }} out of {{ user_allowance.total_number_of_days_in_allowance }} in allowance</p>
-    <input id="days_remaining_inp" type="hidden" value="{{ user_allowance.number_of_days_available_in_allowance }} out of {{ user_allowance.total_number_of_days_in_allowance }}">
+    <label class="control-label">{{t "absences.daysAvailableForYear" name=employee.name}}</label>
+    <p>{{t "absences.outOfAllowance" available=user_allowance.number_of_days_available_in_allowance total=user_allowance.total_number_of_days_in_allowance}}</p>
+    <input id="days_remaining_inp" type="hidden" value="{{t "absences.outOfAllowance" available=user_allowance.number_of_days_available_in_allowance total=user_allowance.total_number_of_days_in_allowance}}">
   </div>
 
   <div class="form-group">
-    <label class="control-label">Is Accrued Allowance?</label>
-    <p>{{# if user_allowance.is_accrued_allowance }}Yes{{else}}No{{/if}}</p>
+    <label class="control-label">{{t "absences.isAccruedAllowance"}}</label>
+    <p>{{# if user_allowance.is_accrued_allowance }}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</p>
     <span class="help-block">
-      The way of available allowance calculation is defined on department level. <a href="/settings/departments/edit/{{employee.DepartmentId}}">More details <i class="fa fa-angle-double-right"></i></a>
+      {{t "absences.accruedHelp"}} <a href="/settings/departments/edit/{{employee.DepartmentId}}">{{t "common.moreDetails"}} <i class="fa fa-angle-double-right"></i></a>
     </span>
   </div>
 
   <div class="row">
     <div class="col-md-5">
       <dl>
-        <dt>Absences used this year grouped by leave types</dt>
+        <dt>{{t "absences.groupedByType"}}</dt>
         {{# if leave_type_statistics }}
           {{# each leave_type_statistics }}
-            <dd><em>{{this.leave_type.name}}:</em> <span class="pull-right">{{this.days_taken}}{{# if this.limit}} out of {{this.limit}}{{/if}}</span></dd>
+            <dd><em>{{this.leave_type.name}}:</em> <span class="pull-right">{{this.days_taken}}{{# if this.limit}} {{t "common.outOf" limit=this.limit}}{{/if}}</span></dd>
           {{/each}}
         {{else}}
-          <dd class="text-muted">No approved requests so far.</dd>
+          <dd class="text-muted">{{t "calendar.noApprovedRequests"}}</dd>
         {{/if}}
       </dl>
     </div>
@@ -73,33 +73,33 @@
   </div>
 
   <div class="form-group">
-    <label for="carried_over_allowance_inp" class="control-label">Allowance carried over from previous year</label>
+    <label for="carried_over_allowance_inp" class="control-label">{{t "absences.carriedOver"}}</label>
     <div class="input-group col-md-4">
       <input class="form-control" readonly id="carried_over_allowance_inp" type="number" step="0.5" name="carried_over_allowance" value="{{#if carried_over_allowance }}{{carried_over_allowance}}{{else}}0{{/if}}" aria-describedby="carried_over_allowance_help">
-      <span class="input-group-addon">working days</span>
+      <span class="input-group-addon">{{t "absences.workingDays"}}</span>
     </div>
     <div id="carried_over_allowance_help" class="help-block">
-      <div>Allowance adjustment based on unused holidays from previous year.</div>
-      <div>It is calculated at the beginning of current year.</div>
+      <div>{{t "absences.carriedOverHelp"}}</div>
+      <div>{{t "absences.carriedOverHelpSecond"}}</div>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="adjustment_inp" class="control-label">Allowance adjustment in current year</label>
+    <label for="adjustment_inp" class="control-label">{{t "absences.adjustment"}}</label>
     <div class="input-group col-md-4">
       <input class="form-control" id="adjustment_inp" type="number" step="0.5" name="adjustment" value="{{#if employee_adjustment }}{{employee_adjustment}}{{else}}0{{/if}}" aria-describedby="adjustment_help">
-      <span class="input-group-addon">working days</span>
+      <span class="input-group-addon">{{t "absences.workingDays"}}</span>
     </div>
     <div id="adjustment_help" class="help-block">
-      <div>Tune allowance for this user in current year.</div>
-      <div>Could be negative as well.</div>
-      <div>The value is valid during current year. Next year it needs to be re-confirmed.</div>
+      <div>{{t "absences.adjustmentHelp"}}</div>
+      <div>{{t "absences.adjustmentHelpSecond"}}</div>
+      <div>{{t "absences.adjustmentHelpThird"}}</div>
     </div>
   </div>
 
   <div class="form-group">
     <div class="col-md-12">
-      <button id="save_changes_btn" type="submit" class="btn btn-success pull-right single-click">Save changes</button>
+      <button id="save_changes_btn" type="submit" class="btn btn-success pull-right single-click">{{t "common.saveChanges"}}</button>
     </div>
   </div>
   </form>

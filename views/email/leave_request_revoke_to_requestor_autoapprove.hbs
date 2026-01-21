@@ -1,9 +1,9 @@
-Leave was revoked
+{{t "emails.leaveRevoke.subjectRevoked"}}
 =====
-<p>Hello <strong>{{#with requester}}{{this.full_name}}{{/with}}</strong>,</p>
+<p>{{t "emails.greeting" name=requester.full_name}}</p>
 
-<p>Your leave <strong>{{>leave_request_detail leave=leave }}</strong> was successfully revoked.</p>
+<p>{{t "emails.leaveRevoke.revoked"}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>

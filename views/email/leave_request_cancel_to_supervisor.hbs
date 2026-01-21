@@ -1,11 +1,11 @@
-Cancel leave request
+{{t "emails.leaveCancel.subjectSupervisor"}}
 =====
-<p>Hello {{#with approver }}{{this.full_name}}{{/with}},</p>
+<p>{{t "emails.greeting" name=approver.full_name}}</p>
 
-<p><strong>{{#with requester}}{{this.full_name}}{{/with}} cancelled</strong> leave request <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
+<p>{{t "emails.leaveRevoke.cancelled" requester=requester.full_name}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>No actions are needed.</p>
+<p>{{t "emails.leaveCancel.noAction"}}</p>
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>

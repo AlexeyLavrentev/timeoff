@@ -1,7 +1,6 @@
 
 {{# if comments.length }}
   {{#each comments}}
-    <p><strong>Comment:</strong> {{this.comment}}</p>
+    <p><strong>{{t "emails.commentLabel"}}:</strong> {{this.comment}}</p>
   {{/each}}
 {{/ if }}
-

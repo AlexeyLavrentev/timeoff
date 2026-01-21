@@ -22,6 +22,39 @@ body {
   color: $primary-font-color;
 }
 
+.app-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding-left: clamp(16px, 2vw, 32px);
+  padding-right: clamp(16px, 2vw, 32px);
+}
+
+.app-container .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.app-container .row > [class*="col-"] {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding-left: 5vw;
+    padding-right: 5vw;
+  }
+
+  .app-container .row {
+    flex-direction: column;
+  }
+
+  .app-container .row > [class*="col-"] {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 a {
   color: $link-color;
 }
@@ -106,6 +139,31 @@ label.label-plain {
 .header, .marketing, .footer {
     padding-right: 0;
     padding-left: 0;
+}
+
+.navbar-brand,
+.navbar-nav > li > a {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.dropdown-menu > li > a {
+  white-space: normal;
+}
+
+.btn {
+  white-space: normal;
+}
+
+.modal-title {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.table th,
+.table td {
+  white-space: normal;
+  word-break: break-word;
 }
 
 

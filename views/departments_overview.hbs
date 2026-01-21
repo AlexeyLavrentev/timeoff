@@ -1,14 +1,14 @@
 
 {{> header }}
 
-<h1>Departments</h1>
+<h1>{{t "departments.title"}}</h1>
 
 {{> show_flash_messages }}
 
 <div class="row">
-  <div class="col-md-4 lead">All departments</div>
+  <div class="col-md-4 lead">{{t "departments.allDepartments"}}</div>
   <div class="col-md-4 col-md-offset-4">
-    <button class="btn btn-info pull-right" data-toggle="modal" data-target="#add_new_department_modal" type="button" id="add_new_department_btn">Add new department</button>
+    <button class="btn btn-info pull-right" data-toggle="modal" data-target="#add_new_department_modal" type="button" id="add_new_department_btn">{{t "departments.addNew"}}</button>
   </div>
 </div>
 
@@ -18,7 +18,7 @@
 
 {{# unless departments.length }}
 <div class="row">
-    <div class="col-md-4">No department records</div>
+    <div class="col-md-4">{{t "departments.noDepartments"}}</div>
 </div>
 {{/unless}}
 
@@ -28,14 +28,14 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Manager</th>
-          <th>Allowance</th>
-          <th>Number Employees</th>
-          <th>Public Holidays
+          <th>{{t "common.name"}}</th>
+          <th>{{t "departments.manager"}}</th>
+          <th>{{t "departments.allowance"}}</th>
+          <th>{{t "departments.numberEmployees"}}</th>
+          <th>{{t "departments.publicHolidays"}}
             <button type="button"
               class="btn btn-xs btn-link"
-              data-content="If set to YES, employees from department have Bank Holidays added on top of their allowance"
+              data-content="{{t "departments.publicHolidaysHelp"}}"
               data-placement="top"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -43,10 +43,10 @@
               <span class="fa fa-question-circle"> </span>
             </button>
           </th>
-          <th>Accrued Allowance
+          <th>{{t "departments.accruedAllowance"}}
             <button type="button"
               class="btn btn-xs btn-link"
-              data-content="If set to YES, holiday allowance starts to build up - or accrue - from the first day of employment. It accrues in proportion to the annual entitlement. E.g. an employee in the ninth month of employment would have built up 9/12ths (or three-quarters) of annual entitlement."
+              data-content="{{t "departments.accruedAllowanceHelp"}}"
               data-placement="top"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -66,8 +66,8 @@
             {{#each ../allowance_options}}{{#if_equal this.value ../allowance}}{{caption}}{{/if_equal}}{{/each}}
           </td>
           <td><a href="/users/?department={{ this.id }}">{{this.users.length}}</a></td>
-          <td>{{# if this.include_public_holidays }}Yes{{/if}}</td>
-          <td>{{# if this.is_accrued_allowance }}Yes{{/if}}</td>
+          <td>{{# if this.include_public_holidays }}{{t "common.yes"}}{{/if}}</td>
+          <td>{{# if this.is_accrued_allowance }}{{t "common.yes"}}{{/if}}</td>
           <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right"><span class="fa fa-chevron-right"></span></a></td>
         </tr>
         {{/each}}

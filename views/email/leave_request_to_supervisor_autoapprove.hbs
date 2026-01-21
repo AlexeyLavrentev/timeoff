@@ -1,11 +1,11 @@
-New leave was added and auto approved.
+{{t "emails.leaveRequest.subjectAutoApprovedSupervisor"}}
 =====
-<p>Hello <strong>{{#with approver }}{{this.full_name}}{{/with}}</strong>,</p>
+<p>{{t "emails.greeting" name=approver.full_name}}</p>
 
-<p><strong>{{#with requester}}{{this.full_name}}{{/with}}</strong> added new leave <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
+<p>{{t "emails.leaveRequest.newLeaveAdded" requester=requester.full_name}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>There is no need to approve/reject leaves from {{#with requester}}{{this.full_name}}{{/with}}.</p>
+<p>{{t "emails.leaveRequest.noApprovalNeeded" requester=requester.full_name}}</p>
 
-<p>Thanks</p>
+<p>{{t "emails.thanks"}}</p>

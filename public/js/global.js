@@ -31,32 +31,17 @@ $(document).ready(function(){
  * Bootstrap-datepicker
  *
  * */
-!function(a){
-  a.fn.datepicker.dates["en-GB"] = {
-    days : [
-      "Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"
-    ],
-    daysShort : [
-      "Sun","Mon","Tue","Wed","Thu","Fri","Sat"
-    ],
-    daysMin : [
-      "Su","Mo","Tu","We","Th","Fr","Sa"
-    ],
-    months : [
-      "January","February","March","April","May","June","July","August","September","October","November","December"
-    ],
-    monthsShort : [
-      "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"
-    ],
-    today       : "Today",
-    monthsTitle : "Months",
-    clear       : "Clear",
-    weekStart   : 1,
-    format      : "dd/mm/yyyy"
-  }
-}(jQuery);
-
 $(function () {
+  var locale = (window.timeoff && window.timeoff.locale) || 'en';
+  var datepickerLocale = locale === 'en' ? 'en-GB' : locale;
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+  var datepickerTranslations = translations.datepicker;
+
+  if (datepickerTranslations) {
+    $.fn.datepicker.dates[datepickerLocale] = datepickerTranslations;
+    $.fn.datepicker.defaults.language = datepickerLocale;
+  }
+
   $('[data-toggle="tooltip"]').tooltip()
 })
 
@@ -73,6 +58,7 @@ $('#add_secondary_supervisers_modal').on('show.bs.modal', function (event) {
   var button = $(event.relatedTarget),
       department_name = button.data('department_name'),
       department_id = button.data('department_id');
+  var translations = (window.timeoff && window.timeoff.translations) || {};
 
   var modal = $(this);
 
@@ -85,7 +71,7 @@ $('#add_secondary_supervisers_modal').on('show.bs.modal', function (event) {
 
   $(this).find(".modal-body")
     // Show "loading" icon while content of modal is loaded
-    .html('<p class="text-center"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span></p>')
+    .html('<p class="text-center"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i><span class="sr-only">' + translations.loading + '</span></p>')
     .load('/settings/departments/available-supervisors/'+department_id+'/');
 });
 
@@ -170,8 +156,10 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
   $('.user-details-summary-trigger').popover({
-    title: 'Employee summary',
+    title: translations.employeeSummary,
     html: true,
     trigger: 'hover',
     placement: 'auto',
@@ -190,13 +178,15 @@ $(document).ready(function(){
       }
     });
 
-    return '<div id="'+ divId +'">Loading...</div>';
+    return '<div id="'+ divId +'">' + translations.loading + '</div>';
   }
 });
 
 $(document).ready(function(){
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
   $('.leave-details-summary-trigger').popover({
-    title: 'Leave summary',
+    title: translations.leaveSummary,
     html: true,
     trigger: 'hover',
     placement: 'auto',
@@ -214,7 +204,7 @@ $(document).ready(function(){
         $('#'+divId).html(response);
       }
     });
-    return '<div id="'+ divId +'">Loading...</div>';
+    return '<div id="'+ divId +'">' + translations.loading + '</div>';
   }
 });
 
@@ -238,7 +228,7 @@ $(document).ready(function() {
           if (!data || !data.length) {
             badge.addClass('hidden');
             dropDown.empty();
-            dropDown.append('<li class="dropdown-header">No notifications</li>')
+            dropDown.append('<li class="dropdown-header">' + translations.notificationsEmpty + '</li>')
 
             document.title = document.title.replace(/\(\d+\)\s*/, '');
 

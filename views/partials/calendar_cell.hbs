@@ -24,11 +24,11 @@
           data-placement="top"
           title="
             {{~#if ../day.leaveLabel ~}}{{~../day.leaveLabel~}}: {{/if~}}
-            {{~#if ../../day.is_current_day}}Today{{/if~}}
-            {{~#if this.is_new_leave}}New absence waiting approval{{/if~}}
-            {{~#if this.is_pended_revoke_leave}}Revoked waiting for approval{{/if~}}
+            {{~#if ../../day.is_current_day}}{{t "calendar.tooltip.today"}}{{/if~}}
+            {{~#if this.is_new_leave}}{{t "calendar.tooltip.newAbsencePendingApproval"}}{{/if~}}
+            {{~#if this.is_pended_revoke_leave}}{{t "calendar.tooltip.revokedPendingApproval"}}{{/if~}}
             {{~#if this.is_approved_leave~}}
-              {{~#unless this.is_pended_revoke_leave}}Approved absence{{/unless~}}
+              {{~#unless this.is_pended_revoke_leave}}{{t "calendar.tooltip.approvedAbsence"}}{{/unless~}}
             {{~/if}}"
         {{/if}}
       {{/with}}
@@ -38,13 +38,13 @@
   {{#if day.is_current_day}}
     data-toggle="tooltip"
     data-placement="top"
-    title="Today"
+    title="{{t "calendar.tooltip.today"}}"
   {{/if}}
 
   {{#if day.is_bank_holiday}}
     data-toggle="tooltip"
     data-placement="top"
-    title="Bank holiday: {{day.bank_holiday_name}}"
+    title="{{t "calendar.tooltip.bankHoliday" name=day.bank_holiday_name}}"
   {{/if}}
 
 >{{day.val}}</span>

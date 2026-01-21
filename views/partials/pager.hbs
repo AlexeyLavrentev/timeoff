@@ -20,9 +20,9 @@
   <li {{# unless pager.page_prev }} class="disabled" {{/unless}}>
       <span>
         {{#if pager.page_prev}}
-        <a href="?{{#each pager.filter }}{{@key}}={{this}}&{{/each}}page={{pager.page_prev}}">&laquo; Prev</a>
+        <a href="?{{#each pager.filter }}{{@key}}={{this}}&{{/each}}page={{pager.page_prev}}">&laquo; {{t "pager.previous"}}</a>
         {{else}}
-        &laquo; Prev
+        &laquo; {{t "pager.previous"}}
         {{/if}}
       </span>
   </li>
@@ -30,7 +30,7 @@
 
     {{# if_equal this ../pager.page }}
       <li>
-        <span><a href="?{{#each ../pager.filter }}{{@key}}={{this}}&{{/each}}page={{this}}">{{ this }} of {{ ../pager.page_qnty }}</a></span>
+        <span><a href="?{{#each ../pager.filter }}{{@key}}={{this}}&{{/each}}page={{this}}">{{ this }} {{t "pager.of"}} {{ ../pager.page_qnty }}</a></span>
       </li>
     {{/ if_equal}}
 
@@ -39,9 +39,9 @@
     <span>
 
         {{#if pager.page_next}}
-        <a href="?{{#each pager.filter }}{{@key}}={{this}}&{{/each}}page={{pager.page_next}}">Next &raquo;</a>
+        <a href="?{{#each pager.filter }}{{@key}}={{this}}&{{/each}}page={{pager.page_next}}">{{t "pager.next"}} &raquo;</a>
         {{else}}
-        Next &raquo;
+        {{t "pager.next"}} &raquo;
         {{/if}}
 
     </span>
