@@ -43,7 +43,7 @@
         <input class="" id="auto_approve_inp" name="auto_approve" type="checkbox" {{# if employee.auto_approve}} checked="checked"  {{/if}} >
         {{t "userDetails.autoApprove"}}
       </label>
-      <span class="help-block">{{t "userDetails.autoApproveHelp" name=employee.full_name}}</span>
+      <span class="help-block">{{t "userDetails.autoApproveHelp" name=(full_name employee)}}</span>
   </div>
 
   <div class="form-group">
@@ -83,7 +83,7 @@
 
   <div class="form-group">
     <label for="link_to_email_audit" class="control-label">
-      <a href="/audit/email/?user_id={{employee.id}}">{{t "userDetails.emailsSentTo" name=employee.full_name}}</a>
+      <a href="/audit/email/?user_id={{employee.id}}">{{t "userDetails.emailsSentTo" name=(full_name employee)}}</a>
     </label>
   </div>
 </div>
