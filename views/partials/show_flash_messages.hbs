@@ -10,6 +10,10 @@
             <div class="alert alert-success" role="alert">{{ . }}</div>
         {{/each}}
     {{/if}}
+    {{#if flash.warnings }}
+        {{# each flash.warnings }}
+            <div class="alert alert-warning" role="alert">{{ . }}</div>
+        {{/each}}
+    {{/if}}
 {{/if}}
-
 

@@ -187,13 +187,17 @@
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="control-label">{{t "generalSettings.leaveTypeNameLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeNameHelp"}}</em></p>
           </div>
           <div class="col-md-offset-3 col-md-2">
             <label class="control-label">{{t "generalSettings.leaveTypeLimitLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeLimitHelp"}}</em></p>
+          </div>
+          <div class="col-md-2">
+            <label class="control-label">{{t "generalSettings.leaveTypeMinConsecutiveLabel"}}</label>
+            <p><em>{{t "generalSettings.leaveTypeMinConsecutiveHelp"}}</em></p>
           </div>
         </div>
 
@@ -210,7 +214,7 @@
 
         {{#each leave_types}}
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4">
 
             <div class="input-group">
               <span class="input-group-addon">
@@ -242,6 +246,9 @@
           </div>
           <div class="col-md-2">
             <input type="number" class="form-control" value="{{limit}}" name="limit__{{ this.id }}" data-tom-leave-type-order="limit_{{@index}}">
+          </div>
+          <div class="col-md-2">
+            <input type="number" class="form-control" value="{{minimum_consecutive_days}}" name="minimum_consecutive_days__{{ this.id }}" data-tom-leave-type-order="minimum_consecutive_days_{{@index}}">
           </div>
           <div class="col-md-1">
             <button class="btn btn-default pull-right leavetype-remove-btn" value="{{ this.id }}" data-tom-leave-type-order="remove_{{@index}}"><span class="fa fa-remove"></span></button>
