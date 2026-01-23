@@ -268,7 +268,7 @@ $(document).ready(function() {
 /**
  * Prevent for double submission.
  */
- $(document).ready(function(){
+$(document).ready(function(){
   $('.single-click').on('click', function(e) {
     var form = $(e.target).closest('form');
 
@@ -290,5 +290,60 @@ $(document).ready(function() {
     form.submit();
 
     return false;
+  });
+});
+
+$(document).ready(function(){
+  var themeStorageKey = 'timeoff-theme';
+  var $themeMenu = $('#theme-menu');
+
+  if (!$themeMenu.length) {
+    return;
+  }
+
+  var $themeLabel = $themeMenu.find('.theme-label');
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+
+  function setLabel(theme) {
+    var $item = $themeMenu.find('[data-theme-value="' + theme + '"]');
+    if ($item.length) {
+      $themeLabel.text($item.text());
+    }
+  }
+
+  var storedTheme;
+  try {
+    storedTheme = localStorage.getItem(themeStorageKey);
+  } catch (e) {
+    storedTheme = null;
+  }
+
+  if (storedTheme === 'dark' || storedTheme === 'light') {
+    applyTheme(storedTheme);
+    setLabel(storedTheme);
+  } else {
+    applyTheme('light');
+    setLabel('light');
+  }
+
+  $themeMenu.find('[data-theme-value]').on('click', function(event){
+    event.preventDefault();
+    var theme = $(this).data('theme-value');
+
+    applyTheme(theme);
+    setLabel(theme);
+
+    try {
+      localStorage.setItem(themeStorageKey, theme);
+    } catch (e) {
+      // Ignore storage errors (for example, privacy mode).
+    }
   });
 });
