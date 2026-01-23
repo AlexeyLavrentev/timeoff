@@ -9,27 +9,19 @@ body {
 
 .app-container {
   width: 100%;
-  max-width: 1920px;
+<<<<<<< ours
+  max-width: 1280px;
+=======
+  max-width: 1600px;
+>>>>>>> theirs
   margin: 0 auto;
   padding-left: clamp(16px, 2vw, 32px);
   padding-right: clamp(16px, 2vw, 32px); }
 
-.app-container .row {
-  display: flex;
-  flex-wrap: wrap; }
-
-.app-container .row > [class*="col-"] {
-  min-width: 0; }
-
 @media (max-width: 768px) {
   .app-container {
     padding-left: 5vw;
-    padding-right: 5vw; }
-  .app-container .row {
-    flex-direction: column; }
-  .app-container .row > [class*="col-"] {
-    width: 100%;
-    max-width: 100%; } }
+    padding-right: 5vw; } }
 
 a {
   color: #5ba4e5; }
@@ -129,7 +121,9 @@ label.label-plain {
 
 /* styling calendar*/
 .calendar_month {
-  width: 100%; }
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto; }
 
 .calendar_month td {
   text-align: center;
