@@ -1,6 +1,6 @@
 {{t "emails.leaveCancel.subject"}}
 =====
-<p>{{t "emails.greeting" name=requester.full_name}}</p>
+<p>{{t "emails.greeting" name=(full_name requester)}}</p>
 
 <p>{{t "emails.leaveCancel.requestorBody"}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 

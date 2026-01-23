@@ -1,8 +1,8 @@
 {{t "emails.leaveCancel.subjectSupervisor"}}
 =====
-<p>{{t "emails.greeting" name=approver.full_name}}</p>
+<p>{{t "emails.greeting" name=(full_name approver)}}</p>
 
-<p>{{t "emails.leaveRevoke.cancelled" requester=requester.full_name}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
+<p>{{t "emails.leaveRevoke.cancelled" requester=(full_name requester)}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 {{> email/leave_comments comments=comments }}
 

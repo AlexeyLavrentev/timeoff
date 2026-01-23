@@ -250,6 +250,10 @@
     "commentOptional": "Comment (optional):",
     "leaveSummary": "Leave summary"
   },
+  "leaveWarnings": {
+    "missingMinimumBlock": "Reminder: in {{year}} you still need to schedule at least {{days}} consecutive days of {{leaveType}}.",
+    "managerMissingMinimumBlock": "Employee has not yet scheduled at least {{days}} consecutive days of {{leaveType}} in {{year}}."
+  },
   "user": {
     "employeeSummary": "Employee summary"
   },
@@ -472,7 +476,8 @@
     "autoApproveHelp": "If checked leaves of this type will not require supervisor approval.",
     "pickColor": "Pick a color for the new type",
     "pickColorHelp": "Determine how leaves of new type are going to be highlighted on Calendar/Team view pages.",
-    "limitHelp": "If set to non-zero value determines maximum number of days of new leave type each employee could take during the year."
+    "limitHelp": "If set to non-zero value determines maximum number of days of new leave type each employee could take during the year.",
+    "minimumConsecutiveHelp": "If set, employees should have at least one leave request of this type for the specified number of consecutive days within a calendar year."
   },
   "generalSettings": {
     "title": "General settings",
@@ -504,6 +509,8 @@
     "leaveTypeNameHelp": "Tick one to always be on top of the list",
     "leaveTypeLimitLabel": "Limit",
     "leaveTypeLimitHelp": "Days/year",
+    "leaveTypeMinConsecutiveLabel": "Min consecutive days",
+    "leaveTypeMinConsecutiveHelp": "Days/year",
     "noLeaveTypes": "No Leave type records",
     "leaveTypeUseAllowance": "Use allowance",
     "leaveTypeAutoApprove": "Auto approve",
