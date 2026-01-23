@@ -40,7 +40,12 @@
           <td>{{this.user.department.name}}</td>
           <td class="date_of_request">{{as_date_from_timestamp this.createdAt}}</td>
           <td data-tom-leave-dates="1"><a class="leave-details-summary-trigger" data-leave-id="{{this.id}}" href="#">{{> leave_dates leave=this}}</a></td>
-          <td>{{#if this.is_pended_revoke_leave}}{{t "requests.revokeLabel"}} {{/if}}{{this.leave_type.name}}</td>
+          <td>
+            {{#if this.is_pended_revoke_leave}}{{t "requests.revokeLabel"}} {{/if}}{{this.leave_type.name}}
+            {{#if this.minimum_leave_warning}}
+              <div class="text-warning small">{{this.minimum_leave_warning}}</div>
+            {{/if}}
+          </td>
           <td data-vpp="days_used">{{ this.get_deducted_days_number }}</td>
           <td>{{this.comment.comment}}</td>
           <td>

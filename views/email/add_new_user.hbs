@@ -1,8 +1,8 @@
-{{t "emails.addNewUser.subject" name=new_user.full_name}}
+{{t "emails.addNewUser.subject" name=(full_name new_user)}}
 =====
 <p>{{t "emails.greeting" name=new_user.name}}</p>
 
-<p>{{t "emails.addNewUser.body" admin=admin_user.full_name company=company.name}}</p>
+<p>{{t "emails.addNewUser.body" admin=(full_name admin_user) company=company.name}}</p>
 
 <p>{{t "emails.addNewUser.passwordContact" admin=admin_user.name}} {{> email/link href=(get_application_domain) text=(t "brand.name") }}</p>
 

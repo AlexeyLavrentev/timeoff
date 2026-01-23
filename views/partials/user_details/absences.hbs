@@ -19,7 +19,7 @@
       <div
         class="progress-bar progress-bar-success"
         style="width: {{ leave_statistics.used_so_far_percent }}%"
-        data-content="{{t 'absences.usedSoFarPopover' name=employee.full_name days=leave_statistics.used_so_far}}"
+        data-content="{{t 'absences.usedSoFarPopover' name=(full_name employee) days=leave_statistics.used_so_far}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
@@ -29,7 +29,7 @@
       <div
         class="progress-bar progress-bar-warning"
         style="width: {{ leave_statistics.remaining_percent }}%"
-        data-content="{{t 'absences.remainingPopover' name=employee.full_name days=leave_statistics.remaining}}"
+        data-content="{{t 'absences.remainingPopover' name=(full_name employee) days=leave_statistics.remaining}}"
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
