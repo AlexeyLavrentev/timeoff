@@ -352,3 +352,104 @@ div.feeds-holder {
 .leave_type_color_5 {
   background: #00BCD4 !important;
 }
+
+/* Dark theme overrides */
+[data-theme="dark"] {
+  body {
+    background-color: #121417;
+    color: #e6e6e6;
+  }
+
+  a {
+    color: #8abcf5;
+  }
+
+  .navbar-default {
+    background-color: #1d2125;
+    border-color: #2a2f34;
+  }
+
+  .navbar-default .navbar-brand,
+  .navbar-default .navbar-nav > li > a {
+    color: #e6e6e6;
+  }
+
+  .navbar-default .navbar-nav > li > a:hover,
+  .navbar-default .navbar-brand:hover {
+    color: #ffffff;
+  }
+
+  .dropdown-menu {
+    background-color: #1f2327;
+    border-color: #2a2f34;
+  }
+
+  .dropdown-menu > li > a {
+    color: #e6e6e6;
+  }
+
+  .dropdown-menu > li > a:hover,
+  .dropdown-menu > li > a:focus {
+    background-color: #2a2f34;
+    color: #ffffff;
+  }
+
+  .panel,
+  .panel-default > .panel-heading,
+  .well,
+  .modal-content {
+    background-color: #1a1e22;
+    border-color: #2a2f34;
+    color: #e6e6e6;
+  }
+
+  .panel-default > .panel-heading {
+    color: #e6e6e6;
+  }
+
+  .table {
+    background-color: #1a1e22;
+  }
+
+  .table > thead > tr > th,
+  .table > tbody > tr > td,
+  .table > tfoot > tr > td {
+    border-color: #2a2f34;
+  }
+
+  .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #1f2327;
+  }
+
+  .breadcrumb {
+    color: #c8c8c8;
+  }
+
+  .form-control {
+    background-color: #1f2327;
+    border-color: #2a2f34;
+    color: #e6e6e6;
+  }
+
+  .form-control:focus {
+    border-color: #5b87b8;
+    box-shadow: 0 0 0 1px rgba(91, 135, 184, 0.3);
+  }
+
+  .list-group-item {
+    background-color: #1a1e22;
+    border-color: #2a2f34;
+    color: #e6e6e6;
+  }
+
+  .alert-info,
+  .alert-warning,
+  .alert-danger,
+  .alert-success {
+    color: #e6e6e6;
+  }
+
+  .footer {
+    border-top-color: #2a2f34;
+  }
+}

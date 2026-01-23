@@ -27,6 +27,11 @@
     "english": "English",
     "russian": "Russian"
   },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "common": {
     "addNew": "Add new",
     "toggleDropdown": "Toggle Dropdown",
