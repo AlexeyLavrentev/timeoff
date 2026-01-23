@@ -1,11 +1,11 @@
 {{t "emails.leaveRequest.subjectAutoApprovedSupervisor"}}
 =====
-<p>{{t "emails.greeting" name=approver.full_name}}</p>
+<p>{{t "emails.greeting" name=(full_name approver)}}</p>
 
-<p>{{t "emails.leaveRequest.newLeaveAdded" requester=requester.full_name}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
+<p>{{t "emails.leaveRequest.newLeaveAdded" requester=(full_name requester)}} <strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>{{t "emails.leaveRequest.noApprovalNeeded" requester=requester.full_name}}</p>
+<p>{{t "emails.leaveRequest.noApprovalNeeded" requester=(full_name requester)}}</p>
 
 <p>{{t "emails.thanks"}}</p>

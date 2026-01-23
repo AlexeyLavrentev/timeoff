@@ -100,6 +100,61 @@ docker run --rm -p 3000:3000 timeoff:local
 
 После запуска приложение будет доступно на http://localhost:3000/.
 
+### Docker Compose для MySQL (production)
+
+Для продакшен‑сценариев используйте MySQL и `docker-compose.yml`, который поднимает базу и приложение вместе.
+
+```bash
+docker compose up --build
+```
+
+После запуска:
+
+* Приложение: http://localhost:3000/
+* MySQL: `db:3306` внутри сети compose
+
+Инициализацию/миграции можно запустить вручную:
+
+```bash
+docker compose run --rm app npm run db-update
+```
+
+Переменные подключения к базе можно переопределить через окружение:
+
+* `DB_DIALECT`, `DB_HOST`, `DB_PORT`
+* `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+* `DB_STORAGE`, `DB_LOGGING`
+* также поддерживаются `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
+
+Чтобы убрать подробные SQL‑логи Sequelize, установите `DB_LOGGING=false`
+в окружении (уже задано в `docker-compose.yml`).
+
+#### Диагностика ошибки доступа к MySQL
+
+Если при запуске в контейнере появляется ошибка вида:
+
+```
+SequelizeAccessDeniedError: ER_ACCESS_DENIED_ERROR: Access denied for user
+```
+
+то чаще всего уже существует том MySQL, созданный с другими учётными данными.
+В таком случае удалите том и пересоздайте контейнеры:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+Либо убедитесь, что значения `MYSQL_USER`/`MYSQL_PASSWORD` в `docker-compose.yml`
+совпадают с `DB_USER`/`DB_PASSWORD` для приложения.
+
+Если появляется ошибка `ER_NO_SUCH_TABLE: Table 'timeoff.Sessions' doesn't exist`,
+убедитесь, что таблицы созданы:
+
+```bash
+docker compose run --rm app npm run db-update
+```
+
 ## Запуск тестов
 
 Тесты покрывают основные пользовательские сценарии.

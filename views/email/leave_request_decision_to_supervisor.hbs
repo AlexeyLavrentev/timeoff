@@ -1,9 +1,9 @@
 {{t "emails.leaveDecisionSupervisor.subject"}}
 =====
-<p>{{t "emails.greeting" name=approver.full_name}}</p>
+<p>{{t "emails.greeting" name=(full_name approver)}}</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>{{#if_equal action 'approve'}}{{t "emails.leaveDecisionSupervisor.body" requester=requester.full_name action=(t "emails.actions.approve")}}{{else}}{{t "emails.leaveDecisionSupervisor.body" requester=requester.full_name action=(t "emails.actions.reject")}}{{/if_equal}} {{#if was_pended_revoke}}{{t "emails.leaveDecision.cancellation"}} {{/if}}{{>leave_request_detail leave=leave }}.</p>
+<p>{{#if_equal action 'approve'}}{{t "emails.leaveDecisionSupervisor.body" requester=(full_name requester) action=(t "emails.actions.approve")}}{{else}}{{t "emails.leaveDecisionSupervisor.body" requester=(full_name requester) action=(t "emails.actions.reject")}}{{/if_equal}} {{#if was_pended_revoke}}{{t "emails.leaveDecision.cancellation"}} {{/if}}{{>leave_request_detail leave=leave }}.</p>
 
 <p>{{t "emails.thanks"}}</p>

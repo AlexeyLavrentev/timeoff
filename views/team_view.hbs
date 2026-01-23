@@ -118,7 +118,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=this.user.full_name days=../../statistics.deducted_days }}"
+              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=(full_name this.user) days=../../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"
@@ -170,7 +170,7 @@
           <td>
             <span class="teamview-deducted-days"
               {{#if statistics }}
-              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../base_date 'MMMM, YYYY') name=this.user.full_name days=../statistics.deducted_days }}"
+              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../base_date 'MMMM, YYYY') name=(full_name this.user) days=../statistics.deducted_days }}"
               data-placement="right"
               data-toggle="popover"
               data-trigger="focus hover"
