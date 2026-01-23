@@ -1,5 +1,6 @@
 
 var express      = require('express');
+var os           = require('os');
 var path         = require('path');
 var favicon      = require('serve-favicon');
 var logger       = require('morgan');
@@ -12,6 +13,10 @@ const i18nextMiddleware = require('i18next-express-middleware');
 const { initI18next } = require('./lib/i18n');
 
 var app = express();
+
+if (typeof os.tmpDir !== 'function') {
+  os.tmpDir = os.tmpdir;
+}
 
 // View engine setup
 var handlebars = require('express-handlebars')
