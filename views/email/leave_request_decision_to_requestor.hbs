@@ -1,9 +1,9 @@
 {{#if_equal action 'approve'}}{{t "emails.leaveDecision.subjectApproved"}}{{else}}{{t "emails.leaveDecision.subjectRejected"}}{{/if_equal}}
 =====
-<p>{{t "emails.greeting" name=requester.full_name}}</p>
+<p>{{t "emails.greeting" name=(full_name requester)}}</p>
 
 {{> email/leave_comments comments=comments }}
 
-<p>{{#if_equal action 'approve'}}{{t "emails.leaveDecision.body" approver=approver.full_name action=(t "emails.actions.approve")}}{{else}}{{t "emails.leaveDecision.body" approver=approver.full_name action=(t "emails.actions.reject")}}{{/if_equal}} {{#if was_pended_revoke}}{{t "emails.leaveDecision.cancellation"}} {{/if}}<strong>{{>leave_request_detail leave=leave }}</strong>.</p>
+<p>{{#if_equal action 'approve'}}{{t "emails.leaveDecision.body" approver=(full_name approver) action=(t "emails.actions.approve")}}{{else}}{{t "emails.leaveDecision.body" approver=(full_name approver) action=(t "emails.actions.reject")}}{{/if_equal}} {{#if was_pended_revoke}}{{t "emails.leaveDecision.cancellation"}} {{/if}}<strong>{{>leave_request_detail leave=leave }}</strong>.</p>
 
 <p>{{t "emails.thanks"}}</p>
