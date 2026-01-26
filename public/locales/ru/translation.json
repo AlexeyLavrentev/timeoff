@@ -27,6 +27,11 @@
     "english": "English",
     "russian": "Русский"
   },
+  "theme": {
+    "label": "Тема",
+    "light": "Светлая",
+    "dark": "Темная"
+  },
   "common": {
     "addNew": "Добавить",
     "toggleDropdown": "Переключить меню",

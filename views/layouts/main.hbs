@@ -11,6 +11,19 @@
 
     <title>{{title}}</title>
 
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('timeoff-theme');
+          if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {
+          // Ignore theme preferences when storage is unavailable.
+        }
+      })();
+    </script>
+
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/font-awesome.min.css">
