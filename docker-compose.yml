@@ -15,10 +15,22 @@ services:
       timeout: 5s
       retries: 20
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   app:
     build: .
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: production
@@ -34,6 +46,9 @@ services:
       MYSQL_PASSWORD: timeoff_password
     ports:
       - "3000:3000"
+    volumes:
+      - ./config/app.redis.json:/app/config/app.json:ro
 
 volumes:
   mysql_data:
+  redis_data:
