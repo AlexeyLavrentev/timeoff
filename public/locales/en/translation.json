@@ -108,6 +108,13 @@
       "revokedPendingApproval": "Revoked waiting for approval",
       "approvedAbsence": "Approved absence",
       "bankHoliday": "Bank holiday: {{name}}"
+    },
+    "messages": {
+      "companyLocked": "Company account is locked and new Timeoff requests could not be added. Please contact administration.",
+      "leaveAdded": "New leave request was added",
+      "leaveCreateFailed": "Failed to create a leave request",
+      "teamViewAccessFailed": "Failed to access TeamView page. Please contact administrator.",
+      "feedRegenerated": "Feed was regenerated"
     }
   },
   "bankHolidays": {
@@ -117,7 +124,17 @@
     "addNew": "Add new bank holiday",
     "monthRange": "January - December {{year}}",
     "holidayName": "Holiday Name",
-    "noRecords": "No Bank holiday records"
+    "noRecords": "No Bank holiday records",
+    "messages": {
+      "saved": "Changes to bank holidays were saved",
+      "updateFailed": "Failed to update bank holidays, please contact customer service",
+      "importAdded": "New bank holidays were added: {{names}}",
+      "importNone": "No more new bank holidays exist",
+      "importFailed": "Failed to import bank holidays",
+      "removeWrongParams": "Cannot remove bank holiday: wrong parameters",
+      "removed": "Bank holiday was successfully removed",
+      "dateInvalid": "New day for {{name}} should be date"
+    }
   },
   "requests": {
     "noLeaveRequests": "There are no leave requests yet.",
@@ -150,7 +167,26 @@
     "reject": "Reject",
     "approve": "Approve",
     "allAbsences": "All my absences",
-    "deductedFromAllowance": "Days would be deducted from allowance"
+    "deductedFromAllowance": "Days would be deducted from allowance",
+    "messages": {
+      "processed": "Request from {{name}} was processed",
+      "approveFailed": "Failed to approve request",
+      "rejectFailed": "Failed to reject request",
+      "canceled": "The leave request was canceled",
+      "cancelFailed": "Failed to cancel leave request",
+      "revokeFailed": "Failed to revoke leave request",
+      "revokeRequested": "You have requested leave to be revoked.",
+      "revokeRequestedNeedsApproval": "You have requested leave to be revoked. Your supervisor needs to approve it."
+    }
+  },
+  "leaveRequest": {
+    "messages": {
+      "invalidEmployee": "Incorrect employee",
+      "invalidLeaveType": "Incorrect leave type",
+      "dateInvalid": "{{label}} should be a date",
+      "dayPartInvalid": "Incorrect day part",
+      "interYearNotAllowed": "Current implementation does not allow inter year leaves. Please split your request into two parts"
+    }
   },
   "allowanceBreakdown": {
     "title": "Allowance breakdown",
@@ -200,6 +236,12 @@
     "moveToCompanyWide": "Move employee to company wide schedule",
     "saveUserSpecific": "Save employee specific schedule",
     "overrideCompanyWide": "Override company wide schedule",
+    "messages": {
+      "userSaved": "Schedule for user was saved",
+      "companySaved": "Schedule for company was saved",
+      "userSaveFailed": "Failed to save user schedule",
+      "companySaveFailed": "Failed to save company schedule"
+    },
     "weekdayShort": {
       "mon": "Mon",
       "tue": "Tue",
@@ -216,7 +258,27 @@
     "password": "Password",
     "submit": "Login",
     "forgotPassword": "Forgot password?",
-    "registerCompany": "Register new company"
+    "registerCompany": "Register new company",
+    "messages": {
+      "invalidCredentials": "Incorrect credentials",
+      "welcomeBack": "Welcome back {{name}}!",
+      "emailMissing": "Email was not provided",
+      "emailInvalid": "Email address is invalid",
+      "nameMissing": "Name was not specified",
+      "lastNameMissing": "Last name was not specified",
+      "passwordBlank": "Password could not be blank",
+      "passwordMismatch": "Confirmed password does not match initial one",
+      "countryInvalid": "Incorrect country code",
+      "timezoneUnknown": "Time zone is unknown",
+      "registrationComplete": "Registration is complete.",
+      "registrationFailed": "Failed to register user. {{reason}}",
+      "contactSupport": "Please contact customer service.",
+      "forgotPasswordSent": "Please check your email box for further instructions",
+      "forgotPasswordFailed": "Failed to proceed with submitted data.",
+      "resetLinkUnknown": "Unknown reset password link, please submit request again",
+      "resetPasswordMismatch": "Confirmed password does not match password",
+      "resetPasswordUseNew": "Please use new password to login into system"
+    }
   },
   "forgotPassword": {
     "title": "Forgot password",
@@ -454,7 +516,33 @@
     "yes": "Yes",
     "downloadCsv": ".csv",
     "downloadCsvTooltip": "Download current page as .CSV file",
-    "filterByGroup": "Filter by group"
+    "filterByGroup": "Filter by group",
+    "messages": {
+      "created": "New user account successfully added",
+      "createFailed": "Failed to add new user",
+      "importSuccess": "Successfully imported users with following emails: {{emails}}",
+      "importUserFailed": "Failed to add user {{email}}. Reason: {{reason}}",
+      "importFailed": "Failed to import users, reason: {{reason}}",
+      "emailExistsOtherAccount": "There is an active account with similar email somewhere within system.",
+      "emailAlreadyInUse": "Email is already in use",
+      "lastAdmin": "This is last admin within company. Cannot revoke admin rights.",
+      "detailsUpdated": "Details for {{name}} were updated",
+      "saveFailed": "Failed to save changes.",
+      "recordsRemoved": "Employee records were removed from the system",
+      "removeFailed": "Failed to remove user. {{error}}",
+      "invalidSearchEmail": "Provided email does not look like valid one: \"{{email}}\""
+    },
+    "validation": {
+      "emailInvalid": "New email of {{itemName}} should be valid email address",
+      "departmentInvalid": "New department number of {{itemName}} should be a valid number",
+      "adjustmentInvalid": "New allowance adjustment of {{itemName}} should be a valid number",
+      "adjustmentInvalidHalf": "New allowance adjustment of {{itemName}} should be either whole integer number or with half",
+      "startDateInvalid": "New start date for {{itemName}} should be valid date",
+      "endDateInvalid": "New end date for {{itemName}} should be valid date",
+      "endDateBeforeStart": "End date for {{itemName}} is before start date",
+      "passwordMismatch": "Confirmed password does not match initial one",
+      "passwordRequired": "Password is required"
+    }
   },
   "userAdd": {
     "title": "New employee",
@@ -533,6 +621,42 @@
     "removeCompanyBackupSuffix": "employees leave data first.",
     "removeCompanyButton": "Delete company account"
   },
+  "settings": {
+    "messages": {
+      "countryInvalid": "Country should contain only letters and numbers",
+      "timezoneUnknown": "Time zone is unknown",
+      "carryOverInvalid": "Carried over allowance has to be a number",
+      "dateFormatUnknown": "Unknown date format was provided",
+      "companyUpdated": "Company was successfully updated",
+      "companyUpdateFailed": "Failed to update company details, please contact customer service",
+      "carryOverSuccess": "Unused allowance was successfully carried over",
+      "carryOverFailed": "Failed to carry over unused allowances, please contact customer service and provide incident ID: {{incidentId}}",
+      "leaveTypesSaved": "Changes to leave types were saved",
+      "leaveTypesUpdateFailed": "Failed to update leave types details, please contact customer service",
+      "leaveTypeRemoveWrongParams": "Cannot remove leave type: wrong parameters",
+      "leaveTypeInUse": "Cannot remove leave type: type is in use",
+      "leaveTypeRemoved": "Leave type was successfully removed",
+      "leaveTypeRemoveFailed": "Failed to remove Leave Type",
+      "saved": "Settings were saved",
+      "saveFailed": "Failed to save settings. {{reason}}",
+      "ldapUpdated": "LDAP configuration was updated",
+      "ldapUpdateFailed": "Failed to update LDAP configuration. {{reason}}",
+      "ldapUrlInvalid": "URL to LDAP server must be of following format: 'ldap://HOSTNAME:PORT'",
+      "companySummaryFailed": "Failed to download company summary. {{reason}}",
+      "companyRemoved": "Company {{company}} and related data were successfully removed",
+      "companyRemoveFailed": "Failed to remove company. Reason: {{reason}}",
+      "contactSupport": "Please contact customer service"
+    },
+    "leaveTypes": {
+      "validation": {
+        "colorInvalid": "New color for {{name}} should be valid css class",
+        "limitInvalid": "New limit for {{name}} should be a valid number",
+        "limitNonNegative": "New limit for {{name}} should be positive number or 0",
+        "minimumInvalid": "Minimum consecutive days for {{name}} should be a valid number",
+        "minimumNonNegative": "Minimum consecutive days for {{name}} should be positive number or 0"
+      }
+    }
+  },
   "departments": {
     "title": "Departments",
     "allDepartments": "All departments",
@@ -570,7 +694,24 @@
     "addSupervisorsPrefix": "Add supervisors to",
     "addSupervisorsSuffix": "department",
     "addSelectedEmployees": "Add selected employees",
-    "noAvailableSupervisors": "No employees available to be added as secondary supervisors."
+    "noAvailableSupervisors": "No employees available to be added as secondary supervisors.",
+    "messages": {
+      "allowanceNumeric": "New allowance for {{department}} should be numeric",
+      "allowanceRange": "New allowance for {{department}} should be between 0.5 and 50 days",
+      "bossNumeric": "New boss reference for {{department}} should be numeric",
+      "bossUnknown": "New boss for {{department}} is unknown",
+      "criticalOverlapRange": "Max critical overlap for {{department}} should be a number between 1 and 50",
+      "saved": "Changes to departments were saved",
+      "createFailed": "Failed to add new department, please contact customer service",
+      "removeWrongParams": "Cannot remove department: wrong parameters",
+      "removeHasUsers": "Cannot remove department {{name}} as it still has {{count}} users.",
+      "removed": "Department was successfully removed",
+      "detailsFailed": "Failed to fetch details for given department",
+      "supervisorRemoved": "Supervisor was removed from {{department}}",
+      "supervisorsAdded": "Supervisors were added to department {{department}}",
+      "updated": "Department {{department}} was updated",
+      "updateFailed": "Failed to update department's details"
+    }
   },
   "ldapAuth": {
     "title": "LDAP authentication",

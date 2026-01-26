@@ -108,6 +108,13 @@
       "revokedPendingApproval": "Отзыв ожидает подтверждения",
       "approvedAbsence": "Отсутствие подтверждено",
       "bankHoliday": "Праздничный день: {{name}}"
+    },
+    "messages": {
+      "companyLocked": "Аккаунт компании заблокирован, новые запросы на отпуск недоступны. Обратитесь к администратору.",
+      "leaveAdded": "Новый запрос на отпуск создан",
+      "leaveCreateFailed": "Не удалось создать запрос на отпуск",
+      "teamViewAccessFailed": "Не удалось открыть Team View. Обратитесь к администратору.",
+      "feedRegenerated": "Фид был обновлён"
     }
   },
   "bankHolidays": {
@@ -117,7 +124,17 @@
     "addNew": "Добавить новый праздник",
     "monthRange": "Январь - Декабрь {{year}}",
     "holidayName": "Название праздника",
-    "noRecords": "Нет записей о праздниках"
+    "noRecords": "Нет записей о праздниках",
+    "messages": {
+      "saved": "Изменения в банковских праздниках сохранены",
+      "updateFailed": "Не удалось обновить банковские праздники, обратитесь в поддержку",
+      "importAdded": "Добавлены новые праздничные дни: {{names}}",
+      "importNone": "Новых праздничных дней нет",
+      "importFailed": "Не удалось импортировать праздничные дни",
+      "removeWrongParams": "Нельзя удалить праздничный день: неверные параметры",
+      "removed": "Праздничный день успешно удалён",
+      "dateInvalid": "Новая дата для {{name}} должна быть корректной"
+    }
   },
   "requests": {
     "noLeaveRequests": "Пока нет заявок на отпуск.",
@@ -150,7 +167,26 @@
     "reject": "Отклонить",
     "approve": "Утвердить",
     "allAbsences": "Все мои отсутствия",
-    "deductedFromAllowance": "Дни будут списаны из лимита"
+    "deductedFromAllowance": "Дни будут списаны из лимита",
+    "messages": {
+      "processed": "Запрос от {{name}} обработан",
+      "approveFailed": "Не удалось одобрить запрос",
+      "rejectFailed": "Не удалось отклонить запрос",
+      "canceled": "Запрос на отпуск отменён",
+      "cancelFailed": "Не удалось отменить запрос на отпуск",
+      "revokeFailed": "Не удалось отозвать запрос на отпуск",
+      "revokeRequested": "Вы запросили отзыв отпуска.",
+      "revokeRequestedNeedsApproval": "Вы запросили отзыв отпуска. Требуется подтверждение руководителя."
+    }
+  },
+  "leaveRequest": {
+    "messages": {
+      "invalidEmployee": "Некорректный сотрудник",
+      "invalidLeaveType": "Некорректный тип отпуска",
+      "dateInvalid": "{{label}} должна быть датой",
+      "dayPartInvalid": "Некорректная часть дня",
+      "interYearNotAllowed": "Сейчас нельзя создавать отпуска на разные годы. Разделите запрос на две части"
+    }
   },
   "allowanceBreakdown": {
     "title": "Разбивка лимита",
@@ -200,6 +236,12 @@
     "moveToCompanyWide": "Перевести на общий график",
     "saveUserSpecific": "Сохранить индивидуальный график",
     "overrideCompanyWide": "Переопределить общий график",
+    "messages": {
+      "userSaved": "График сотрудника сохранён",
+      "companySaved": "График компании сохранён",
+      "userSaveFailed": "Не удалось сохранить график сотрудника",
+      "companySaveFailed": "Не удалось сохранить график компании"
+    },
     "weekdayShort": {
       "mon": "Пн",
       "tue": "Вт",
@@ -216,7 +258,27 @@
     "password": "Пароль",
     "submit": "Войти",
     "forgotPassword": "Забыли пароль?",
-    "registerCompany": "Зарегистрировать компанию"
+    "registerCompany": "Зарегистрировать компанию",
+    "messages": {
+      "invalidCredentials": "Неверные учетные данные",
+      "welcomeBack": "С возвращением, {{name}}!",
+      "emailMissing": "Email не указан",
+      "emailInvalid": "Некорректный адрес email",
+      "nameMissing": "Имя не указано",
+      "lastNameMissing": "Фамилия не указана",
+      "passwordBlank": "Пароль не может быть пустым",
+      "passwordMismatch": "Подтверждение пароля не совпадает",
+      "countryInvalid": "Неверный код страны",
+      "timezoneUnknown": "Неизвестная часовая зона",
+      "registrationComplete": "Регистрация завершена.",
+      "registrationFailed": "Не удалось зарегистрировать пользователя. {{reason}}",
+      "contactSupport": "Пожалуйста, обратитесь в поддержку",
+      "forgotPasswordSent": "Проверьте почту для дальнейших инструкций",
+      "forgotPasswordFailed": "Не удалось обработать данные.",
+      "resetLinkUnknown": "Ссылка на сброс пароля недействительна, отправьте запрос ещё раз",
+      "resetPasswordMismatch": "Подтверждение пароля не совпадает",
+      "resetPasswordUseNew": "Используйте новый пароль для входа"
+    }
   },
   "forgotPassword": {
     "title": "Восстановление пароля",
@@ -454,7 +516,33 @@
     "yes": "Да",
     "downloadCsv": ".csv",
     "downloadCsvTooltip": "Скачать текущую страницу в .CSV",
-    "filterByGroup": "Фильтр по группе"
+    "filterByGroup": "Фильтр по группе",
+    "messages": {
+      "created": "Новый пользователь успешно добавлен",
+      "createFailed": "Не удалось добавить пользователя",
+      "importSuccess": "Пользователи успешно импортированы: {{emails}}",
+      "importUserFailed": "Не удалось добавить пользователя {{email}}. Причина: {{reason}}",
+      "importFailed": "Не удалось импортировать пользователей. Причина: {{reason}}",
+      "emailExistsOtherAccount": "В системе уже есть активная учетная запись с таким email.",
+      "emailAlreadyInUse": "Email уже используется",
+      "lastAdmin": "Это последний администратор в компании. Нельзя отозвать права администратора.",
+      "detailsUpdated": "Данные пользователя {{name}} обновлены",
+      "saveFailed": "Не удалось сохранить изменения.",
+      "recordsRemoved": "Записи сотрудника удалены из системы",
+      "removeFailed": "Не удалось удалить пользователя. {{error}}",
+      "invalidSearchEmail": "Указанный email выглядит неверно: \"{{email}}\""
+    },
+    "validation": {
+      "emailInvalid": "Новый email для {{itemName}} должен быть корректным адресом",
+      "departmentInvalid": "Новый отдел для {{itemName}} должен быть корректным номером",
+      "adjustmentInvalid": "Новое значение корректировки лимита для {{itemName}} должно быть числом",
+      "adjustmentInvalidHalf": "Корректировка лимита для {{itemName}} должна быть целым числом или с половиной",
+      "startDateInvalid": "Новая дата начала для {{itemName}} должна быть корректной",
+      "endDateInvalid": "Новая дата окончания для {{itemName}} должна быть корректной",
+      "endDateBeforeStart": "Дата окончания для {{itemName}} раньше даты начала",
+      "passwordMismatch": "Подтверждение пароля не совпадает",
+      "passwordRequired": "Пароль обязателен"
+    }
   },
   "userAdd": {
     "title": "Новый сотрудник",
@@ -533,6 +621,42 @@
     "removeCompanyBackupSuffix": "данные об отсутствиях сотрудников.",
     "removeCompanyButton": "Удалить аккаунт компании"
   },
+  "settings": {
+    "messages": {
+      "countryInvalid": "Код страны должен содержать только буквы и цифры",
+      "timezoneUnknown": "Неизвестная часовая зона",
+      "carryOverInvalid": "Переносимый лимит должен быть числом",
+      "dateFormatUnknown": "Указан неизвестный формат даты",
+      "companyUpdated": "Компания успешно обновлена",
+      "companyUpdateFailed": "Не удалось обновить данные компании, обратитесь в поддержку",
+      "carryOverSuccess": "Неиспользованный лимит успешно перенесён",
+      "carryOverFailed": "Не удалось перенести лимит. Обратитесь в поддержку и укажите идентификатор инцидента: {{incidentId}}",
+      "leaveTypesSaved": "Изменения типов отпусков сохранены",
+      "leaveTypesUpdateFailed": "Не удалось обновить типы отпусков, обратитесь в поддержку",
+      "leaveTypeRemoveWrongParams": "Нельзя удалить тип отпуска: неверные параметры",
+      "leaveTypeInUse": "Нельзя удалить тип отпуска: он используется",
+      "leaveTypeRemoved": "Тип отпуска успешно удалён",
+      "leaveTypeRemoveFailed": "Не удалось удалить тип отпуска",
+      "saved": "Настройки сохранены",
+      "saveFailed": "Не удалось сохранить настройки. {{reason}}",
+      "ldapUpdated": "Настройки LDAP обновлены",
+      "ldapUpdateFailed": "Не удалось обновить настройки LDAP. {{reason}}",
+      "ldapUrlInvalid": "URL LDAP-сервера должен быть вида 'ldap://HOSTNAME:PORT'",
+      "companySummaryFailed": "Не удалось скачать сводку компании. {{reason}}",
+      "companyRemoved": "Компания {{company}} и связанные данные успешно удалены",
+      "companyRemoveFailed": "Не удалось удалить компанию. Причина: {{reason}}",
+      "contactSupport": "Пожалуйста, обратитесь в поддержку"
+    },
+    "leaveTypes": {
+      "validation": {
+        "colorInvalid": "Новый цвет для {{name}} должен быть корректным CSS-классом",
+        "limitInvalid": "Новый лимит для {{name}} должен быть числом",
+        "limitNonNegative": "Новый лимит для {{name}} должен быть положительным числом или 0",
+        "minimumInvalid": "Минимальное количество подряд идущих дней для {{name}} должно быть числом",
+        "minimumNonNegative": "Минимальное количество подряд идущих дней для {{name}} должно быть положительным числом или 0"
+      }
+    }
+  },
   "departments": {
     "title": "Отделы",
     "allDepartments": "Все отделы",
@@ -570,7 +694,24 @@
     "addSupervisorsPrefix": "Добавить руководителей в отдел",
     "addSupervisorsSuffix": "",
     "addSelectedEmployees": "Добавить выбранных сотрудников",
-    "noAvailableSupervisors": "Нет сотрудников, которых можно добавить как дополнительных руководителей."
+    "noAvailableSupervisors": "Нет сотрудников, которых можно добавить как дополнительных руководителей.",
+    "messages": {
+      "allowanceNumeric": "Новый лимит для {{department}} должен быть числом",
+      "allowanceRange": "Новый лимит для {{department}} должен быть от 0,5 до 50 дней",
+      "bossNumeric": "Идентификатор руководителя для {{department}} должен быть числом",
+      "bossUnknown": "Руководитель для {{department}} не найден",
+      "criticalOverlapRange": "Максимальное критическое пересечение для {{department}} должно быть числом от 1 до 50",
+      "saved": "Изменения в отделах сохранены",
+      "createFailed": "Не удалось добавить отдел, обратитесь в поддержку",
+      "removeWrongParams": "Нельзя удалить отдел: неверные параметры",
+      "removeHasUsers": "Нельзя удалить отдел {{name}}, в нём ещё {{count}} сотрудников.",
+      "removed": "Отдел успешно удалён",
+      "detailsFailed": "Не удалось загрузить данные отдела",
+      "supervisorRemoved": "Руководитель удалён из {{department}}",
+      "supervisorsAdded": "Руководители добавлены в отдел {{department}}",
+      "updated": "Отдел {{department}} обновлён",
+      "updateFailed": "Не удалось обновить данные отдела"
+    }
   },
   "ldapAuth": {
     "title": "LDAP аутентификация",
