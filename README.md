@@ -155,6 +155,19 @@ docker compose up --build
 docker compose run --rm app npm run db-update
 ```
 
+#### Docker Compose с Redis для хранения сессий
+
+В `docker-compose.yml` уже добавлен контейнер Redis и подключена конфигурация
+`config/app.redis.json`, чтобы сессии хранились в Redis.
+
+Для запуска:
+
+```bash
+docker compose up --build
+```
+
+Redis будет доступен внутри сети compose по хосту `redis:6379`.
+
 ## Запуск тестов
 
 Тесты покрывают основные пользовательские сценарии.

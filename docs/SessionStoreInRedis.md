@@ -13,3 +13,8 @@ It is possible to use different storage mechanism for Sessions data: [Redis](htt
 * Update `sessionStore.redisConnectionConfiguration`'s `host` and `port` pointing to corresponding instance of Redis
 * Save the configuration file 
 * Restart the application
+
+## Docker Compose
+
+`docker-compose.yml` запускает контейнер Redis и монтирует `config/app.redis.json`
+в `config/app.json` внутри контейнера приложения. Redis доступен по хосту `redis:6379`.
