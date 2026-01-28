@@ -497,7 +497,8 @@
     "fullMode": "Полный режим",
     "allDepartments": "Все отделы",
     "allGroups": "Все группы",
-    "deductedDays": "В {{month}} {{name}} использовал(а) {{days}} дней из лимита"
+    "monthsLabel": "Месяцев",
+    "deductedDays": "В {{period}} {{name}} использовал(а) {{days}} дней из лимита"
   },
   "users": {
     "title": "Сотрудники",

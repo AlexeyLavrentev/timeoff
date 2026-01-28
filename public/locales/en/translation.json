@@ -497,7 +497,8 @@
     "fullMode": "Full mode",
     "allDepartments": "All departments",
     "allGroups": "All groups",
-    "deductedDays": "In {{month}} {{name}} used {{days}} days from allowance"
+    "monthsLabel": "Months",
+    "deductedDays": "In {{period}} {{name}} used {{days}} days from allowance"
   },
   "users": {
     "title": "Staff",
