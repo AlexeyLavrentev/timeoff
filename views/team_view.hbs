@@ -116,7 +116,10 @@
           </td>
 
         {{#each this.header_days }}
-          <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
+          <td colspan="2" class="team-view-header">
+            <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+            <b>{{as_date_formatted this.moment 'dd'}}</b>
+          </td>
         {{/each}}
         </tr>
         </thead>
