@@ -90,12 +90,6 @@
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="btn-group btn-group-sm pull-right" role="group">
-      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 0 save_compact_mode = 1 }}" class="btn btn-default" {{#unless compact_mode}}disabled=disabled{{/unless}}>{{t "teamView.fullMode"}}</a>
-      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 1 save_compact_mode = 1 }}" class="btn btn-default" {{#if compact_mode}}disabled=disabled{{/if}}>{{t "teamView.compactMode"}}</a>
-    </div>
-  </div>
 </div>
 
 <div class="row">&nbsp;</div>
@@ -143,7 +137,7 @@
               {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
               </span>
             </td>
-            {{#each this.display_days}}
+            {{#each this.days}}
               {{> calendar_cell day = this}}
             {{/each}}
           </tr>
