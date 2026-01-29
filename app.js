@@ -31,7 +31,8 @@ app.set('view engine', '.hbs');
 
 // Add single reference to the model into application object
 // and reuse it whenever an access to DB is needed
-app.set('db_model', require('./lib/model/db'));
+const dbModel = require('./lib/model/db');
+app.set('db_model', dbModel);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
@@ -43,6 +44,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const i18next = initI18next();
 app.use(i18nextMiddleware.handle(i18next));
+
+app.use(function(req, res, next) {
+  if (!dbModel.ready) {
+    return next();
+  }
+  return dbModel.ready.then(() => next()).catch(next);
+});
 
 
 
