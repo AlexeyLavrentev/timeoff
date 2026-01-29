@@ -497,7 +497,8 @@
     "fullMode": "Full mode",
     "allDepartments": "All departments",
     "allGroups": "All groups",
-    "deductedDays": "In {{month}} {{name}} used {{days}} days from allowance"
+    "monthsLabel": "Months",
+    "deductedDays": "In {{period}} {{name}} used {{days}} days from allowance"
   },
   "users": {
     "title": "Staff",
@@ -745,7 +746,11 @@
     "allGroups": "All groups",
     "addNew": "Add new group",
     "name": "Name",
+    "maxCriticalOverlap": "Max critical overlap",
+    "overlapHelp": "Maximum number of critical employees allowed to have overlapping leave at the same time.",
     "members": "Members",
+    "criticalEmployees": "Critical employees",
+    "criticalHelp": "Select employees that are critical for operations. Overlap limits apply to them.",
     "save": "Save changes",
     "delete": "Delete",
     "noGroups": "No group records",
@@ -755,6 +760,7 @@
       "loadFailed": "Failed to load groups",
       "nameRequired": "Group name is required",
       "duplicateName": "Group with the same name already exists",
+      "criticalOverlapRange": "Max critical overlap for {{group}} should be a number between 1 and 50",
       "created": "Group was created",
       "createFailed": "Failed to create group",
       "invalidId": "Invalid group id",

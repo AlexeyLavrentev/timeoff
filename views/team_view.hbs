@@ -24,7 +24,14 @@
     </div>
 
     <div class="col-xs-8 calendar-section-caption">
-        <button id="team_view_month_select_btn" class="btn btn-link btn-lg" data-tom="/calendar/teamview/?{{> team_view_url_parameters base_date=0 }}" data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months">{{as_date_formatted base_date 'MMMM, YYYY' }} <i class="fa fa-angle-down"></i></button>
+        <button id="team_view_month_select_btn" class="btn btn-link btn-lg" data-tom="/calendar/teamview/?{{> team_view_url_parameters base_date=0 }}" data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months">
+          {{#if_equal months_count 1}}
+            {{as_date_formatted base_date 'MMMM, YYYY' }}
+          {{else}}
+            {{as_date_formatted start_date 'MMM'}} - {{as_date_formatted end_date 'MMM, YYYY' }}
+          {{/if_equal}}
+          <i class="fa fa-angle-down"></i>
+        </button>
     </div>
 
     <div class="col-xs-2">
@@ -72,126 +79,197 @@
       </div>
     </div>
   </div>
-  <div class="col-md-6">
-    <div class="btn-group btn-group-sm pull-right" role="group">
-      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 0 save_compact_mode = 1 }}" class="btn btn-default" {{#unless compact_mode}}disabled=disabled{{/unless}}>{{t "teamView.fullMode"}}</a>
-      <a href="/calendar/teamview/?{{> team_view_url_parameters compact_mode = 1 save_compact_mode = 1 }}" class="btn btn-default" {{#if compact_mode}}disabled=disabled{{/if}}>{{t "teamView.compactMode"}}</a>
+  <div class="col-md-3">
+    <div class="form-group">
+      <label class="control-label">{{t "teamView.monthsLabel"}}</label>
+      <div class="btn-group btn-group-sm" role="group">
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 1 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 1}}disabled=disabled{{/if_equal}}>1</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 3 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 3}}disabled=disabled{{/if_equal}}>3</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 6 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 6}}disabled=disabled{{/if_equal}}>6</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 12 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 12}}disabled=disabled{{/if_equal}}>12</a>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="row">&nbsp;</div>
 
-{{#if grouped_mode}}
+{{#each months}}
+  {{#if ../show_month_title}}
+  <div class="row clearfix">
+    <div class="col-md-12">
+      <h3>{{as_date_formatted this.start_date 'MMMM, YYYY'}}</h3>
+    </div>
+  </div>
+  {{/if}}
 
-{{#each users_and_leaves_by_departments}}
-
-{{#if @index}}
-<div class="row">
-  <div class="col-md-12">&nbsp;</div>
-</div>
-{{/if}}
-
-<div class="row clearfix">
-  <div class="col-md-12">
-    <table class="team-view-table table-hover">
-      <thead>
-      <tr>
-        <td class="team-view-header" colspan="2">
-          <div class="pull-left">
-            <h3>{{this.departmentName}}</h3>
-          </div>
-        </td>
-
-      {{#unless ../compact_mode}}
-        {{#each this.users_and_leaves.0.days }}
-          <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
-        {{/each}}
-      {{/unless}}
-      </tr>
-      </thead>
-
-      <tbody>
-      {{#each this.users_and_leaves}}
-        <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
-          <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
-          <td>
-            <span class="teamview-deducted-days"
-              {{#if statistics }}
-              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../../base_date 'MMMM, YYYY') name=(full_name this.user) days=../../statistics.deducted_days }}"
-              data-placement="right"
-              data-toggle="popover"
-              data-trigger="focus hover"
-              {{/if}}
-            >
-            {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
-            </span>
+  {{#each this.departments}}
+  <div class="row clearfix">
+    <div class="col-md-12">
+      <table class="team-view-table table-hover">
+        <thead>
+        <tr>
+          <td class="team-view-header" colspan="2">
+            <div class="pull-left">
+              <h3>{{this.departmentName}}</h3>
+            </div>
           </td>
+
+        {{#each this.header_days }}
+          <td colspan="2" class="team-view-header">
+            <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+            <b>{{as_date_formatted this.moment 'dd'}}</b>
+          </td>
+        {{/each}}
+        </tr>
+        </thead>
+
+        <tbody>
+        {{#each this.users_and_leaves}}
+          <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
+            <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../../../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
+            <td>
+              <span class="teamview-deducted-days"
+                {{#if statistics }}
+                data-content="{{t 'teamView.deductedDays' period=../../../deducted_period name=(full_name this.user) days=../../../statistics.deducted_days }}"
+                data-placement="right"
+                data-toggle="popover"
+                data-trigger="focus hover"
+                {{/if}}
+              >
+              {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
+              </span>
+            </td>
+            {{#each this.days}}
+              {{> calendar_cell day = this}}
+            {{/each}}
+          </tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {{/each}}
+  {{#if ../grouped_mode}}
+    {{#each this.users_and_leaves_by_departments}}
+    <div class="row clearfix">
+      <div class="col-md-12">
+        <table class="team-view-table table-hover">
+          <thead>
+          <tr>
+            <td class="team-view-header" colspan="2">
+              <div class="pull-left">
+                <h3>{{this.departmentName}}</h3>
+              </div>
+            </td>
           {{#unless ../../compact_mode}}
-            {{#each this.days}}
-              {{> calendar_cell day = this}}
+            {{#each this.users_and_leaves.0.days }}
+              <td colspan="2" class="team-view-header">
+                <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+                <span class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</span><br>
+                <b>{{as_date_formatted this.moment 'dd'}}</b>
+              </td>
             {{/each}}
           {{/unless}}
-        </tr>
-      {{/each}}
-      </tbody>
-    </table>
-  </div>
-</div>
+          </tr>
+          {{#unless ../../compact_mode}}
+          <tr>
+            <td class="team-view-header" colspan="2"></td>
+            {{#each this.users_and_leaves.0.days }}
+              <td colspan="2" class="team-view-header">{{as_date_formatted this.moment 'ddd'}}</td>
+            {{/each}}
+          </tr>
+          {{/unless}}
+          </thead>
 
-{{/each}}
-
-{{else}}
-
-
-<div class="row clearfix">
-  <div class="col-md-12">
-    <table class="team-view-table table-hover">
-      <thead>
-      <tr>
-        <td class="team-view-header" colspan="2">
-          <div class="pull-left">
-            {{#if current_department }}{{current_department.name}}{{else}}{{t "teamView.allDepartments"}}{{/if}}
-          </div>
-        </td>
-
-      {{#unless compact_mode}}
-        {{#each users_and_leaves.0.days }}
-          <td colspan="2" class="team-view-header"><b>{{as_date_formatted this.moment 'dd'}}</b></td>
-        {{/each}}
-      {{/unless}}
-      </tr>
-      </thead>
-
-      <tbody>
-      {{#each users_and_leaves}}
-        <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
-          <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
-          <td>
-            <span class="teamview-deducted-days"
-              {{#if statistics }}
-              data-content="{{t 'teamView.deductedDays' month=(as_date_formatted ../base_date 'MMMM, YYYY') name=(full_name this.user) days=../statistics.deducted_days }}"
-              data-placement="right"
-              data-toggle="popover"
-              data-trigger="focus hover"
-              {{/if}}
-            >
-            {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
-            </span>
-          </td>
+          <tbody>
+          {{#each this.users_and_leaves}}
+            <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
+              <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../../../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
+              <td>
+                <span class="teamview-deducted-days"
+                  {{#if statistics }}
+                  data-content="{{t 'teamView.deductedDays' period=../../../deducted_period name=(full_name this.user) days=../../../statistics.deducted_days }}"
+                  data-placement="right"
+                  data-toggle="popover"
+                  data-trigger="focus hover"
+                  {{/if}}
+                >
+                {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
+                </span>
+              </td>
+              {{#unless ../../../compact_mode}}
+                {{#each this.days}}
+                  {{> calendar_cell day = this}}
+                {{/each}}
+              {{/unless}}
+            </tr>
+          {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {{/each}}
+  {{else}}
+    <div class="row clearfix">
+      <div class="col-md-12">
+        <table class="team-view-table table-hover">
+          <thead>
+          <tr>
+            <td class="team-view-header" colspan="2">
+              <div class="pull-left">
+                {{#if ../current_department }}{{../current_department.name}}{{else}}{{t "teamView.allDepartments"}}{{/if}}
+              </div>
+            </td>
           {{#unless ../compact_mode}}
-            {{#each this.days}}
-              {{> calendar_cell day = this}}
+            {{#each this.users_and_leaves.0.days }}
+              <td colspan="2" class="team-view-header">
+                <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+                <span class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</span><br>
+                <b>{{as_date_formatted this.moment 'dd'}}</b>
+              </td>
             {{/each}}
           {{/unless}}
-        </tr>
-      {{/each}}
-      </tbody>
-    </table>
-  </div>
-</div>
+          </tr>
+          {{#unless ../compact_mode}}
+          <tr>
+            <td class="team-view-header" colspan="2"></td>
+            {{#each this.users_and_leaves.0.days }}
+              <td colspan="2" class="team-view-header">{{as_date_formatted this.moment 'ddd'}}</td>
+            {{/each}}
+          </tr>
+          {{/unless}}
+          </thead>
 
-{{/if}}
+          <tbody>
+          {{#each this.users_and_leaves}}
+            <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
+              <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
+              <td>
+                <span class="teamview-deducted-days"
+                  {{#if statistics }}
+                  data-content="{{t 'teamView.deductedDays' period=../../deducted_period name=(full_name this.user) days=../../statistics.deducted_days }}"
+                  data-placement="right"
+                  data-toggle="popover"
+                  data-trigger="focus hover"
+                  {{/if}}
+                >
+                {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
+                </span>
+              </td>
+              {{#unless ../../compact_mode}}
+                {{#each this.days}}
+                  {{> calendar_cell day = this}}
+                {{/each}}
+              {{/unless}}
+            </tr>
+          {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {{/if}}
+{{/each}}
 
 <div class="row clearfix">&nbsp;</div>
 

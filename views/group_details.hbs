@@ -33,6 +33,12 @@
   </div>
 
   <div class="form-group">
+    <label for="max_critical_overlap" class="control-label">{{t "groups.maxCriticalOverlap"}}</label>
+    <input class="form-control" id="max_critical_overlap" name="max_critical_overlap" type="number" min="1" max="50" value="{{group.max_critical_overlap}}">
+    <span class="help-block">{{t "groups.overlapHelp"}}</span>
+  </div>
+
+  <div class="form-group">
     <label class="control-label">{{t "groups.editMembers"}}</label>
     <ul class="list-group no-bottom-space">
       {{#each company.users}}
@@ -44,6 +50,23 @@
         </li>
       {{/each}}
     </ul>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label">{{t "groups.criticalEmployees"}}</label>
+    <ul class="list-group no-bottom-space">
+      {{#each company.users}}
+        {{#if (lookup ../group_user_map this.id)}}
+          <li class="list-group-item">
+            <label>
+              <input type="checkbox" name="critical_user_ids" value="{{this.id}}" {{#if (lookup ../group_critical_map this.id)}}checked="checked"{{/if}}>
+              {{this.full_name}}
+            </label>
+          </li>
+        {{/if}}
+      {{/each}}
+    </ul>
+    <span class="help-block">{{t "groups.criticalHelp"}}</span>
   </div>
 </div>
 
