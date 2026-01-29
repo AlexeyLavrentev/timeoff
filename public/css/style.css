@@ -144,6 +144,12 @@ td.team-view-header {
   height: 43px;
   text-align: center; }
 
+.team-view-weekday {
+  display: inline-block;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.1; }
+
 td.calendar_cell {
   width: 15px !important;
   min-width: 15px !important;
