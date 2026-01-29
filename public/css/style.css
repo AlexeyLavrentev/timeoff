@@ -9,11 +9,7 @@ body {
 
 .app-container {
   width: 100%;
-<<<<<<< ours
   max-width: 1280px;
-=======
-  max-width: 1600px;
->>>>>>> theirs
   margin: 0 auto;
   padding-left: clamp(16px, 2vw, 32px);
   padding-right: clamp(16px, 2vw, 32px); }
@@ -379,20 +375,11 @@ div.feeds-holder {
   border-color: #2a2f34;
   color: #e6e6e6; }
 
-<<<<<<< ours
-<<<<<<< ours
-=======
-=======
->>>>>>> theirs
 [data-theme="dark"] .list-group-item:hover,
 [data-theme="dark"] .list-group-item:focus {
   background-color: #2a2f34;
   color: #e6e6e6; }
 
-<<<<<<< ours
->>>>>>> theirs
-=======
->>>>>>> theirs
 [data-theme="dark"] .calendar_month {
   background-color: #1a1e22;
   color: #e6e6e6; }
@@ -445,23 +432,12 @@ div.feeds-holder {
 [data-theme="dark"] .popover {
   background-color: #1f2327;
   border-color: #2a2f34;
-<<<<<<< ours
   color: #e6e6e6; }
 
 [data-theme="dark"] .popover-title {
   background-color: #1a1e22;
   border-bottom-color: #2a2f34;
   color: #e6e6e6; }
-
-=======
-  color: #e6e6e6; }
-
-[data-theme="dark"] .popover-title {
-  background-color: #1a1e22;
-  border-bottom-color: #2a2f34;
-  color: #e6e6e6; }
-
->>>>>>> theirs
 [data-theme="dark"] .popover.right > .arrow::after {
   border-right-color: #1f2327; }
 
