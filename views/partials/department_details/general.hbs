@@ -78,28 +78,6 @@
     <span class="help-block">{{t "departments.accruedAllowanceHelp"}}</span>
   </div>
 
-  <div class="form-group">
-    <label for="max_critical_overlap" class="control-label">{{t "departments.maxCriticalOverlap"}}</label>
-    <input class="form-control" id="max_critical_overlap" name="max_critical_overlap" type="number" min="1" max="50" value="{{department.max_critical_overlap}}">
-    <span class="help-block">{{t "departments.overlapHelp"}}</span>
-  </div>
-
-  <div class="form-group">
-    <label class="control-label">{{t "departments.criticalEmployees"}}</label>
-    <ul class="list-group no-bottom-space">
-      {{#each company.users}}
-        {{#if_equal this.DepartmentId ../department.id}}
-          <li class="list-group-item">
-            <label>
-              <input type="checkbox" name="critical_user_ids" value="{{this.id}}" {{#if this.is_critical}}checked="checked"{{/if}}>
-              {{this.full_name}}
-            </label>
-          </li>
-        {{/if_equal}}
-      {{/each}}
-    </ul>
-    <span class="help-block">{{t "departments.criticalHelp"}}</span>
-  </div>
 </div>
 
 <div class="row">
