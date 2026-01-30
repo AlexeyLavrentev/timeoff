@@ -37,6 +37,15 @@
     <input class="form-control" id="max_critical_overlap" name="max_critical_overlap" type="number" min="1" max="50" value="{{group.max_critical_overlap}}">
     <span class="help-block">{{t "groups.overlapHelp"}}</span>
   </div>
+  <div class="form-group">
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" name="is_hr_group" {{#if group.is_hr_group}}checked="checked"{{/if}}>
+        {{t "groups.hrModeLabel"}}
+      </label>
+    </div>
+    <span class="help-block">{{t "groups.hrModeHelp"}}</span>
+  </div>
 
   <div class="form-group">
     <label class="control-label">{{t "groups.editMembers"}}</label>
