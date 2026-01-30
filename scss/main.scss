@@ -30,6 +30,10 @@ body {
   padding-right: clamp(16px, 2vw, 32px);
 }
 
+.team-view-container {
+  max-width: min(2400px, 90vw);
+}
+
 @media (max-width: 768px) {
   .app-container {
     padding-left: 5vw;
