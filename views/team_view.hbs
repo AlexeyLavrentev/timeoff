@@ -43,7 +43,7 @@
 <div class="row">&nbsp;</div>
 
 <div class="row team-view-filters">
-  <div class="col-md-3">
+  <div class="col-md-4">
     <div class="form-group">
       <label class="control-label">{{t "teamView.departmentLabel"}}</label>
       <div class="dropdown">
@@ -78,11 +78,9 @@
         </div>
       </div>
     {{/if}}
-  </div>
-  <div class="col-md-3 team-view-months">
-    <div class="form-group">
+    <div class="form-group team-view-months">
       <label class="control-label">{{t "teamView.monthsLabel"}}</label>
-      <div class="btn-group btn-group-sm" role="group">
+      <div class="btn-group btn-group-sm team-view-months-buttons" role="group">
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 1 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 1}}disabled=disabled{{/if_equal}}>1</a>
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 3 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 3}}disabled=disabled{{/if_equal}}>3</a>
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 6 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 6}}disabled=disabled{{/if_equal}}>6</a>
