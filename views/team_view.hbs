@@ -60,24 +60,24 @@
         </ul>
       </div>
     </div>
-  </div>
-  <div class="col-md-3">
-    <div class="form-group">
-      <label class="control-label">{{t "teamView.groupLabel"}}</label>
-      <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-          {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
-          <li role="separator" class="divider"></li>
-          {{#each related_groups}}
-          <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_group = this save_current_group = 1 }}">{{this.name}}</a></li>
-          {{/each}}
-        </ul>
+    {{#if logged_user.admin}}
+      <div class="form-group">
+        <label class="control-label">{{t "teamView.groupLabel"}}</label>
+        <div class="dropdown">
+          <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
+            <li role="separator" class="divider"></li>
+            {{#each related_groups}}
+            <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_group = this save_current_group = 1 }}">{{this.name}}</a></li>
+            {{/each}}
+          </ul>
+        </div>
       </div>
-    </div>
+    {{/if}}
   </div>
   <div class="col-md-3">
     <div class="form-group">
