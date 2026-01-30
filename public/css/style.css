@@ -199,6 +199,20 @@ td.leave_cell_pended {
   overflow: hidden;
   display: inline-block; }
 
+.team-view-table-container {
+<<<<<<< ours
+  padding-left: 0;
+  padding-right: 15px; }
+=======
+  margin-left: -15px;
+  margin-right: -15px;
+  padding-left: 0;
+  padding-right: 0; }
+>>>>>>> theirs
+
+.team-view-filters .team-view-months {
+  padding-top: 24px; }
+
 .main-row_header {
   /* TODO refactore */
   border: none;
