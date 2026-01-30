@@ -181,7 +181,8 @@ div.month_container {
 }
 
 .team-view-table {
-  width : 100%;
+  width : calc(100% + 15px);
+  margin-left: -15px;
 }
 .team-view-table td {
   padding-top    : 5px;
@@ -241,6 +242,22 @@ td.leave_cell_pended {
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
+}
+
+.team-view-table-container {
+  padding-left: 0;
+  padding-right: 15px;
+}
+
+.team-view-table-container {
+  margin-left: -15px;
+  margin-right: -15px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.team-view-filters .team-view-months {
+  padding-top: 24px;
 }
 
 .main-row_header {  /* TODO refactore */
