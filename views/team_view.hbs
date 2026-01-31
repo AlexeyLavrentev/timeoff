@@ -42,8 +42,8 @@
 
 <div class="row">&nbsp;</div>
 
-<div class="row">
-  <div class="col-md-3">
+<div class="row team-view-filters">
+  <div class="col-md-4">
     <div class="form-group">
       <label class="control-label">{{t "teamView.departmentLabel"}}</label>
       <div class="dropdown">
@@ -60,29 +60,27 @@
         </ul>
       </div>
     </div>
-  </div>
-  <div class="col-md-3">
-    <div class="form-group">
-      <label class="control-label">{{t "teamView.groupLabel"}}</label>
-      <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-          {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
-          <li role="separator" class="divider"></li>
-          {{#each related_groups}}
-          <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_group = this save_current_group = 1 }}">{{this.name}}</a></li>
-          {{/each}}
-        </ul>
+    {{#if logged_user.admin}}
+      <div class="form-group">
+        <label class="control-label">{{t "teamView.groupLabel"}}</label>
+        <div class="dropdown">
+          <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
+            <li role="separator" class="divider"></li>
+            {{#each related_groups}}
+            <li><a href="?{{> team_view_url_parameters base_date = ../base_date current_group = this save_current_group = 1 }}">{{this.name}}</a></li>
+            {{/each}}
+          </ul>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="form-group">
+    {{/if}}
+    <div class="form-group team-view-months">
       <label class="control-label">{{t "teamView.monthsLabel"}}</label>
-      <div class="btn-group btn-group-sm" role="group">
+      <div class="btn-group btn-group-sm team-view-months-buttons" role="group">
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 1 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 1}}disabled=disabled{{/if_equal}}>1</a>
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 3 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 3}}disabled=disabled{{/if_equal}}>3</a>
         <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 6 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 6}}disabled=disabled{{/if_equal}}>6</a>
@@ -97,7 +95,7 @@
 {{#each months}}
   {{#if ../show_month_title}}
   <div class="row clearfix">
-    <div class="col-md-12">
+    <div class="col-md-12 team-view-table-container">
       <h3>{{as_date_formatted this.start_date 'MMMM, YYYY'}}</h3>
     </div>
   </div>
@@ -105,7 +103,7 @@
 
   {{#each this.departments}}
   <div class="row clearfix">
-    <div class="col-md-12">
+    <div class="col-md-12 team-view-table-container">
       <table class="team-view-table table-hover">
         <thead>
         <tr>
@@ -152,8 +150,8 @@
   {{/each}}
   {{#if ../grouped_mode}}
     {{#each this.users_and_leaves_by_departments}}
-    <div class="row clearfix">
-      <div class="col-md-12">
+  <div class="row clearfix">
+    <div class="col-md-12 team-view-table-container">
         <table class="team-view-table table-hover">
           <thead>
           <tr>
@@ -212,7 +210,7 @@
     {{/each}}
   {{else}}
     <div class="row clearfix">
-      <div class="col-md-12">
+      <div class="col-md-12 team-view-table-container">
         <table class="team-view-table table-hover">
           <thead>
           <tr>
