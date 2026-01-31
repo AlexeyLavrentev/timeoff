@@ -30,6 +30,10 @@ body {
   padding-right: clamp(16px, 2vw, 32px);
 }
 
+.team-view-container {
+  max-width: min(2400px, 90vw);
+}
+
 @media (max-width: 768px) {
   .app-container {
     padding-left: 5vw;
@@ -181,7 +185,9 @@ div.month_container {
 }
 
 .team-view-table {
-  width : 100%;
+  width: calc(100% + 30px);
+  margin-left: -30px;
+  margin-right: 0;
 }
 .team-view-table td {
   padding-top    : 5px;
@@ -241,6 +247,34 @@ td.leave_cell_pended {
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
+}
+
+.team-view-table-container {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.team-view-filters .team-view-months {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
+.team-view-months .control-label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.team-view-months .team-view-months-buttons {
+  display: inline-flex;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .main-row_header {  /* TODO refactore */
