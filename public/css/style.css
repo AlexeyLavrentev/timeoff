@@ -15,7 +15,8 @@ body {
   padding-right: clamp(16px, 2vw, 32px); }
 
 .team-view-container {
-  max-width: min(2400px, 90vw); }
+  max-width: 1920 px;
+  width: 100%; }
 
 @media (max-width: 768px) {
   .app-container {
@@ -137,8 +138,8 @@ div.month_container {
   height: 250px; }
 
 .team-view-table {
-  width: calc(100% + 30px);
-  margin-left: -30px;
+  width: 100%;
+  margin-left: 0;
   margin-right: 0; }
 
 .team-view-table td {
@@ -151,9 +152,10 @@ td.team-view-header {
 
 .team-view-weekday {
   display: inline-block;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
   color: #6c757d;
-  line-height: 1.1; }
+  line-height: 1.2; }
 
 td.calendar_cell {
   width: 15px !important;

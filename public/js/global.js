@@ -209,6 +209,8 @@ $(document).ready(function(){
 });
 
 $(document).ready(function() {
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
   const fetchNotifications = () => {
     if (typeof($.ajax) === 'function') {
       $.ajax({

@@ -31,7 +31,8 @@ body {
 }
 
 .team-view-container {
-  max-width: min(2400px, 90vw);
+  max-width: 1920 px;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -185,8 +186,8 @@ div.month_container {
 }
 
 .team-view-table {
-  width: calc(100% + 30px);
-  margin-left: -30px;
+  width: 100%;
+  margin-left: o;
   margin-right: 0;
 }
 .team-view-table td {
@@ -198,6 +199,13 @@ td.team-view-header {
   text-align: center;
 }
 
+.team-view-weekday {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6c757d;
+  line-height: 1.2;
+}
 
 td.calendar_cell {
     width          : 15px !important;
