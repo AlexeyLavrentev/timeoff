@@ -1,0 +1,44 @@
+<div class="row clearfix">
+  <div class="col-md-12 team-view-table-container">
+    <table class="team-view-table table-hover">
+      <thead>
+      <tr>
+        <td class="team-view-header" colspan="2">
+          <div class="pull-left">
+            <h3>{{department.departmentName}}</h3>
+          </div>
+        </td>
+
+      {{#each department.header_days }}
+        <td colspan="2" class="team-view-header">
+          <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+        </td>
+      {{/each}}
+      </tr>
+      </thead>
+
+      <tbody>
+      {{#each department.users_and_leaves}}
+        <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
+          <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
+          <td>
+            <span class="teamview-deducted-days"
+              {{#if statistics }}
+              data-content="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name this.user) days=../statistics.deducted_days }}"
+              data-placement="right"
+              data-toggle="popover"
+              data-trigger="focus hover"
+              {{/if}}
+            >
+            {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
+            </span>
+          </td>
+          {{#each this.days}}
+            {{> calendar_cell day = this}}
+          {{/each}}
+        </tr>
+      {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

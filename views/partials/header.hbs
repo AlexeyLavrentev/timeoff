@@ -52,50 +52,48 @@
             <li><a href="/language/ru">{{t "language.russian"}}</a></li>
           </ul>
         </li>
-        <li>
-          {{#if logged_user }}
-            <li class="dropdown" id="header-notification-dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                <span class="fa fa-bell-o"></span>
-                <span class="label label-info notification-badge hidden"></span>
-              </a>
-              <ul class="dropdown-menu" role="menu">
-                <li class="dropdown-header">{{t "nav.notificationsEmpty"}}</li>
-              </ul>
-            </li>
-            {{#if logged_user.admin }}
-            <li class="dropdown hidden-xs">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="fa fa-gears"></span> <span class="caret"></span></a>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="/settings/general/">{{t "nav.general"}}</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="/settings/departments/">{{t "nav.departments"}}</a></li>
-                <li><a href="/settings/groups/">{{t "nav.groups"}}</a></li>
-                <li><a href="/settings/bankholidays/">{{t "nav.bankHolidays"}}</a></li>
-                <li><a href="/settings/company/authentication/">{{t "nav.ldapConfig"}}</a></li>
-                <li><a href="/settings/company/integration-api/">{{t "nav.apiConfig"}}</a></li>
-                <li><a href="/users/import/">{{t "nav.importEmployees"}}</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="/audit/email/">{{t "nav.emailsAudit"}}</a></li>
-                <li><a href="/reports/">{{t "nav.reports"}}</a></li>
-              </ul>
-            </li>
-            {{/if}}
-            <li class="visible-xs-block"><a href="/requests/">{{t "nav.requests"}}</a></li>
-            <li class="visible-xs-block"><a href="/logout/">{{t "nav.logout"}}</a></li>
-            <li class="dropdown hidden-xs">
-              <a id="me_menu" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{t "nav.me"}} <span class="caret"></span></a>
-              <ul class="dropdown-menu" role="menu">
-                <li><a href="/requests/">{{t "nav.requests"}}</a></li>
-                <li class="hidden-xs"><a href="/calendar/feeds/">{{t "nav.feeds"}}</a></li>
-                <li role="separator" class="divider hidden-xs"></li>
-                <li><a href="/logout/">{{t "nav.logout"}}</a></li>
-              </ul>
-            </li>
-          {{else}}
-            <li><a href="/login/">{{t "nav.login"}}</a></li>
+        {{#if logged_user }}
+          <li class="dropdown" id="header-notification-dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+              <span class="fa fa-bell-o"></span>
+              <span class="label label-info notification-badge hidden"></span>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+              <li class="dropdown-header">{{t "nav.notificationsEmpty"}}</li>
+            </ul>
+          </li>
+          {{#if logged_user.admin }}
+          <li class="dropdown hidden-xs">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="fa fa-gears"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="/settings/general/">{{t "nav.general"}}</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="/settings/departments/">{{t "nav.departments"}}</a></li>
+              <li><a href="/settings/groups/">{{t "nav.groups"}}</a></li>
+              <li><a href="/settings/bankholidays/">{{t "nav.bankHolidays"}}</a></li>
+              <li><a href="/settings/company/authentication/">{{t "nav.ldapConfig"}}</a></li>
+              <li><a href="/settings/company/integration-api/">{{t "nav.apiConfig"}}</a></li>
+              <li><a href="/users/import/">{{t "nav.importEmployees"}}</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="/audit/email/">{{t "nav.emailsAudit"}}</a></li>
+              <li><a href="/reports/">{{t "nav.reports"}}</a></li>
+            </ul>
+          </li>
           {{/if}}
-        </li>
+          <li class="visible-xs-block"><a href="/requests/">{{t "nav.requests"}}</a></li>
+          <li class="visible-xs-block"><a href="/logout/">{{t "nav.logout"}}</a></li>
+          <li class="dropdown hidden-xs">
+            <a id="me_menu" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{t "nav.me"}} <span class="caret"></span></a>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="/requests/">{{t "nav.requests"}}</a></li>
+              <li class="hidden-xs"><a href="/calendar/feeds/">{{t "nav.feeds"}}</a></li>
+              <li role="separator" class="divider hidden-xs"></li>
+              <li><a href="/logout/">{{t "nav.logout"}}</a></li>
+            </ul>
+          </li>
+        {{else}}
+          <li><a href="/login/">{{t "nav.login"}}</a></li>
+        {{/if}}
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->

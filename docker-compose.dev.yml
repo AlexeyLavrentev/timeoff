@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: .
+      target: deps
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DB_DIALECT: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: timeoff
+      DB_USER: timeoff
+      DB_PASSWORD: timeoff_password
+      DB_LOGGING: "false"
+      MYSQL_DATABASE: timeoff
+      MYSQL_USER: timeoff
+      MYSQL_PASSWORD: timeoff_password
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - ./config/app.redis.json:/app/config/app.json:ro
+    command: ["sh", "-c", "npm run build-css && npm start"]

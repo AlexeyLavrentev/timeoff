@@ -58,6 +58,31 @@
     "close": "Закрыть",
     "github": "GitHub"
   },
+  "notifications": {
+    "pendingRequest": "{{count}} заявка на отпуск",
+    "pendingRequest_2": "{{count}} заявки на отпуск",
+    "pendingRequest_5": "{{count}} заявок на отпуск",
+    "pendingRequest_one": "{{count}} заявка на отпуск",
+    "pendingRequest_few": "{{count}} заявки на отпуск",
+    "pendingRequest_many": "{{count}} заявок на отпуск",
+    "pendingRequest_other": "{{count}} заявок на отпуск"
+  },
+  "errors": {
+    "requestFailed": "Не удалось выполнить запрос.",
+    "leaveDetailsFailed": "Не удалось получить детали отпуска.",
+    "userDetailsFailed": "Не удалось получить данные сотрудника.",
+    "notificationsFailed": "Не удалось получить уведомления."
+  },
+  "titles": {
+    "calendar": "Календарь",
+    "feeds": "Мои фиды",
+    "dashboard": "Дашборд",
+    "departmentsSettings": "Настройки отделов",
+    "departmentDetails": "Детали отдела",
+    "groups": "Группы",
+    "groupDetails": "Детали группы",
+    "login": "Time Off Management"
+  },
   "userPopup": {
     "available": "Доступно",
     "availableOutOf": "{{available}} дней из {{total}}",
