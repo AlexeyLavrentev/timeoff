@@ -104,6 +104,8 @@ $(document).ready(function(){
   $('#team_view_month_select_btn')
     .datepicker()
     .on('changeDate', function(e) {
+      $('#team-view-loading').removeClass('hidden');
+
       var url = $(e.currentTarget).data('tom');
 
       var form = document.createElement("form");
@@ -126,6 +128,12 @@ $(document).ready(function(){
 
       return form.submit();
     });
+
+  if ($('#team_view_month_select_btn').length) {
+    $(document).on('click', '.team-view-filters a, nav a, .team-view-months-buttons a', function() {
+      $('#team-view-loading').removeClass('hidden');
+    });
+  }
 });
 
 

@@ -58,6 +58,26 @@
     "close": "Close",
     "github": "GitHub"
   },
+  "notifications": {
+    "pendingRequest": "{{count}} leave request to process",
+    "pendingRequest_plural": "{{count}} leave requests to process"
+  },
+  "errors": {
+    "requestFailed": "Request failed.",
+    "leaveDetailsFailed": "Failed to get leave details.",
+    "userDetailsFailed": "Failed to get user details.",
+    "notificationsFailed": "Failed to fetch notifications."
+  },
+  "titles": {
+    "calendar": "Calendar",
+    "feeds": "My feeds",
+    "dashboard": "Dashboard",
+    "departmentsSettings": "Departments settings",
+    "departmentDetails": "Department details",
+    "groups": "Groups",
+    "groupDetails": "Group details",
+    "login": "Time Off Management"
+  },
   "userPopup": {
     "available": "Available",
     "availableOutOf": "{{available}} days out of {{total}}",

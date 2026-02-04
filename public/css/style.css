@@ -15,7 +15,7 @@ body {
   padding-right: clamp(16px, 2vw, 32px); }
 
 .team-view-container {
-  max-width: 1920 px;
+  max-width: 1920px;
   width: 100%; }
 
 @media (max-width: 768px) {
@@ -138,9 +138,10 @@ div.month_container {
   height: 250px; }
 
 .team-view-table {
-  width: 100%;
+  width: auto;
   margin-left: 0;
-  margin-right: 0; }
+  margin-right: 0;
+  display: inline-table; }
 
 .team-view-table td {
   padding-top: 5px;
@@ -156,6 +157,12 @@ td.team-view-header {
   font-weight: 600;
   color: #6c757d;
   line-height: 1.2; }
+
+.team-view-weekday {
+  display: inline-block;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.1; }
 
 td.calendar_cell {
   width: 15px !important;
@@ -201,7 +208,7 @@ td.leave_cell_pended {
 .left-column-cell {
   text-overflow: ellipsis;
   /* Cannot avoid specifying width with pixels... */
-  width: 165px;
+  width: 180px;
   white-space: nowrap;
   overflow: hidden;
   display: inline-block; }
@@ -209,8 +216,35 @@ td.leave_cell_pended {
 .team-view-table-container {
   margin-left: 0;
   margin-right: 0;
-  padding-left: 0;
-  padding-right: 0; }
+  padding-left: 32px;
+  padding-right: 0;
+  overflow-x: auto;
+  text-align: left; }
+
+.team-view-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center; }
+
+.team-view-loading-content {
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px; }
+
+.team-view-loading-text {
+  white-space: nowrap; }
 
 .team-view-filters .team-view-months {
   display: flex;

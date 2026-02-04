@@ -1,4 +1,4 @@
-FROM node:14-bullseye-slim AS base
+FROM node:14-bullseye-slim AS deps
 
 WORKDIR /app
 
@@ -12,14 +12,22 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+RUN npm install
+
+FROM deps AS build
+
+COPY scss ./scss
+COPY public ./public
+RUN npm run compile-sass \
+  && npm prune --omit=dev
 
 FROM node:14-bullseye-slim
 
 WORKDIR /app
 
-COPY --from=base /app/node_modules ./node_modules
+COPY --from=build /app/node_modules ./node_modules
 COPY . .
+COPY --from=build /app/public/css/style.css ./public/css/style.css
 
 EXPOSE 3000
 CMD ["npm", "start"]
