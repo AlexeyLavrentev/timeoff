@@ -1,4 +1,4 @@
-FROM node:14-bullseye-slim AS deps
+FROM node:20-bullseye-slim AS deps
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ COPY public ./public
 RUN npm run compile-sass \
   && npm prune --omit=dev
 
-FROM node:14-bullseye-slim
+FROM node:20-bullseye-slim
 
 WORKDIR /app
 
