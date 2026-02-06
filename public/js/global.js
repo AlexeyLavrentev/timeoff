@@ -131,6 +131,14 @@ $(document).ready(function(){
 
   if ($('#team_view_month_select_btn').length) {
     $(document).on('click', '.team-view-filters a, nav a, .team-view-months-buttons a', function() {
+      var $link = $(this);
+      var href = $link.attr('href');
+
+      // Ignore controls that only toggle UI state (dropdowns/modals), they do not navigate.
+      if (!href || href === '#' || href.indexOf('javascript:') === 0 || $link.is('[data-toggle="dropdown"], [data-toggle="modal"]')) {
+        return;
+      }
+
       $('#team-view-loading').removeClass('hidden');
     });
   }
