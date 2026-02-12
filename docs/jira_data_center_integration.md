@@ -10,6 +10,8 @@ Keep vacation planning in TimeOff, and automatically reassign Jira issues to a d
 2. New migration: `migrations/20260212112000-add-user-replacements.js`
 3. New Integration API endpoint:
    `GET /integration/v1/report/replacements`
+4. Admin UI for rules:
+   `Settings -> Replacement rules` (`/settings/company/replacements/`)
 
 ## Data model
 
