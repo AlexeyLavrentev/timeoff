@@ -7,7 +7,6 @@ const REQUIRED_ENV = [
   "TIMEOFF_BASE_URL",
   "TIMEOFF_TOKEN",
   "JIRA_BASE_URL",
-  "JIRA_USER",
   "JIRA_TOKEN",
 ];
 
@@ -25,10 +24,26 @@ const asBool = (value, defaultValue = false) => {
 };
 
 const assertRequiredEnv = () => {
-  const missing = REQUIRED_ENV.filter((name) => !getEnv(name));
+  const authMode = getJiraAuthMode();
+  const required = [...REQUIRED_ENV];
+
+  if (authMode === "basic") {
+    required.push("JIRA_USER");
+  }
+
+  const missing = required.filter((name) => !getEnv(name));
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
+};
+
+const getJiraAuthMode = () => {
+  const mode = String(getEnv("JIRA_AUTH_MODE", "basic")).toLowerCase();
+  if (mode !== "basic" && mode !== "bearer") {
+    throw new Error(`Unsupported JIRA_AUTH_MODE='${mode}', use 'basic' or 'bearer'`);
+  }
+
+  return mode;
 };
 
 const getToday = () => {
@@ -111,12 +126,20 @@ const log = (message, payload = null) => {
 };
 
 const jiraAuthHeaders = () => {
-  const user = getEnv("JIRA_USER");
   const token = getEnv("JIRA_TOKEN");
-  const credentials = Buffer.from(`${user}:${token}`).toString("base64");
+  const authMode = getJiraAuthMode();
+
+  let authorization = "";
+  if (authMode === "bearer") {
+    authorization = `Bearer ${token}`;
+  } else {
+    const user = getEnv("JIRA_USER");
+    const credentials = Buffer.from(`${user}:${token}`).toString("base64");
+    authorization = `Basic ${credentials}`;
+  }
 
   return {
-    Authorization: `Basic ${credentials}`,
+    Authorization: authorization,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
@@ -485,6 +508,7 @@ const main = async () => {
   log("Starting TimeOff -> Jira sync", {
     date,
     dryRun,
+    jiraAuthMode: getJiraAuthMode(),
   });
 
   const report = await fetchTimeoffReplacements({ date });

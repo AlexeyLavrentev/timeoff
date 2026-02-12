@@ -40,10 +40,11 @@ cp config/user-map.example.json config/user-map.json
 1. `TIMEOFF_BASE_URL`
 2. `TIMEOFF_TOKEN`
 3. `JIRA_BASE_URL`
-4. `JIRA_USER`
-5. `JIRA_TOKEN`
-6. `USER_MAPPING_FILE=./config/user-map.json` (опционально)
-7. `AUTO_MAP_BY_EMAIL=true` (рекомендуется)
+4. `JIRA_AUTH_MODE` (`basic` или `bearer`)
+5. `JIRA_USER` (только для `basic`)
+6. `JIRA_TOKEN`
+7. `USER_MAPPING_FILE=./config/user-map.json` (опционально)
+8. `AUTO_MAP_BY_EMAIL=true` (рекомендуется)
 
 4. Если нужен ручной override, заполните `config/user-map.json`:
 
@@ -157,6 +158,8 @@ sudo systemctl status timeoff-jira-worker.timer
    путь к JSON-отчету по сопоставлению пользователей
 8. `MAPPING_NOT_FOUND_THRESHOLD`
    аварийный порог для `summary.byStatus.not_found`; при превышении worker завершится с ошибкой
+9. `JIRA_AUTH_MODE`
+   `basic` (по умолчанию) или `bearer` (PAT)
 
 ## 8. Диагностика
 
@@ -172,8 +175,10 @@ sudo systemctl status timeoff-jira-worker.timer
 
 ### Проблема: `Jira search failed [401/403]`
 
-1. Проверить `JIRA_USER/JIRA_TOKEN`.
-2. Проверить права service account в Jira.
+1. Если в ошибке есть `Basic Authentication has been disabled on this instance`, переключить:
+   `JIRA_AUTH_MODE=bearer`
+2. Для `bearer` использовать PAT в `JIRA_TOKEN`.
+3. Проверить права service account в Jira.
 
 ### Проблема: `Skipping absent employee: no Jira mapping`
 
