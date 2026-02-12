@@ -49,6 +49,40 @@ services:
     volumes:
       - ./config/app.redis.json:/app/config/app.json:ro
 
+  worker:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_started
+    restart: unless-stopped
+    environment:
+      TIMEOFF_BASE_URL: http://app:3000
+      TIMEOFF_TOKEN: ${TIMEOFF_TOKEN}
+      JIRA_BASE_URL: ${JIRA_BASE_URL}
+      JIRA_USER: ${JIRA_USER}
+      JIRA_TOKEN: ${JIRA_TOKEN}
+      JIRA_ASSIGN_FIELD: ${JIRA_ASSIGN_FIELD:-name}
+      JIRA_EXTRA_JQL: ${JIRA_EXTRA_JQL:-}
+      AUTO_MAP_BY_EMAIL: ${AUTO_MAP_BY_EMAIL:-true}
+      USER_MAPPING_FILE: /app/integrations/jira-timeoff-worker/config/user-map.json
+      TIMEOFF_LEAVE_STATUSES: ${TIMEOFF_LEAVE_STATUSES:-Approved}
+      TIMEOFF_DATE: ${TIMEOFF_DATE:-}
+      DRY_RUN: ${DRY_RUN:-true}
+      HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-20000}
+      JIRA_SEARCH_PAGE_SIZE: ${JIRA_SEARCH_PAGE_SIZE:-100}
+      WORKER_INTERVAL_SECONDS: ${WORKER_INTERVAL_SECONDS:-600}
+    volumes:
+      - ./integrations/jira-timeoff-worker/config:/app/integrations/jira-timeoff-worker/config:ro
+    command: >
+      sh -c "while true; do
+        node /app/integrations/jira-timeoff-worker/index.js;
+        sleep $$WORKER_INTERVAL_SECONDS;
+      done"
+
 volumes:
   mysql_data:
   redis_data:
