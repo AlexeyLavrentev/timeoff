@@ -153,6 +153,8 @@ sudo systemctl status timeoff-jira-worker.timer
    автоматический поиск Jira-пользователя по email из TimeOff
 6. `USER_MAPPING_FILE`
    файл ручных соответствий (используется как override для исключений)
+7. `MAPPING_REPORT_FILE`
+   путь к JSON-отчету по сопоставлению пользователей
 
 ## 8. Диагностика
 
@@ -188,7 +190,20 @@ chmod 600 .env
 
 3. Регулярно ротируйте токены и обновляйте `.env`.
 
-## 10. Запуск через Docker Compose (рекомендуется для вашего проекта)
+## 10.1 Отчет по сопоставлениям (mapping report)
+
+Если задан `MAPPING_REPORT_FILE`, после каждого цикла worker сохраняет JSON с результатами маппинга.
+
+Пример полей:
+
+1. `status`: `resolved` / `not_found` / `error`
+2. `source`:
+   `override_file`, `auto_user_lookup`, `auto_search_email`, `auto_search_name`, `auto_mapping_not_found`, `auto_mapping_error`
+3. `jiraUser`: найденный Jira-идентификатор
+
+Это удобно для диагностики и проверки качества авто-сопоставления.
+
+## 11. Запуск через Docker Compose (рекомендуется для вашего проекта)
 
 В репозитории уже добавлен сервис `worker` в `docker-compose.yml`.
 
@@ -248,3 +263,4 @@ docker compose up -d --no-deps worker
 1. Внутри compose TimeOff адрес берется как `http://app:3000` (уже настроено).
 2. Интервал запуска задается переменной `WORKER_INTERVAL_SECONDS` (по умолчанию 600 секунд).
 3. Файл `user-map.json` подключается в контейнер read-only.
+4. Отчет по маппингу сохраняется в `integrations/jira-timeoff-worker/reports/mapping-report.json`.

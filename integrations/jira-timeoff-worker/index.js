@@ -45,6 +45,7 @@ const getToday = () => {
 };
 
 const normalizeBaseUrl = (value) => value.replace(/\/+$/, "");
+const nowIso = () => new Date().toISOString();
 
 const fetchWithTimeout = async (url, options = {}, timeoutMs = 20000) => {
   const controller = new AbortController();
@@ -101,7 +102,7 @@ const loadUserMap = () => {
 };
 
 const log = (message, payload = null) => {
-  const ts = new Date().toISOString();
+  const ts = nowIso();
   if (payload === null) {
     console.log(`[${ts}] ${message}`);
     return;
@@ -129,6 +130,27 @@ const pickJiraIdentity = (user) => {
   }
 
   return user.name || user.key || user.accountId || "";
+};
+
+const ensureParentDirectory = (filePath) => {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+
+const writeJsonFileSafe = ({ filePath, data }) => {
+  try {
+    ensureParentDirectory(filePath);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    return true;
+  } catch (error) {
+    log("Failed to write JSON report file", {
+      filePath,
+      error: String(error),
+    });
+    return false;
+  }
 };
 
 const fetchTimeoffReplacements = async ({ date }) => {
@@ -282,55 +304,131 @@ const searchJiraUsers = async ({ query }) => {
 const createUserResolver = ({ userMap }) => {
   const cache = {};
   const autoMapByEmail = asBool(getEnv("AUTO_MAP_BY_EMAIL", "true"), true);
+  const mappingAudit = {};
 
-  return async ({ email }) => {
+  const setAudit = ({ email, status, source, jiraUser = "", details = "", error = "" }) => {
+    if (!email) {
+      return;
+    }
+
+    mappingAudit[email] = {
+      email,
+      status,
+      source,
+      jiraUser,
+      details,
+      error,
+      updatedAt: nowIso(),
+    };
+  };
+
+  const resolve = async ({ email }) => {
     const normalizedEmail = String(email || "").toLowerCase();
     if (!normalizedEmail) {
       return "";
     }
 
     if (cache[normalizedEmail] !== undefined) {
+      if (!mappingAudit[normalizedEmail]) {
+        setAudit({
+          email: normalizedEmail,
+          status: cache[normalizedEmail] ? "resolved" : "not_found",
+          source: "cache",
+          jiraUser: cache[normalizedEmail] || "",
+        });
+      }
       return cache[normalizedEmail];
     }
 
     if (userMap[normalizedEmail]) {
       const value = userMap[normalizedEmail];
       cache[normalizedEmail] = value;
+      setAudit({
+        email: normalizedEmail,
+        status: "resolved",
+        source: "override_file",
+        jiraUser: value,
+      });
       return value;
     }
 
     if (!autoMapByEmail) {
       cache[normalizedEmail] = "";
+      setAudit({
+        email: normalizedEmail,
+        status: "not_found",
+        source: "auto_mapping_disabled",
+        details: "AUTO_MAP_BY_EMAIL=false",
+      });
       return "";
     }
 
-    // Fast path: Jira username is equal to email.
-    const direct = await fetchJiraUserByUsername({ username: normalizedEmail });
-    if (direct) {
-      const identity = pickJiraIdentity(direct);
-      cache[normalizedEmail] = identity;
-      return identity;
-    }
+    try {
+      // Fast path: Jira username is equal to email.
+      const direct = await fetchJiraUserByUsername({ username: normalizedEmail });
+      if (direct) {
+        const identity = pickJiraIdentity(direct);
+        cache[normalizedEmail] = identity;
+        setAudit({
+          email: normalizedEmail,
+          status: "resolved",
+          source: "auto_user_lookup",
+          jiraUser: identity,
+        });
+        return identity;
+      }
 
-    // Fallback path: search user and match by email/name.
-    const candidates = await searchJiraUsers({ query: normalizedEmail });
+      // Fallback path: search user and match by email/name.
+      const candidates = await searchJiraUsers({ query: normalizedEmail });
 
-    const byEmail = candidates.find((user) => String(user.emailAddress || "").toLowerCase() === normalizedEmail);
-    if (byEmail) {
-      const identity = pickJiraIdentity(byEmail);
-      cache[normalizedEmail] = identity;
-      return identity;
-    }
+      const byEmail = candidates.find((user) => String(user.emailAddress || "").toLowerCase() === normalizedEmail);
+      if (byEmail) {
+        const identity = pickJiraIdentity(byEmail);
+        cache[normalizedEmail] = identity;
+        setAudit({
+          email: normalizedEmail,
+          status: "resolved",
+          source: "auto_search_email",
+          jiraUser: identity,
+        });
+        return identity;
+      }
 
-    const byName = candidates.find((user) => String(user.name || "").toLowerCase() === normalizedEmail);
-    if (byName) {
-      const identity = pickJiraIdentity(byName);
-      cache[normalizedEmail] = identity;
-      return identity;
+      const byName = candidates.find((user) => String(user.name || "").toLowerCase() === normalizedEmail);
+      if (byName) {
+        const identity = pickJiraIdentity(byName);
+        cache[normalizedEmail] = identity;
+        setAudit({
+          email: normalizedEmail,
+          status: "resolved",
+          source: "auto_search_name",
+          jiraUser: identity,
+        });
+        return identity;
+      }
+    } catch (error) {
+      cache[normalizedEmail] = "";
+      setAudit({
+        email: normalizedEmail,
+        status: "error",
+        source: "auto_mapping_error",
+        error: String(error),
+      });
+      return "";
     }
 
     cache[normalizedEmail] = "";
+    setAudit({
+      email: normalizedEmail,
+      status: "not_found",
+      source: "auto_mapping_not_found",
+    });
     return "";
+  };
+
+  return {
+    resolve,
+    mappingAudit,
   };
 };
 
@@ -341,7 +439,8 @@ const main = async () => {
   const extraJql = getEnv("JIRA_EXTRA_JQL", "");
   const date = getToday();
   const userMap = loadUserMap();
-  const resolveJiraUser = createUserResolver({ userMap });
+  const resolver = createUserResolver({ userMap });
+  const resolveJiraUser = resolver.resolve || resolver;
 
   log("Starting TimeOff -> Jira sync", {
     date,
@@ -439,6 +538,19 @@ const main = async () => {
         });
       }
     }
+  }
+
+  const mappingReportFile = getEnv("MAPPING_REPORT_FILE", "");
+  if (mappingReportFile) {
+    writeJsonFileSafe({
+      filePath: path.resolve(mappingReportFile),
+      data: {
+        generatedAt: nowIso(),
+        date,
+        dryRun,
+        mapping: resolver.mappingAudit || {},
+      },
+    });
   }
 
   log("Sync completed", stats);

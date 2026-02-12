@@ -72,11 +72,13 @@ services:
       TIMEOFF_LEAVE_STATUSES: ${TIMEOFF_LEAVE_STATUSES:-Approved}
       TIMEOFF_DATE: ${TIMEOFF_DATE:-}
       DRY_RUN: ${DRY_RUN:-true}
+      MAPPING_REPORT_FILE: ${MAPPING_REPORT_FILE:-/app/integrations/jira-timeoff-worker/reports/mapping-report.json}
       HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-20000}
       JIRA_SEARCH_PAGE_SIZE: ${JIRA_SEARCH_PAGE_SIZE:-100}
       WORKER_INTERVAL_SECONDS: ${WORKER_INTERVAL_SECONDS:-600}
     volumes:
       - ./integrations/jira-timeoff-worker/config:/app/integrations/jira-timeoff-worker/config:ro
+      - ./integrations/jira-timeoff-worker/reports:/app/integrations/jira-timeoff-worker/reports
     command: >
       sh -c "while true; do
         node /app/integrations/jira-timeoff-worker/index.js;

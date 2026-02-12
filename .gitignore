@@ -6,3 +6,5 @@
 node_modules/
 *.sqlite
 .env
+integrations/jira-timeoff-worker/reports/*.json
+!integrations/jira-timeoff-worker/reports/.gitkeep
