@@ -160,6 +160,12 @@ sudo systemctl status timeoff-jira-worker.timer
    аварийный порог для `summary.byStatus.not_found`; при превышении worker завершится с ошибкой
 9. `JIRA_AUTH_MODE`
    `basic` (по умолчанию) или `bearer` (PAT)
+10. `ENABLE_AUTO_RESTORE`
+   включает автоматический возврат задач на исходного assignee после выхода сотрудника из отпуска
+11. `REASSIGN_STATE_FILE`
+   путь к файлу состояния переназначений
+12. `RESTORE_REPORT_FILE`
+   отдельный JSON-отчет по этапу возврата задач
 
 ## 8. Диагностика
 
@@ -217,6 +223,19 @@ chmod 600 .env
 1. `MAPPING_NOT_FOUND_THRESHOLD=0` - не допускается ни одного `not_found`.
 2. `MAPPING_NOT_FOUND_THRESHOLD=2` - допускается не более двух неразрешенных пользователей.
 
+## 10.2 Автоматический возврат задач после отпуска
+
+Если `ENABLE_AUTO_RESTORE=true`, worker:
+
+1. запоминает исходного assignee при авто-переназначении на замещающего;
+2. после выхода сотрудника из отпуска возвращает задачу обратно исходному assignee.
+
+Безопасность логики:
+
+1. если assignee задачи изменен вручную, worker не перетирает это изменение;
+2. задачи в статусе Done не возвращаются и убираются из state;
+3. если в текущем цикле есть ошибки маппинга пользователей, этап auto-restore пропускается.
+
 ## 11. Запуск через Docker Compose (рекомендуется для вашего проекта)
 
 В репозитории уже добавлен сервис `worker` в `docker-compose.yml`.
@@ -233,10 +252,11 @@ cp .env.example .env
 
 1. `TIMEOFF_TOKEN`
 2. `JIRA_BASE_URL`
-3. `JIRA_USER`
+3. `JIRA_AUTH_MODE` (`basic` или `bearer`)
 4. `JIRA_TOKEN`
-5. Опционально `JIRA_EXTRA_JQL`
-6. Для первого прогона оставить `DRY_RUN=true`
+5. `JIRA_USER` (только если `JIRA_AUTH_MODE=basic`)
+6. Опционально `JIRA_EXTRA_JQL`
+7. Для первого прогона оставить `DRY_RUN=true`
 
 3. Создать файл маппинга:
 
@@ -279,3 +299,5 @@ docker compose up -d --no-deps worker
 3. Файл `user-map.json` подключается в контейнер read-only.
 4. Отчет по маппингу сохраняется в `integrations/jira-timeoff-worker/reports/mapping-report.json`.
 5. Если сработал порог `MAPPING_NOT_FOUND_THRESHOLD`, контейнер worker завершится с ошибкой и будет перезапущен по `restart: unless-stopped`.
+6. Состояние для auto-restore хранится в `integrations/jira-timeoff-worker/reports/reassignment-state.json`.
+7. Отчет по возврату задач хранится в `integrations/jira-timeoff-worker/reports/restore-report.json`.

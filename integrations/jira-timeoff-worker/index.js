@@ -176,6 +176,23 @@ const writeJsonFileSafe = ({ filePath, data }) => {
   }
 };
 
+const readJsonFileSafe = ({ filePath, fallback }) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return fallback;
+    }
+
+    const raw = fs.readFileSync(filePath, "utf8");
+    return JSON.parse(raw);
+  } catch (error) {
+    log("Failed to read JSON file, using fallback", {
+      filePath,
+      error: String(error),
+    });
+    return fallback;
+  }
+};
+
 const buildMappingSummary = ({ mappingAudit }) => {
   const values = Object.values(mappingAudit || {});
 
@@ -315,6 +332,39 @@ const getIssueAssigneeIdentity = (issue) => {
   }
 
   return assignee.name || assignee.accountId || assignee.key || "";
+};
+
+const isIssueDone = (issue) => {
+  const statusCategoryKey = issue && issue.fields && issue.fields.status && issue.fields.status.statusCategory
+    ? String(issue.fields.status.statusCategory.key || "").toLowerCase()
+    : "";
+
+  return statusCategoryKey === "done";
+};
+
+const fetchIssueByKey = async ({ issueKey }) => {
+  const baseUrl = normalizeBaseUrl(getEnv("JIRA_BASE_URL"));
+  const url = `${baseUrl}/rest/api/2/issue/${encodeURIComponent(issueKey)}?fields=assignee,status`;
+
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: "GET",
+      headers: jiraAuthHeaders(),
+    },
+    Number(getEnv("HTTP_TIMEOUT_MS", "20000"))
+  );
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const body = await parseJsonSafe(response);
+    throw new Error(`Jira issue lookup failed [${response.status}] for ${issueKey}: ${JSON.stringify(body)}`);
+  }
+
+  return parseJsonSafe(response);
 };
 
 const fetchJiraUserByUsername = async ({ username }) => {
@@ -504,6 +554,19 @@ const main = async () => {
   const userMap = loadUserMap();
   const resolver = createUserResolver({ userMap });
   const resolveJiraUser = resolver.resolve || resolver;
+  const enableAutoRestore = asBool(getEnv("ENABLE_AUTO_RESTORE", "false"), false);
+  const reassignStateFile = path.resolve(
+    getEnv("REASSIGN_STATE_FILE", "/app/integrations/jira-timeoff-worker/reports/reassignment-state.json")
+  );
+  const reassignState = readJsonFileSafe({
+    filePath: reassignStateFile,
+    fallback: {
+      version: 1,
+      updatedAt: nowIso(),
+      issues: {},
+    },
+  });
+  let reassignStateDirty = false;
 
   log("Starting TimeOff -> Jira sync", {
     date,
@@ -522,7 +585,15 @@ const main = async () => {
     issuesUpdated: 0,
     issuesSkippedAlreadyAssigned: 0,
     issuesFailed: 0,
+    restoreCandidates: 0,
+    restoreDone: 0,
+    restoreSkippedStillAbsent: 0,
+    restoreSkippedManualOverride: 0,
+    restoreSkippedDone: 0,
+    restoreFailed: 0,
   };
+  const restoreEvents = [];
+  const absentJiraUsers = {};
 
   for (const entry of rows) {
     const employeeEmail = entry.user && entry.user.email ? String(entry.user.email).toLowerCase() : "";
@@ -549,6 +620,7 @@ const main = async () => {
       continue;
     }
 
+    absentJiraUsers[jiraAbsentUser] = true;
     stats.employeesWithReplacement += 1;
 
     const issues = await searchIssuesByAssignee({
@@ -589,6 +661,15 @@ const main = async () => {
           issueKey,
           replacementName: jiraReplacementUser,
         });
+        reassignState.issues[issueKey] = {
+          issueKey,
+          originalAssignee: jiraAbsentUser,
+          replacementAssignee: jiraReplacementUser,
+          employeeEmail,
+          replacementEmail,
+          updatedAt: nowIso(),
+        };
+        reassignStateDirty = true;
         stats.issuesUpdated += 1;
         log("Issue reassigned", {
           issueKey,
@@ -600,6 +681,143 @@ const main = async () => {
           issueKey,
           error: String(error),
         });
+      }
+    }
+  }
+
+  const mappingSummaryForDecision = buildMappingSummary({
+    mappingAudit: resolver.mappingAudit || {},
+  });
+
+  if (enableAutoRestore) {
+    const hasMappingErrors = Number(mappingSummaryForDecision.byStatus.error || 0) > 0;
+
+    if (hasMappingErrors) {
+      log("Skip auto-restore because mapping has errors in this cycle", {
+        mappingSummary: mappingSummaryForDecision,
+      });
+    } else {
+      for (const issueKey of Object.keys(reassignState.issues || {})) {
+        const stateItem = reassignState.issues[issueKey];
+        if (!stateItem) {
+          continue;
+        }
+
+        stats.restoreCandidates += 1;
+
+        if (absentJiraUsers[stateItem.originalAssignee]) {
+          stats.restoreSkippedStillAbsent += 1;
+          restoreEvents.push({
+            issueKey,
+            action: "skip_still_absent",
+            originalAssignee: stateItem.originalAssignee,
+            replacementAssignee: stateItem.replacementAssignee,
+          });
+          continue;
+        }
+
+        try {
+          const issue = await fetchIssueByKey({ issueKey });
+
+          if (!issue) {
+            delete reassignState.issues[issueKey];
+            reassignStateDirty = true;
+            restoreEvents.push({
+              issueKey,
+              action: "skip_issue_not_found",
+            });
+            continue;
+          }
+
+          if (isIssueDone(issue)) {
+            delete reassignState.issues[issueKey];
+            reassignStateDirty = true;
+            stats.restoreSkippedDone += 1;
+            restoreEvents.push({
+              issueKey,
+              action: "skip_issue_done",
+            });
+            continue;
+          }
+
+          const currentAssignee = getIssueAssigneeIdentity(issue);
+
+          if (currentAssignee === stateItem.originalAssignee) {
+            delete reassignState.issues[issueKey];
+            reassignStateDirty = true;
+            restoreEvents.push({
+              issueKey,
+              action: "skip_already_restored",
+            });
+            continue;
+          }
+
+          if (currentAssignee !== stateItem.replacementAssignee) {
+            // Someone reassigned issue manually; do not override it.
+            delete reassignState.issues[issueKey];
+            reassignStateDirty = true;
+            stats.restoreSkippedManualOverride += 1;
+            restoreEvents.push({
+              issueKey,
+              action: "skip_manual_override",
+              currentAssignee,
+              expectedReplacement: stateItem.replacementAssignee,
+            });
+            log("Skip auto-restore due to manual assignee change", {
+              issueKey,
+              currentAssignee,
+              expectedReplacement: stateItem.replacementAssignee,
+            });
+            continue;
+          }
+
+          if (dryRun) {
+            stats.restoreDone += 1;
+            restoreEvents.push({
+              issueKey,
+              action: "dry_run_restore",
+              from: stateItem.replacementAssignee,
+              to: stateItem.originalAssignee,
+            });
+            log("DRY_RUN: would restore issue assignee", {
+              issueKey,
+              from: stateItem.replacementAssignee,
+              to: stateItem.originalAssignee,
+            });
+            continue;
+          }
+
+          await reassignIssue({
+            issueKey,
+            replacementName: stateItem.originalAssignee,
+          });
+
+          delete reassignState.issues[issueKey];
+          reassignStateDirty = true;
+          stats.restoreDone += 1;
+          restoreEvents.push({
+            issueKey,
+            action: "restored",
+            from: stateItem.replacementAssignee,
+            to: stateItem.originalAssignee,
+          });
+
+          log("Issue assignee restored", {
+            issueKey,
+            to: stateItem.originalAssignee,
+          });
+        } catch (error) {
+          stats.restoreFailed += 1;
+          restoreEvents.push({
+            issueKey,
+            action: "restore_failed",
+            error: String(error),
+          });
+          log("Failed to restore issue assignee", {
+            issueKey,
+            error: String(error),
+          });
+        }
       }
     }
   }
@@ -627,6 +845,37 @@ const main = async () => {
     });
   } else {
     mappingSummary = buildMappingSummary({ mappingAudit: resolver.mappingAudit || {} });
+  }
+
+  if (reassignStateDirty && !dryRun) {
+    reassignState.updatedAt = nowIso();
+    writeJsonFileSafe({
+      filePath: reassignStateFile,
+      data: reassignState,
+    });
+  }
+
+  const restoreReportFile = getEnv("RESTORE_REPORT_FILE", "");
+  if (restoreReportFile) {
+    writeJsonFileSafe({
+      filePath: path.resolve(restoreReportFile),
+      data: {
+        generatedAt: nowIso(),
+        date,
+        dryRun,
+        autoRestoreEnabled: enableAutoRestore,
+        summary: {
+          restoreCandidates: stats.restoreCandidates,
+          restoreDone: stats.restoreDone,
+          restoreSkippedStillAbsent: stats.restoreSkippedStillAbsent,
+          restoreSkippedManualOverride: stats.restoreSkippedManualOverride,
+          restoreSkippedDone: stats.restoreSkippedDone,
+          restoreFailed: stats.restoreFailed,
+        },
+        trackedIssuesAfterRun: Object.keys(reassignState.issues || {}).length,
+        events: restoreEvents,
+      },
+    });
   }
 
   assertMappingThresholds({ summary: mappingSummary });

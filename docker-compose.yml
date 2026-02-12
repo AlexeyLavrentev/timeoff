@@ -64,7 +64,7 @@ services:
       TIMEOFF_TOKEN: ${TIMEOFF_TOKEN}
       JIRA_BASE_URL: ${JIRA_BASE_URL}
       JIRA_AUTH_MODE: ${JIRA_AUTH_MODE:-basic}
-      JIRA_USER: ${JIRA_USER}
+      JIRA_USER: ${JIRA_USER:-}
       JIRA_TOKEN: ${JIRA_TOKEN}
       JIRA_ASSIGN_FIELD: ${JIRA_ASSIGN_FIELD:-name}
       JIRA_EXTRA_JQL: ${JIRA_EXTRA_JQL:-}
@@ -73,6 +73,9 @@ services:
       TIMEOFF_LEAVE_STATUSES: ${TIMEOFF_LEAVE_STATUSES:-Approved}
       TIMEOFF_DATE: ${TIMEOFF_DATE:-}
       DRY_RUN: ${DRY_RUN:-true}
+      ENABLE_AUTO_RESTORE: ${ENABLE_AUTO_RESTORE:-true}
+      REASSIGN_STATE_FILE: ${REASSIGN_STATE_FILE:-/app/integrations/jira-timeoff-worker/reports/reassignment-state.json}
+      RESTORE_REPORT_FILE: ${RESTORE_REPORT_FILE:-/app/integrations/jira-timeoff-worker/reports/restore-report.json}
       MAPPING_REPORT_FILE: ${MAPPING_REPORT_FILE:-/app/integrations/jira-timeoff-worker/reports/mapping-report.json}
       HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-20000}
       JIRA_SEARCH_PAGE_SIZE: ${JIRA_SEARCH_PAGE_SIZE:-100}
