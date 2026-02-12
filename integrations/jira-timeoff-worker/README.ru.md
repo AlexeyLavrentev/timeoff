@@ -155,6 +155,8 @@ sudo systemctl status timeoff-jira-worker.timer
    файл ручных соответствий (используется как override для исключений)
 7. `MAPPING_REPORT_FILE`
    путь к JSON-отчету по сопоставлению пользователей
+8. `MAPPING_NOT_FOUND_THRESHOLD`
+   аварийный порог для `summary.byStatus.not_found`; при превышении worker завершится с ошибкой
 
 ## 8. Диагностика
 
@@ -200,8 +202,15 @@ chmod 600 .env
 2. `source`:
    `override_file`, `auto_user_lookup`, `auto_search_email`, `auto_search_name`, `auto_mapping_not_found`, `auto_mapping_error`
 3. `jiraUser`: найденный Jira-идентификатор
+4. `summary`:
+   агрегаты по `status` и `source` для быстрого контроля качества сопоставления
 
 Это удобно для диагностики и проверки качества авто-сопоставления.
+
+Пример guardrail:
+
+1. `MAPPING_NOT_FOUND_THRESHOLD=0` - не допускается ни одного `not_found`.
+2. `MAPPING_NOT_FOUND_THRESHOLD=2` - допускается не более двух неразрешенных пользователей.
 
 ## 11. Запуск через Docker Compose (рекомендуется для вашего проекта)
 
@@ -264,3 +273,4 @@ docker compose up -d --no-deps worker
 2. Интервал запуска задается переменной `WORKER_INTERVAL_SECONDS` (по умолчанию 600 секунд).
 3. Файл `user-map.json` подключается в контейнер read-only.
 4. Отчет по маппингу сохраняется в `integrations/jira-timeoff-worker/reports/mapping-report.json`.
+5. Если сработал порог `MAPPING_NOT_FOUND_THRESHOLD`, контейнер worker завершится с ошибкой и будет перезапущен по `restart: unless-stopped`.

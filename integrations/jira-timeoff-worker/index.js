@@ -153,6 +153,46 @@ const writeJsonFileSafe = ({ filePath, data }) => {
   }
 };
 
+const buildMappingSummary = ({ mappingAudit }) => {
+  const values = Object.values(mappingAudit || {});
+
+  const byStatus = {};
+  const bySource = {};
+
+  for (const item of values) {
+    const status = item.status || "unknown";
+    const source = item.source || "unknown";
+
+    byStatus[status] = (byStatus[status] || 0) + 1;
+    bySource[source] = (bySource[source] || 0) + 1;
+  }
+
+  return {
+    total: values.length,
+    byStatus,
+    bySource,
+  };
+};
+
+const assertMappingThresholds = ({ summary }) => {
+  const notFoundThresholdRaw = getEnv("MAPPING_NOT_FOUND_THRESHOLD", "");
+  if (!notFoundThresholdRaw) {
+    return;
+  }
+
+  const threshold = Number(notFoundThresholdRaw);
+  if (!Number.isFinite(threshold) || threshold < 0) {
+    throw new Error(`MAPPING_NOT_FOUND_THRESHOLD should be non-negative number, got: ${notFoundThresholdRaw}`);
+  }
+
+  const notFound = Number((summary.byStatus && summary.byStatus.not_found) || 0);
+  if (notFound > threshold) {
+    throw new Error(
+      `Mapping not_found threshold exceeded: ${notFound} > ${threshold}. Check mapping-report.json and user identities in Jira.`
+    );
+  }
+};
+
 const fetchTimeoffReplacements = async ({ date }) => {
   const baseUrl = normalizeBaseUrl(getEnv("TIMEOFF_BASE_URL"));
   const token = getEnv("TIMEOFF_TOKEN");
@@ -541,17 +581,31 @@ const main = async () => {
   }
 
   const mappingReportFile = getEnv("MAPPING_REPORT_FILE", "");
+  let mappingSummary = {
+    total: 0,
+    byStatus: {},
+    bySource: {},
+  };
+
   if (mappingReportFile) {
+    const mapping = resolver.mappingAudit || {};
+    mappingSummary = buildMappingSummary({ mappingAudit: mapping });
+
     writeJsonFileSafe({
       filePath: path.resolve(mappingReportFile),
       data: {
         generatedAt: nowIso(),
         date,
         dryRun,
-        mapping: resolver.mappingAudit || {},
+        summary: mappingSummary,
+        mapping,
       },
     });
+  } else {
+    mappingSummary = buildMappingSummary({ mappingAudit: resolver.mappingAudit || {} });
   }
+
+  assertMappingThresholds({ summary: mappingSummary });
 
   log("Sync completed", stats);
 };
