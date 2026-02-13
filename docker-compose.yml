@@ -76,6 +76,8 @@ services:
       ENABLE_AUTO_RESTORE: ${ENABLE_AUTO_RESTORE:-true}
       REASSIGN_STATE_FILE: ${REASSIGN_STATE_FILE:-/app/integrations/jira-timeoff-worker/reports/reassignment-state.json}
       RESTORE_REPORT_FILE: ${RESTORE_REPORT_FILE:-/app/integrations/jira-timeoff-worker/reports/restore-report.json}
+      ENABLE_WATCHERS: ${ENABLE_WATCHERS:-true}
+      REMOVE_WATCHER_ON_RESTORE: ${REMOVE_WATCHER_ON_RESTORE:-false}
       MAPPING_REPORT_FILE: ${MAPPING_REPORT_FILE:-/app/integrations/jira-timeoff-worker/reports/mapping-report.json}
       HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-20000}
       JIRA_SEARCH_PAGE_SIZE: ${JIRA_SEARCH_PAGE_SIZE:-100}

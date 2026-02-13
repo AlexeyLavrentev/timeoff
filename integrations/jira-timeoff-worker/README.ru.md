@@ -166,6 +166,10 @@ sudo systemctl status timeoff-jira-worker.timer
    путь к файлу состояния переназначений
 12. `RESTORE_REPORT_FILE`
    отдельный JSON-отчет по этапу возврата задач
+13. `ENABLE_WATCHERS`
+   добавлять исходного сотрудника в watchers при авто-переназначении
+14. `REMOVE_WATCHER_ON_RESTORE`
+   удалять watcher при авто-возврате задачи (обычно `false`)
 
 ## 8. Диагностика
 
@@ -236,6 +240,20 @@ chmod 600 .env
 2. задачи в статусе Done не возвращаются и убираются из state;
 3. если в текущем цикле есть ошибки маппинга пользователей, этап auto-restore пропускается.
 
+## 10.3 Watchers (уведомления исходному сотруднику)
+
+Если `ENABLE_WATCHERS=true`, worker после переназначения задачи:
+
+1. добавляет исходного сотрудника в watchers задачи;
+2. сотрудник продолжает получать уведомления по задаче во время отпуска.
+
+Если `REMOVE_WATCHER_ON_RESTORE=true`, watcher будет удален после возврата задачи.
+
+Требования в Jira:
+
+1. включен функционал watchers;
+2. у сервисного пользователя есть права `Manage Watchers` и `View Voters and Watchers` в нужных проектах.
+
 ## 11. Запуск через Docker Compose (рекомендуется для вашего проекта)
 
 В репозитории уже добавлен сервис `worker` в `docker-compose.yml`.
@@ -301,3 +319,4 @@ docker compose up -d --no-deps worker
 5. Если сработал порог `MAPPING_NOT_FOUND_THRESHOLD`, контейнер worker завершится с ошибкой и будет перезапущен по `restart: unless-stopped`.
 6. Состояние для auto-restore хранится в `integrations/jira-timeoff-worker/reports/reassignment-state.json`.
 7. Отчет по возврату задач хранится в `integrations/jira-timeoff-worker/reports/restore-report.json`.
+8. Логи цикла содержат отдельные счетчики по watchers (`watchersAdded`, `watchersAddFailed`, `watchersRemoved`).

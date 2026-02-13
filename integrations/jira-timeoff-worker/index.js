@@ -325,6 +325,41 @@ const reassignIssue = async ({ issueKey, replacementName }) => {
   }
 };
 
+const addWatcherToIssue = async ({ issueKey, watcherUser }) => {
+  const baseUrl = normalizeBaseUrl(getEnv("JIRA_BASE_URL"));
+  const response = await fetchWithTimeout(
+    `${baseUrl}/rest/api/2/issue/${encodeURIComponent(issueKey)}/watchers`,
+    {
+      method: "POST",
+      headers: jiraAuthHeaders(),
+      body: JSON.stringify(watcherUser),
+    },
+    Number(getEnv("HTTP_TIMEOUT_MS", "20000"))
+  );
+
+  if (!response.ok) {
+    const body = await parseJsonSafe(response);
+    throw new Error(`Jira add watcher failed [${response.status}] for ${issueKey}: ${JSON.stringify(body)}`);
+  }
+};
+
+const removeWatcherFromIssue = async ({ issueKey, watcherUser }) => {
+  const baseUrl = normalizeBaseUrl(getEnv("JIRA_BASE_URL"));
+  const response = await fetchWithTimeout(
+    `${baseUrl}/rest/api/2/issue/${encodeURIComponent(issueKey)}/watchers?username=${encodeURIComponent(watcherUser)}`,
+    {
+      method: "DELETE",
+      headers: jiraAuthHeaders(),
+    },
+    Number(getEnv("HTTP_TIMEOUT_MS", "20000"))
+  );
+
+  if (!response.ok) {
+    const body = await parseJsonSafe(response);
+    throw new Error(`Jira remove watcher failed [${response.status}] for ${issueKey}: ${JSON.stringify(body)}`);
+  }
+};
+
 const getIssueAssigneeIdentity = (issue) => {
   const assignee = issue && issue.fields ? issue.fields.assignee : null;
   if (!assignee) {
@@ -555,6 +590,8 @@ const main = async () => {
   const resolver = createUserResolver({ userMap });
   const resolveJiraUser = resolver.resolve || resolver;
   const enableAutoRestore = asBool(getEnv("ENABLE_AUTO_RESTORE", "false"), false);
+  const enableWatchers = asBool(getEnv("ENABLE_WATCHERS", "false"), false);
+  const removeWatcherOnRestore = asBool(getEnv("REMOVE_WATCHER_ON_RESTORE", "false"), false);
   const reassignStateFile = path.resolve(
     getEnv("REASSIGN_STATE_FILE", "/app/integrations/jira-timeoff-worker/reports/reassignment-state.json")
   );
@@ -591,6 +628,12 @@ const main = async () => {
     restoreSkippedManualOverride: 0,
     restoreSkippedDone: 0,
     restoreFailed: 0,
+    watchersAddAttempted: 0,
+    watchersAdded: 0,
+    watchersAddFailed: 0,
+    watchersRemoveAttempted: 0,
+    watchersRemoved: 0,
+    watchersRemoveFailed: 0,
   };
   const restoreEvents = [];
   const absentJiraUsers = {};
@@ -652,6 +695,13 @@ const main = async () => {
           from: currentAssignee,
           to: jiraReplacementUser,
         });
+        if (enableWatchers) {
+          stats.watchersAddAttempted += 1;
+          log("DRY_RUN: would add watcher", {
+            issueKey,
+            watcher: jiraAbsentUser,
+          });
+        }
         stats.issuesUpdated += 1;
         continue;
       }
@@ -667,6 +717,7 @@ const main = async () => {
           replacementAssignee: jiraReplacementUser,
           employeeEmail,
           replacementEmail,
+          watcherUser: jiraAbsentUser,
           updatedAt: nowIso(),
         };
         reassignStateDirty = true;
@@ -675,6 +726,28 @@ const main = async () => {
           issueKey,
           to: jiraReplacementUser,
         });
+
+        if (enableWatchers) {
+          stats.watchersAddAttempted += 1;
+          try {
+            await addWatcherToIssue({
+              issueKey,
+              watcherUser: jiraAbsentUser,
+            });
+            stats.watchersAdded += 1;
+            log("Watcher added", {
+              issueKey,
+              watcher: jiraAbsentUser,
+            });
+          } catch (watcherError) {
+            stats.watchersAddFailed += 1;
+            log("Failed to add watcher", {
+              issueKey,
+              watcher: jiraAbsentUser,
+              error: String(watcherError),
+            });
+          }
+        }
       } catch (error) {
         stats.issuesFailed += 1;
         log("Failed to reassign issue", {
@@ -779,6 +852,14 @@ const main = async () => {
               from: stateItem.replacementAssignee,
               to: stateItem.originalAssignee,
             });
+            if (enableWatchers && removeWatcherOnRestore && stateItem.watcherUser) {
+              stats.watchersRemoveAttempted += 1;
+              restoreEvents.push({
+                issueKey,
+                action: "dry_run_remove_watcher",
+                watcher: stateItem.watcherUser,
+              });
+            }
             log("DRY_RUN: would restore issue assignee", {
               issueKey,
               from: stateItem.replacementAssignee,
@@ -806,6 +887,39 @@ const main = async () => {
             issueKey,
             to: stateItem.originalAssignee,
           });
+
+          if (enableWatchers && removeWatcherOnRestore && stateItem.watcherUser) {
+            stats.watchersRemoveAttempted += 1;
+            try {
+              await removeWatcherFromIssue({
+                issueKey,
+                watcherUser: stateItem.watcherUser,
+              });
+              stats.watchersRemoved += 1;
+              restoreEvents.push({
+                issueKey,
+                action: "watcher_removed",
+                watcher: stateItem.watcherUser,
+              });
+              log("Watcher removed after restore", {
+                issueKey,
+                watcher: stateItem.watcherUser,
+              });
+            } catch (watcherError) {
+              stats.watchersRemoveFailed += 1;
+              restoreEvents.push({
+                issueKey,
+                action: "watcher_remove_failed",
+                watcher: stateItem.watcherUser,
+                error: String(watcherError),
+              });
+              log("Failed to remove watcher after restore", {
+                issueKey,
+                watcher: stateItem.watcherUser,
+                error: String(watcherError),
+              });
+            }
+          }
         } catch (error) {
           stats.restoreFailed += 1;
           restoreEvents.push({
@@ -871,6 +985,12 @@ const main = async () => {
           restoreSkippedManualOverride: stats.restoreSkippedManualOverride,
           restoreSkippedDone: stats.restoreSkippedDone,
           restoreFailed: stats.restoreFailed,
+          watchersAddAttempted: stats.watchersAddAttempted,
+          watchersAdded: stats.watchersAdded,
+          watchersAddFailed: stats.watchersAddFailed,
+          watchersRemoveAttempted: stats.watchersRemoveAttempted,
+          watchersRemoved: stats.watchersRemoved,
+          watchersRemoveFailed: stats.watchersRemoveFailed,
         },
         trackedIssuesAfterRun: Object.keys(reassignState.issues || {}).length,
         events: restoreEvents,
