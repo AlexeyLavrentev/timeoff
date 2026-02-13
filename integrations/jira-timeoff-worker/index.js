@@ -360,6 +360,39 @@ const removeWatcherFromIssue = async ({ issueKey, watcherUser }) => {
   }
 };
 
+const fetchIssueWatchers = async ({ issueKey }) => {
+  const baseUrl = normalizeBaseUrl(getEnv("JIRA_BASE_URL"));
+  const response = await fetchWithTimeout(
+    `${baseUrl}/rest/api/2/issue/${encodeURIComponent(issueKey)}/watchers`,
+    {
+      method: "GET",
+      headers: jiraAuthHeaders(),
+    },
+    Number(getEnv("HTTP_TIMEOUT_MS", "20000"))
+  );
+
+  if (!response.ok) {
+    const body = await parseJsonSafe(response);
+    throw new Error(`Jira fetch watchers failed [${response.status}] for ${issueKey}: ${JSON.stringify(body)}`);
+  }
+
+  return parseJsonSafe(response);
+};
+
+const hasWatcher = ({ watchersPayload, watcherUser }) => {
+  const watchers = watchersPayload && Array.isArray(watchersPayload.watchers)
+    ? watchersPayload.watchers
+    : [];
+
+  const normalized = String(watcherUser || "").toLowerCase();
+  return watchers.some((w) => {
+    const name = String(w.name || "").toLowerCase();
+    const key = String(w.key || "").toLowerCase();
+    const accountId = String(w.accountId || "").toLowerCase();
+    return name === normalized || key === normalized || accountId === normalized;
+  });
+};
+
 const getIssueAssigneeIdentity = (issue) => {
   const assignee = issue && issue.fields ? issue.fields.assignee : null;
   if (!assignee) {
@@ -631,9 +664,11 @@ const main = async () => {
     watchersAddAttempted: 0,
     watchersAdded: 0,
     watchersAddFailed: 0,
+    watchersAddSkippedAlreadyWatching: 0,
     watchersRemoveAttempted: 0,
     watchersRemoved: 0,
     watchersRemoveFailed: 0,
+    watchersRemoveSkippedNotOwned: 0,
   };
   const restoreEvents = [];
   const absentJiraUsers = {};
@@ -718,6 +753,7 @@ const main = async () => {
           employeeEmail,
           replacementEmail,
           watcherUser: jiraAbsentUser,
+          watcherAddedByWorker: false,
           updatedAt: nowIso(),
         };
         reassignStateDirty = true;
@@ -730,15 +766,33 @@ const main = async () => {
         if (enableWatchers) {
           stats.watchersAddAttempted += 1;
           try {
-            await addWatcherToIssue({
-              issueKey,
+            const watchersPayload = await fetchIssueWatchers({ issueKey });
+            const alreadyWatching = hasWatcher({
+              watchersPayload,
               watcherUser: jiraAbsentUser,
             });
-            stats.watchersAdded += 1;
-            log("Watcher added", {
-              issueKey,
-              watcher: jiraAbsentUser,
-            });
+
+            if (alreadyWatching) {
+              stats.watchersAddSkippedAlreadyWatching += 1;
+              reassignState.issues[issueKey].watcherAddedByWorker = false;
+              reassignStateDirty = true;
+              log("Watcher already present, skip add", {
+                issueKey,
+                watcher: jiraAbsentUser,
+              });
+            } else {
+              await addWatcherToIssue({
+                issueKey,
+                watcherUser: jiraAbsentUser,
+              });
+              stats.watchersAdded += 1;
+              reassignState.issues[issueKey].watcherAddedByWorker = true;
+              reassignStateDirty = true;
+              log("Watcher added", {
+                issueKey,
+                watcher: jiraAbsentUser,
+              });
+            }
           } catch (watcherError) {
             stats.watchersAddFailed += 1;
             log("Failed to add watcher", {
@@ -890,34 +944,47 @@ const main = async () => {
 
           if (enableWatchers && removeWatcherOnRestore && stateItem.watcherUser) {
             stats.watchersRemoveAttempted += 1;
-            try {
-              await removeWatcherFromIssue({
-                issueKey,
-                watcherUser: stateItem.watcherUser,
-              });
-              stats.watchersRemoved += 1;
+            if (stateItem.watcherAddedByWorker !== true) {
+              stats.watchersRemoveSkippedNotOwned += 1;
               restoreEvents.push({
                 issueKey,
-                action: "watcher_removed",
+                action: "skip_remove_watcher_not_owned",
                 watcher: stateItem.watcherUser,
               });
-              log("Watcher removed after restore", {
+              log("Skip watcher removal: watcher was not added by worker", {
                 issueKey,
                 watcher: stateItem.watcherUser,
               });
-            } catch (watcherError) {
-              stats.watchersRemoveFailed += 1;
-              restoreEvents.push({
-                issueKey,
-                action: "watcher_remove_failed",
-                watcher: stateItem.watcherUser,
-                error: String(watcherError),
-              });
-              log("Failed to remove watcher after restore", {
-                issueKey,
-                watcher: stateItem.watcherUser,
-                error: String(watcherError),
-              });
+            } else {
+              try {
+                await removeWatcherFromIssue({
+                  issueKey,
+                  watcherUser: stateItem.watcherUser,
+                });
+                stats.watchersRemoved += 1;
+                restoreEvents.push({
+                  issueKey,
+                  action: "watcher_removed",
+                  watcher: stateItem.watcherUser,
+                });
+                log("Watcher removed after restore", {
+                  issueKey,
+                  watcher: stateItem.watcherUser,
+                });
+              } catch (watcherError) {
+                stats.watchersRemoveFailed += 1;
+                restoreEvents.push({
+                  issueKey,
+                  action: "watcher_remove_failed",
+                  watcher: stateItem.watcherUser,
+                  error: String(watcherError),
+                });
+                log("Failed to remove watcher after restore", {
+                  issueKey,
+                  watcher: stateItem.watcherUser,
+                  error: String(watcherError),
+                });
+              }
             }
           }
         } catch (error) {
@@ -988,9 +1055,11 @@ const main = async () => {
           watchersAddAttempted: stats.watchersAddAttempted,
           watchersAdded: stats.watchersAdded,
           watchersAddFailed: stats.watchersAddFailed,
+          watchersAddSkippedAlreadyWatching: stats.watchersAddSkippedAlreadyWatching,
           watchersRemoveAttempted: stats.watchersRemoveAttempted,
           watchersRemoved: stats.watchersRemoved,
           watchersRemoveFailed: stats.watchersRemoveFailed,
+          watchersRemoveSkippedNotOwned: stats.watchersRemoveSkippedNotOwned,
         },
         trackedIssuesAfterRun: Object.keys(reassignState.issues || {}).length,
         events: restoreEvents,

@@ -248,6 +248,8 @@ chmod 600 .env
 2. сотрудник продолжает получать уведомления по задаче во время отпуска.
 
 Если `REMOVE_WATCHER_ON_RESTORE=true`, watcher будет удален после возврата задачи.
+Удаление выполняется только если watcher был добавлен именно worker-ом
+(`watcherAddedByWorker=true` в state), чтобы не удалить "исторических" наблюдателей.
 
 Требования в Jira:
 
@@ -319,4 +321,6 @@ docker compose up -d --no-deps worker
 5. Если сработал порог `MAPPING_NOT_FOUND_THRESHOLD`, контейнер worker завершится с ошибкой и будет перезапущен по `restart: unless-stopped`.
 6. Состояние для auto-restore хранится в `integrations/jira-timeoff-worker/reports/reassignment-state.json`.
 7. Отчет по возврату задач хранится в `integrations/jira-timeoff-worker/reports/restore-report.json`.
-8. Логи цикла содержат отдельные счетчики по watchers (`watchersAdded`, `watchersAddFailed`, `watchersRemoved`).
+8. Логи цикла содержат отдельные счетчики по watchers
+(`watchersAdded`, `watchersAddFailed`, `watchersAddSkippedAlreadyWatching`,
+`watchersRemoved`, `watchersRemoveFailed`, `watchersRemoveSkippedNotOwned`).
