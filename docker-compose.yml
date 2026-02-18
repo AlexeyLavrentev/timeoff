@@ -2,31 +2,44 @@ services:
   db:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: timeoff
-      MYSQL_USER: timeoff
-      MYSQL_PASSWORD: timeoff_password
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
+      MYSQL_USER: ${MYSQL_USER:-timeoff}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_password"]
-      interval: 5s
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 20
+      start_period: 20s
+    networks:
+      - backend
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 20
+      start_period: 10s
+    networks:
+      - backend
 
   app:
-    build: .
+    build:
+      context: .
+      target: runtime
+    restart: unless-stopped
+    init: true
     depends_on:
       db:
         condition: service_healthy
@@ -37,18 +50,40 @@ services:
       DB_DIALECT: mysql
       DB_HOST: db
       DB_PORT: 3306
-      DB_NAME: timeoff
-      DB_USER: timeoff
-      DB_PASSWORD: timeoff_password
+      DB_NAME: ${MYSQL_DATABASE:-timeoff}
+      DB_USER: ${MYSQL_USER:-timeoff}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
       DB_LOGGING: "false"
-      MYSQL_DATABASE: timeoff
-      MYSQL_USER: timeoff
-      MYSQL_PASSWORD: timeoff_password
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
+      MYSQL_USER: ${MYSQL_USER:-timeoff}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
     ports:
       - "3000:3000"
     volumes:
       - ./config/app.redis.json:/app/config/app.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"const http=require('http');const req=http.get('http://127.0.0.1:3000/',res=>process.exit(res.statusCode<500?0:1));req.on('error',()=>process.exit(1));req.setTimeout(3000,()=>{req.destroy();process.exit(1)});\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    pids_limit: 256
+    networks:
+      - frontend
+      - backend
 
 volumes:
   mysql_data:
   redis_data:
+
+networks:
+  frontend:
+  backend:
+    internal: true
