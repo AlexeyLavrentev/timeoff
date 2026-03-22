@@ -20,7 +20,8 @@
     "feeds": "Фиды",
     "logout": "Выйти",
     "login": "Вход",
-    "me": "Профиль"
+    "me": "Профиль",
+    "authConfig": "Аутентификация"
   },
   "language": {
     "label": "Язык",
@@ -73,7 +74,8 @@
     "userDetailsFailed": "Не удалось получить данные сотрудника.",
     "notificationsFailed": "Не удалось получить уведомления.",
     "teamViewRenderFailed": "Не удалось отобразить командный обзор.",
-    "feedUnavailable": "Фид недоступен."
+    "feedUnavailable": "Фид недоступен.",
+    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты."
   },
   "titles": {
     "calendar": "Календарь",
@@ -305,8 +307,19 @@
       "forgotPasswordFailed": "Не удалось обработать данные.",
       "resetLinkUnknown": "Ссылка на сброс пароля недействительна, отправьте запрос ещё раз",
       "resetPasswordMismatch": "Подтверждение пароля не совпадает",
-      "resetPasswordUseNew": "Используйте новый пароль для входа"
-    }
+      "resetPasswordUseNew": "Используйте новый пароль для входа",
+      "ssoNotConfigured": "Для этой учётной записи SSO не настроен.",
+      "ssoUnsupportedProvider": "Неподдерживаемый провайдер SSO.",
+      "ssoSessionExpired": "Сессия SSO истекла. Повторите вход.",
+      "ssoEmailMissing": "Провайдер идентификации не вернул email.",
+      "ssoEmailMismatch": "Провайдер идентификации вернул другой email.",
+      "ssoEmailNotVerified": "Провайдер идентификации вернул неподтверждённый email.",
+      "ssoFailed": "Не удалось завершить вход через SSO.",
+      "ssoStateMismatch": "Не прошла проверка состояния SSO.",
+      "ssoWelcomeBack": "Вход через SSO выполнен. С возвращением, {{name}}!"
+    },
+    "continueWithSso": "Войти через SSO",
+    "ssoHint": "Введите рабочий email и выберите вход по паролю или через SSO."
   },
   "forgotPassword": {
     "title": "Восстановление пароля",
@@ -674,7 +687,16 @@
       "companySummaryFailed": "Не удалось скачать сводку компании. {{reason}}",
       "companyRemoved": "Компания {{company}} и связанные данные успешно удалены",
       "companyRemoveFailed": "Не удалось удалить компанию. Причина: {{reason}}",
-      "contactSupport": "Пожалуйста, обратитесь в поддержку"
+      "contactSupport": "Пожалуйста, обратитесь в поддержку",
+      "authMutuallyExclusive": "LDAP и SSO нельзя включать одновременно.",
+      "ssoUpdated": "Настройки SSO обновлены.",
+      "authUpdated": "Настройки аутентификации обновлены.",
+      "authUpdateFailed": "Не удалось обновить настройки аутентификации. {{reason}}",
+      "ssoProviderUnknown": "Неизвестный провайдер SSO.",
+      "ssoIssuerInvalid": "Некорректный URL issuer для OIDC.",
+      "ssoClientIdMissing": "Нужно указать OIDC client ID.",
+      "ssoEntryPointInvalid": "Некорректный URL entry point для SAML.",
+      "ssoIdpCertMissing": "Нужно указать сертификат IdP для SAML."
     },
     "leaveTypes": {
       "validation": {
@@ -865,9 +887,6 @@
     "title": "Страница не найдена",
     "message": "Упс! Мы не можем найти страницу, которую вы ищете."
   },
-  "errors": {
-    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты."
-  },
   "meta": {
     "description": "Open source система управления отсутствиями сотрудников"
   },
@@ -949,5 +968,28 @@
     "clear": "Очистить",
     "weekStart": 1,
     "format": "dd.mm.yyyy"
+  },
+  "authConfig": {
+    "title": "Аутентификация",
+    "subtitle": "Настройте LDAP или SSO для компании.",
+    "ldapSectionTitle": "Настройка LDAP",
+    "ssoSectionTitle": "Настройка SSO",
+    "enableSsoLabel": "Включить SSO",
+    "providerLabel": "Провайдер SSO",
+    "oidcIssuerLabel": "OIDC issuer URL",
+    "oidcClientIdLabel": "OIDC client ID",
+    "oidcClientSecretLabel": "OIDC client secret",
+    "oidcScopeLabel": "OIDC scopes",
+    "oidcEmailClaimLabel": "OIDC claim с email",
+    "oidcRequireVerifiedEmailLabel": "Требовать подтверждённый email от OIDC провайдера",
+    "oidcCallbackLabel": "OIDC callback URL",
+    "samlEntryPointLabel": "SAML entry point",
+    "samlIdpCertLabel": "Сертификат SAML IdP",
+    "samlIdentifierFormatLabel": "Формат SAML NameID",
+    "samlEmailAttributeLabel": "SAML атрибут email",
+    "samlEntityIdLabel": "SAML SP entity ID",
+    "samlCallbackLabel": "SAML ACS URL",
+    "samlMetadataLabel": "SAML metadata URL",
+    "saveButton": "Сохранить настройки аутентификации"
   }
 }
