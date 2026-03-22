@@ -20,7 +20,8 @@
     "feeds": "Feeds",
     "logout": "Logout",
     "login": "Login",
-    "me": "Me"
+    "me": "Me",
+    "authConfig": "Authentication"
   },
   "language": {
     "label": "Language",
@@ -68,7 +69,8 @@
     "userDetailsFailed": "Failed to get user details.",
     "notificationsFailed": "Failed to fetch notifications.",
     "teamViewRenderFailed": "Failed to render Team View.",
-    "feedUnavailable": "Feed is not available."
+    "feedUnavailable": "Feed is not available.",
+    "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
   },
   "titles": {
     "calendar": "Calendar",
@@ -300,8 +302,19 @@
       "forgotPasswordFailed": "Failed to proceed with submitted data.",
       "resetLinkUnknown": "Unknown reset password link, please submit request again",
       "resetPasswordMismatch": "Confirmed password does not match password",
-      "resetPasswordUseNew": "Please use new password to login into system"
-    }
+      "resetPasswordUseNew": "Please use new password to login into system",
+      "ssoNotConfigured": "SSO is not configured for this account.",
+      "ssoUnsupportedProvider": "Unsupported SSO provider.",
+      "ssoSessionExpired": "SSO session has expired. Please try again.",
+      "ssoEmailMissing": "Email claim was not returned by the identity provider.",
+      "ssoEmailMismatch": "The identity provider returned a different email than requested.",
+      "ssoEmailNotVerified": "The identity provider returned an unverified email.",
+      "ssoFailed": "Failed to complete SSO login.",
+      "ssoStateMismatch": "SSO state validation failed.",
+      "ssoWelcomeBack": "Signed in with SSO. Welcome back {{name}}!"
+    },
+    "continueWithSso": "Continue with SSO",
+    "ssoHint": "Enter your work email, then choose password login or SSO."
   },
   "forgotPassword": {
     "title": "Forgot password",
@@ -669,7 +682,16 @@
       "companySummaryFailed": "Failed to download company summary. {{reason}}",
       "companyRemoved": "Company {{company}} and related data were successfully removed",
       "companyRemoveFailed": "Failed to remove company. Reason: {{reason}}",
-      "contactSupport": "Please contact customer service"
+      "contactSupport": "Please contact customer service",
+      "authMutuallyExclusive": "LDAP and SSO cannot be enabled at the same time.",
+      "ssoUpdated": "SSO configuration was updated.",
+      "authUpdated": "Authentication configuration was updated.",
+      "authUpdateFailed": "Failed to update authentication configuration. {{reason}}",
+      "ssoProviderUnknown": "Unknown SSO provider.",
+      "ssoIssuerInvalid": "OIDC issuer URL is invalid.",
+      "ssoClientIdMissing": "OIDC client ID is required.",
+      "ssoEntryPointInvalid": "SAML entry point URL is invalid.",
+      "ssoIdpCertMissing": "SAML IdP certificate is required."
     },
     "leaveTypes": {
       "validation": {
@@ -860,9 +882,6 @@
     "title": "Page not found",
     "message": "Oops! We can't seem to find the page that you're looking for."
   },
-  "errors": {
-    "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
-  },
   "meta": {
     "description": "Open source Staff Time off management system"
   },
@@ -944,5 +963,28 @@
     "clear": "Clear",
     "weekStart": 1,
     "format": "dd/mm/yyyy"
+  },
+  "authConfig": {
+    "title": "Authentication",
+    "subtitle": "Configure LDAP or SSO for your company.",
+    "ldapSectionTitle": "LDAP Configuration",
+    "ssoSectionTitle": "SSO Configuration",
+    "enableSsoLabel": "Enable SSO",
+    "providerLabel": "SSO provider",
+    "oidcIssuerLabel": "OIDC issuer URL",
+    "oidcClientIdLabel": "OIDC client ID",
+    "oidcClientSecretLabel": "OIDC client secret",
+    "oidcScopeLabel": "OIDC scopes",
+    "oidcEmailClaimLabel": "OIDC email claim",
+    "oidcRequireVerifiedEmailLabel": "Require verified email from OIDC provider",
+    "oidcCallbackLabel": "OIDC callback URL",
+    "samlEntryPointLabel": "SAML entry point",
+    "samlIdpCertLabel": "SAML IdP certificate",
+    "samlIdentifierFormatLabel": "SAML NameID format",
+    "samlEmailAttributeLabel": "SAML email attribute",
+    "samlEntityIdLabel": "SAML SP entity ID",
+    "samlCallbackLabel": "SAML ACS URL",
+    "samlMetadataLabel": "SAML metadata URL",
+    "saveButton": "Save authentication settings"
   }
 }
