@@ -129,6 +129,9 @@ docker compose run --rm app npm run db-update
 Чтобы убрать подробные SQL‑логи Sequelize, установите `DB_LOGGING=false`
 в окружении (уже задано в `docker-compose.yml`).
 
+Compose автоматически читает `.env`, поэтому секреты и локальные значения
+лучше выносить туда, а не редактировать `docker-compose.yml`.
+
 #### Диагностика ошибки доступа к MySQL
 
 Если при запуске в контейнере появляется ошибка вида:
@@ -167,6 +170,18 @@ docker compose up --build
 ```
 
 Redis будет доступен внутри сети compose по хосту `redis:6379`.
+
+### Docker Compose для разработки
+
+Для разработки используйте override-файл:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Он использует dev-target образа, монтирует проект в контейнер и сохраняет
+`node_modules` внутри контейнера, чтобы локальные зависимости хоста не
+перетирали Linux-сборку модулей.
 
 ## Запуск тестов
 
