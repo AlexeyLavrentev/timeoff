@@ -96,6 +96,25 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label for="sso_email_domains" class="col-md-3 control-label">{{t "authConfig.emailDomainsLabel"}}</label>
+        <div class="col-md-5">
+          <textarea class="form-control" id="sso_email_domains" name="sso_email_domains" rows="3" placeholder="example.com
+subsidiary.example.com">{{sso.config.email_domains}}</textarea>
+          <span class="help-block">{{t "authConfig.emailDomainsHelp"}}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-md-9 col-md-offset-3">
+          <label for="sso_auto_create_users" class="control-label">
+            <input id="sso_auto_create_users" type="checkbox" {{#if sso.config.auto_create_users}}checked="checked"{{/if}} name="sso_auto_create_users" />&nbsp;
+            {{t "authConfig.autoCreateUsersLabel"}}
+          </label>
+          <p class="help-block">{{t "authConfig.autoCreateUsersHelp"}}</p>
+        </div>
+      </div>
+
       <div class="form-group" data-sso-provider-section="oidc">
         <div class="col-md-9 col-md-offset-3">
           <p class="help-block">{{t "authConfig.oidcSectionHelp"}}</p>

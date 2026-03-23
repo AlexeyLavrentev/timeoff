@@ -1,19 +1,23 @@
-
 {{> header }}
 
 <h1>{{t "login.title"}}</h1>
 
 {{> show_flash_messages }}
 
-<form class="form-horizontal" action="/login" method="post">
+<form class="form-horizontal" action="/login" method="post" id="local_login_form">
 
   <div class="row">&nbsp;</div>
+
+  <div class="form-group">
+    <div class="col-md-5 col-md-offset-4">
+      <h3>{{t "login.passwordLoginTitle"}}</h3>
+    </div>
+  </div>
 
   <div class="form-group">
     <label for="email_inp" class="col-md-2 control-label col-md-offset-2">{{t "login.employeeEmail"}}</label>
     <div class="col-md-5">
       <input class="form-control" id="email_inp" type="text" name="username" required>
-      <span class="help-block">{{t "login.ssoHint"}}</span>
     </div>
   </div>
 
@@ -27,7 +31,7 @@
   <div class="form-group">
     <div class="col-md-offset-4 col-md-5">
       <button type="submit" class="btn btn-success single-click" id="submit_login">{{t "login.submit"}}</button>
-      <button type="submit" class="btn btn-default single-click" formaction="/login/sso" formmethod="post" id="submit_sso_login">{{t "login.continueWithSso"}}</button>
+      <a href="/login/sso/" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
     </div>
   </div>
 
@@ -40,6 +44,5 @@
 </form>
 
 <div class="row">&nbsp;</div>
-
 
 {{> footer }}

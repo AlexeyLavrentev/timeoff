@@ -311,10 +311,21 @@
       "ssoEmailNotVerified": "The identity provider returned an unverified email.",
       "ssoFailed": "Failed to complete SSO login.",
       "ssoStateMismatch": "SSO state validation failed.",
-      "ssoWelcomeBack": "Signed in with SSO. Welcome back {{name}}!"
+      "ssoWelcomeBack": "Signed in with SSO. Welcome back {{name}}!",
+      "ssoDiscoveryRequired": "Enter your work email or continue with your company SSO provider.",
+      "ssoCompanyUnknown": "We could not determine which company SSO configuration should be used for this sign-in.",
+      "ssoCompanyAmbiguous": "More than one company matches this email domain. Please contact your administrator.",
+      "ssoProvisioningDisabled": "No local account exists for this SSO user yet. Contact your administrator.",
+      "ssoCompanyMismatch": "This SSO account belongs to a different company in TimeOff.Management."
     },
     "continueWithSso": "Continue with SSO",
-    "ssoHint": "Enter your work email, then choose password login or SSO."
+    "ssoHint": "Use your work email to continue with your company SSO provider. A password is not required here.",
+    "passwordLoginTitle": "Password login",
+    "ssoTitle": "Single sign-on",
+    "ssoSubtitle": "Use your company identity provider to sign in.",
+    "ssoEmailSectionTitle": "Continue with your work email",
+    "backToPasswordLogin": "Back to password login",
+    "ssoDirectHint": "Continue directly to {{provider}} for {{company}}, or use your work email below to find the right SSO configuration."
   },
   "forgotPassword": {
     "title": "Forgot password",
@@ -691,7 +702,8 @@
       "ssoIssuerInvalid": "OIDC issuer URL is invalid.",
       "ssoClientIdMissing": "OIDC client ID is required.",
       "ssoEntryPointInvalid": "SAML entry point URL is invalid.",
-      "ssoIdpCertMissing": "SAML IdP certificate is required."
+      "ssoIdpCertMissing": "SAML IdP certificate is required.",
+      "ssoEmailDomainInvalid": "SSO email domain {{domain}} is invalid."
     },
     "leaveTypes": {
       "validation": {
@@ -989,6 +1001,10 @@
     "providerHelp": "Only one SSO method can be active for a company at a time. Choose either OIDC or SAML 2.0.",
     "oidcSectionHelp": "Use this option for Keycloak or another OpenID Connect provider. The issuer URL usually looks like https://<host>/realms/<realm>.",
     "samlSectionHelp": "Use this option for Keycloak or another SAML 2.0 identity provider. Only the SAML fields below are required for this mode.",
-    "samlEntityIdHelp": "Leave empty to use the metadata URL as the SP entity ID."
+    "samlEntityIdHelp": "Leave empty to use the metadata URL as the SP entity ID.",
+    "emailDomainsLabel": "SSO email domains",
+    "emailDomainsHelp": "Optional. Add one domain per line or separate them with commas. These domains are used to find the correct company SSO configuration during login.",
+    "autoCreateUsersLabel": "Allow automatic user provisioning",
+    "autoCreateUsersHelp": "When enabled, a successful SSO login can create a new employee automatically if no local account exists yet."
   }
 }
