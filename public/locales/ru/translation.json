@@ -316,10 +316,21 @@
       "ssoEmailNotVerified": "Провайдер идентификации вернул неподтверждённый email.",
       "ssoFailed": "Не удалось завершить вход через SSO.",
       "ssoStateMismatch": "Не прошла проверка состояния SSO.",
-      "ssoWelcomeBack": "Вход через SSO выполнен. С возвращением, {{name}}!"
+      "ssoWelcomeBack": "Вход через SSO выполнен. С возвращением, {{name}}!",
+      "ssoDiscoveryRequired": "Укажите рабочий email или продолжите через корпоративный SSO-провайдер.",
+      "ssoCompanyUnknown": "Не удалось определить, какую SSO-конфигурацию компании нужно использовать для этого входа.",
+      "ssoCompanyAmbiguous": "Этому email-домену соответствует несколько компаний. Обратитесь к администратору.",
+      "ssoProvisioningDisabled": "Для этого SSO-пользователя ещё нет локальной учётной записи. Обратитесь к администратору.",
+      "ssoCompanyMismatch": "Эта SSO-учётная запись относится к другой компании в TimeOff.Management."
     },
     "continueWithSso": "Войти через SSO",
-    "ssoHint": "Введите рабочий email и выберите вход по паролю или через SSO."
+    "ssoHint": "Введите рабочий email, чтобы перейти к корпоративному провайдеру SSO. Пароль для этого шага не нужен.",
+    "passwordLoginTitle": "Вход по паролю",
+    "ssoTitle": "Единый вход",
+    "ssoSubtitle": "Используйте корпоративного провайдера идентификации для входа.",
+    "ssoEmailSectionTitle": "Продолжить по рабочему email",
+    "backToPasswordLogin": "Вернуться ко входу по паролю",
+    "ssoDirectHint": "Перейдите напрямую к {{provider}} для {{company}} или используйте рабочий email ниже, чтобы найти нужную SSO-конфигурацию."
   },
   "forgotPassword": {
     "title": "Восстановление пароля",
@@ -696,7 +707,8 @@
       "ssoIssuerInvalid": "Некорректный URL issuer для OIDC.",
       "ssoClientIdMissing": "Нужно указать OIDC client ID.",
       "ssoEntryPointInvalid": "Некорректный URL entry point для SAML.",
-      "ssoIdpCertMissing": "Нужно указать сертификат IdP для SAML."
+      "ssoIdpCertMissing": "Нужно указать сертификат IdP для SAML.",
+      "ssoEmailDomainInvalid": "Некорректный SSO email-домен: {{domain}}."
     },
     "leaveTypes": {
       "validation": {
@@ -994,6 +1006,10 @@
     "providerHelp": "Для компании одновременно может быть активен только один SSO-метод. Выберите либо OIDC, либо SAML 2.0.",
     "oidcSectionHelp": "Используйте этот вариант для Keycloak или другого OpenID Connect провайдера. Обычно issuer URL выглядит как https://<host>/realms/<realm>.",
     "samlSectionHelp": "Используйте этот вариант для Keycloak или другого SAML 2.0 Identity Provider. В этом режиме нужны только SAML-поля ниже.",
-    "samlEntityIdHelp": "Оставьте пустым, чтобы использовать metadata URL как SP entity ID."
+    "samlEntityIdHelp": "Оставьте пустым, чтобы использовать metadata URL как SP entity ID.",
+    "emailDomainsLabel": "Email-домены для SSO",
+    "emailDomainsHelp": "Необязательно. Укажите по одному домену на строку или разделите домены запятыми. Эти домены используются для поиска нужной SSO-конфигурации компании во время входа.",
+    "autoCreateUsersLabel": "Разрешить автоматическое создание пользователей",
+    "autoCreateUsersHelp": "Если включено, успешный SSO-вход сможет автоматически создать нового сотрудника, если локальной учётной записи ещё нет."
   }
 }
