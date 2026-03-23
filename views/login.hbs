@@ -31,7 +31,6 @@
   <div class="form-group">
     <div class="col-md-offset-4 col-md-5">
       <button type="submit" class="btn btn-success single-click" id="submit_login">{{t "login.submit"}}</button>
-      <a href="/login/sso/" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
     </div>
   </div>
 
@@ -42,6 +41,48 @@
   </div>
 
 </form>
+
+{{#if sso_login.has_sso_companies}}
+<hr>
+
+<form class="form-horizontal" action="/login/sso" method="post" id="sso_login_form">
+  <div class="form-group">
+    <div class="col-md-5 col-md-offset-4">
+      <h3>{{t "login.ssoTitle"}}</h3>
+      <p class="help-block">{{t "login.ssoSubtitle"}}</p>
+    </div>
+  </div>
+
+  {{#if sso_login.direct_sso_available}}
+  <div class="form-group">
+    <div class="col-md-offset-4 col-md-5">
+      <a href="{{sso_login.direct_sso_url}}" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
+      <p class="help-block">{{t "login.ssoDirectHint" company=sso_login.direct_sso_company_name provider=sso_login.direct_sso_provider_label}}</p>
+    </div>
+  </div>
+  {{else}}
+  <div class="form-group">
+    <label for="sso_email_inp" class="col-md-2 control-label col-md-offset-2">{{t "login.employeeEmail"}}</label>
+    <div class="col-md-5">
+      <input class="form-control" id="sso_email_inp" type="text" name="email">
+      <span class="help-block">{{t "login.ssoHint"}}</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-md-offset-4 col-md-5">
+      <button type="submit" class="btn btn-default single-click" id="go_to_sso_login">{{t "login.continueWithSso"}}</button>
+    </div>
+  </div>
+  {{/if}}
+</form>
+{{else}}
+<div class="row">
+  <div class="col-md-offset-4 col-md-5">
+    <a href="/login/sso/" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
+  </div>
+</div>
+{{/if}}
 
 <div class="row">&nbsp;</div>
 

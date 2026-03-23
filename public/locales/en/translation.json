@@ -703,6 +703,7 @@
       "ssoClientIdMissing": "OIDC client ID is required.",
       "ssoEntryPointInvalid": "SAML entry point URL is invalid.",
       "ssoIdpCertMissing": "SAML IdP certificate is required.",
+      "ssoLoginAliasInvalid": "The SSO login alias must start with a letter or number and contain only letters, numbers, dashes, or underscores.",
       "ssoEmailDomainInvalid": "SSO email domain {{domain}} is invalid."
     },
     "leaveTypes": {
@@ -999,6 +1000,9 @@
     "samlMetadataLabel": "SAML metadata URL",
     "saveButton": "Save authentication settings",
     "providerHelp": "Only one SSO method can be active for a company at a time. Choose either OIDC or SAML 2.0.",
+    "loginAliasLabel": "SSO login alias",
+    "loginAliasHelp": "Optional. Users can sign in directly using a link like /login/sso/tenant/<alias> without discovering the company by email.",
+    "tenantLoginUrlLabel": "Direct SSO sign-in URL",
     "oidcSectionHelp": "Use this option for Keycloak or another OpenID Connect provider. The issuer URL usually looks like https://<host>/realms/<realm>.",
     "samlSectionHelp": "Use this option for Keycloak or another SAML 2.0 identity provider. Only the SAML fields below are required for this mode.",
     "samlEntityIdHelp": "Leave empty to use the metadata URL as the SP entity ID.",
