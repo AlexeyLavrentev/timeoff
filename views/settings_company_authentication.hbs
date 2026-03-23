@@ -92,45 +92,52 @@
             <option value="oidc" {{#if_equal sso.provider "oidc"}}selected{{/if_equal}}>OIDC</option>
             <option value="saml" {{#if_equal sso.provider "saml"}}selected{{/if_equal}}>SAML 2.0</option>
           </select>
+          <span class="help-block">{{t "authConfig.providerHelp"}}</span>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
+        <div class="col-md-9 col-md-offset-3">
+          <p class="help-block">{{t "authConfig.oidcSectionHelp"}}</p>
+        </div>
+      </div>
+
+      <div class="form-group" data-sso-provider-section="oidc">
         <label for="sso_issuer_url" class="col-md-3 control-label">{{t "authConfig.oidcIssuerLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_issuer_url" name="sso_issuer_url" value="{{sso.config.issuer_url}}" placeholder="https://keycloak.example.com/realms/myrealm">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
         <label for="sso_client_id" class="col-md-3 control-label">{{t "authConfig.oidcClientIdLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_client_id" name="sso_client_id" value="{{sso.config.client_id}}" placeholder="timeoff-management">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
         <label for="sso_client_secret" class="col-md-3 control-label">{{t "authConfig.oidcClientSecretLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_client_secret" name="sso_client_secret" value="{{sso.config.client_secret}}" type="password">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
         <label for="sso_scope" class="col-md-3 control-label">{{t "authConfig.oidcScopeLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_scope" name="sso_scope" value="{{sso.config.scope}}" placeholder="openid profile email">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
         <label for="sso_email_claim" class="col-md-3 control-label">{{t "authConfig.oidcEmailClaimLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_email_claim" name="sso_email_claim" value="{{sso.config.email_claim}}" placeholder="email">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="oidc">
         <div class="col-md-9 col-md-offset-3">
           <label for="sso_require_verified_email" class="control-label">
             <input id="sso_require_verified_email" type="checkbox" {{#if sso.config.require_verified_email}}checked="checked"{{/if}} name="sso_require_verified_email" />&nbsp;
@@ -139,61 +146,68 @@
         </div>
       </div>
 
-      <hr/>
+      <div class="form-group" data-sso-provider-section="oidc">
+        <label class="col-md-3 control-label">{{t "authConfig.oidcCallbackLabel"}}</label>
+        <div class="col-md-5">
+          <p class="form-control-static"><code>{{sso.oidc_callback_url}}</code></p>
+        </div>
+      </div>
 
-      <div class="form-group">
+      <hr data-sso-provider-section="saml"/>
+
+      <div class="form-group" data-sso-provider-section="saml">
+        <div class="col-md-9 col-md-offset-3">
+          <p class="help-block">{{t "authConfig.samlSectionHelp"}}</p>
+        </div>
+      </div>
+
+      <div class="form-group" data-sso-provider-section="saml">
         <label for="sso_entry_point" class="col-md-3 control-label">{{t "authConfig.samlEntryPointLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_entry_point" name="sso_entry_point" value="{{sso.config.entry_point}}" placeholder="https://keycloak.example.com/realms/myrealm/protocol/saml">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label for="sso_idp_cert" class="col-md-3 control-label">{{t "authConfig.samlIdpCertLabel"}}</label>
         <div class="col-md-5">
           <textarea class="form-control" id="sso_idp_cert" name="sso_idp_cert" rows="6" placeholder="-----BEGIN CERTIFICATE-----">{{sso.config.idp_cert}}</textarea>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label for="sso_identifier_format" class="col-md-3 control-label">{{t "authConfig.samlIdentifierFormatLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_identifier_format" name="sso_identifier_format" value="{{sso.config.identifier_format}}" placeholder="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label for="sso_email_attribute" class="col-md-3 control-label">{{t "authConfig.samlEmailAttributeLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_email_attribute" name="sso_email_attribute" value="{{sso.config.email_attribute}}" placeholder="email">
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label for="sso_sp_entity_id" class="col-md-3 control-label">{{t "authConfig.samlEntityIdLabel"}}</label>
         <div class="col-md-5">
           <input class="form-control" id="sso_sp_entity_id" name="sso_sp_entity_id" value="{{sso.config.sp_entity_id}}" placeholder="{{sso.saml_entity_id}}">
+          <span class="help-block">{{t "authConfig.samlEntityIdHelp"}}</span>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label class="col-md-3 control-label">{{t "authConfig.samlCallbackLabel"}}</label>
         <div class="col-md-5">
           <p class="form-control-static"><code>{{sso.saml_callback_url}}</code></p>
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" data-sso-provider-section="saml">
         <label class="col-md-3 control-label">{{t "authConfig.samlMetadataLabel"}}</label>
         <div class="col-md-5">
           <p class="form-control-static"><code>{{sso.saml_metadata_url}}</code></p>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="col-md-3 control-label">{{t "authConfig.oidcCallbackLabel"}}</label>
-        <div class="col-md-5">
-          <p class="form-control-static"><code>{{sso.oidc_callback_url}}</code></p>
         </div>
       </div>
 

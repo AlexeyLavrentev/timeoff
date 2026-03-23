@@ -985,6 +985,10 @@
     "samlEntityIdLabel": "SAML SP entity ID",
     "samlCallbackLabel": "SAML ACS URL",
     "samlMetadataLabel": "SAML metadata URL",
-    "saveButton": "Save authentication settings"
+    "saveButton": "Save authentication settings",
+    "providerHelp": "Only one SSO method can be active for a company at a time. Choose either OIDC or SAML 2.0.",
+    "oidcSectionHelp": "Use this option for Keycloak or another OpenID Connect provider. The issuer URL usually looks like https://<host>/realms/<realm>.",
+    "samlSectionHelp": "Use this option for Keycloak or another SAML 2.0 identity provider. Only the SAML fields below are required for this mode.",
+    "samlEntityIdHelp": "Leave empty to use the metadata URL as the SP entity ID."
   }
 }
