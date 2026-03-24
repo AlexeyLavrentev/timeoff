@@ -20,10 +20,11 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
       MYSQL_USER: ${MYSQL_USER:-timeoff}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
+      RUN_DB_MIGRATIONS: ${RUN_DB_MIGRATIONS:-false}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - ./:/app
       - /app/node_modules
       - ./config/app.redis.json:/app/config/app.json:ro
-    command: ["sh", "-c", "npm run build-css && npm start"]
+    command: ["/bin/sh", "./docker/dev-entrypoint.sh"]
