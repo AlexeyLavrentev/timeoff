@@ -1,22 +1,25 @@
 services:
   db:
-    image: mysql:8.0
+    image: mysql:8.0.45
+    # mysql_native_password is still required by the legacy mysql driver used here.
     command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE: timeoff
-      MYSQL_USER: timeoff
-      MYSQL_PASSWORD: timeoff_password
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
+      MYSQL_USER: ${MYSQL_USER:-timeoff}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_password"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
       interval: 5s
       timeout: 5s
       retries: 20
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     healthcheck:
@@ -26,7 +29,11 @@ services:
       retries: 20
 
   app:
-    build: .
+    build:
+      context: .
+      target: runtime
+    init: true
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -34,20 +41,27 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      DB_DIALECT: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_NAME: timeoff
-      DB_USER: timeoff
-      DB_PASSWORD: timeoff_password
-      DB_LOGGING: "false"
-      MYSQL_DATABASE: timeoff
-      MYSQL_USER: timeoff
-      MYSQL_PASSWORD: timeoff_password
+      DB_DIALECT: ${DB_DIALECT:-mysql}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-timeoff}
+      DB_USER: ${DB_USER:-timeoff}
+      DB_PASSWORD: ${DB_PASSWORD:-timeoff_password}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
+      MYSQL_USER: ${MYSQL_USER:-timeoff}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-timeoff_password}
+      RUN_DB_MIGRATIONS: ${RUN_DB_MIGRATIONS:-false}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - ./config/app.redis.json:/app/config/app.json:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/', (res) => { process.exit(res.statusCode >= 200 && res.statusCode < 500 ? 0 : 1); }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
 volumes:
   mysql_data:

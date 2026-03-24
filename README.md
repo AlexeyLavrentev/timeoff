@@ -129,6 +129,9 @@ docker compose run --rm app npm run db-update
 Чтобы убрать подробные SQL‑логи Sequelize, установите `DB_LOGGING=false`
 в окружении (уже задано в `docker-compose.yml`).
 
+Compose автоматически читает `.env`, поэтому секреты и локальные значения
+лучше выносить туда, а не редактировать `docker-compose.yml`.
+
 #### Диагностика ошибки доступа к MySQL
 
 Если при запуске в контейнере появляется ошибка вида:
@@ -167,6 +170,18 @@ docker compose up --build
 ```
 
 Redis будет доступен внутри сети compose по хосту `redis:6379`.
+
+### Docker Compose для разработки
+
+Для разработки используйте override-файл:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Он использует dev-target образа, монтирует проект в контейнер и сохраняет
+`node_modules` внутри контейнера, чтобы локальные зависимости хоста не
+перетирали Linux-сборку модулей.
 
 ## Запуск тестов
 
@@ -213,6 +228,12 @@ npm start
 2. Скопируйте структуру ключей из `public/locales/en/translation.json` и переведите значения.
 3. Добавьте код языка в `supported_languages` и при необходимости укажите `default_language` в `config/app.json`.
 4. Перезапустите приложение.
+
+### SSO через Keycloak
+
+Подробная инструкция по настройке единого входа через Keycloak для обоих поддерживаемых режимов лежит в [docs/sso-keycloak.md](docs/sso-keycloak.md).
+
+Важно: приложение поддерживает только один активный SSO-метод на компанию одновременно: либо `OIDC`, либо `SAML 2.0`.
 
 ### Локализация сортировки
 
