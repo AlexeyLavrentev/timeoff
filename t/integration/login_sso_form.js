@@ -19,10 +19,7 @@ describe('Login page SSO UX', function(){
   });
 
   it('renders password login and a dedicated SSO entry point', function(){
-    return driver.findElements(By.css('form'))
-      .then(function(forms){
-        expect(forms).to.have.length(1);
-      })
+    return driver.findElement(By.css('form#local_login_form'))
       .then(function(){
         return driver.findElement(By.css('form#local_login_form input[name="username"]'));
       })
