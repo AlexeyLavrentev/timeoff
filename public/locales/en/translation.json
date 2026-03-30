@@ -316,7 +316,8 @@
       "ssoCompanyUnknown": "We could not determine which company SSO configuration should be used for this sign-in.",
       "ssoCompanyAmbiguous": "More than one company matches this email domain. Please contact your administrator.",
       "ssoProvisioningDisabled": "No local account exists for this SSO user yet. Contact your administrator.",
-      "ssoCompanyMismatch": "This SSO account belongs to a different company in TimeOff.Management."
+      "ssoCompanyMismatch": "This SSO account belongs to a different company in TimeOff.Management.",
+      "useSsoLogin": "This account uses SSO. Continue with your company identity provider."
     },
     "continueWithSso": "Continue with SSO",
     "ssoHint": "Use your work email to continue with your company SSO provider. A password is not required here.",
