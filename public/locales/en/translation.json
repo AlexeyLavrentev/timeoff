@@ -300,6 +300,9 @@
       "contactSupport": "Please contact customer service.",
       "forgotPasswordSent": "Please check your email box for further instructions",
       "forgotPasswordFailed": "Failed to proceed with submitted data.",
+      "useSsoPasswordRecovery": "This account uses SSO. Reset your password through your company identity provider.",
+      "invalidCsrfToken": "Your form session expired. Please try again.",
+      "tooManyAuthAttempts": "Too many authentication attempts. Please try again in {{seconds}} seconds.",
       "resetLinkUnknown": "Unknown reset password link, please submit request again",
       "resetPasswordMismatch": "Confirmed password does not match password",
       "resetPasswordUseNew": "Please use new password to login into system",
@@ -331,7 +334,8 @@
   "forgotPassword": {
     "title": "Forgot password",
     "employeeEmail": "Employee email:",
-    "submit": "Send instructions"
+    "submit": "Send instructions",
+    "ssoHint": "If your company uses SSO, password reset is not available here. Use your company sign-in instead."
   },
   "resetPassword": {
     "title": "Reset password",

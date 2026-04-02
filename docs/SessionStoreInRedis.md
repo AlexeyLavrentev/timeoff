@@ -18,3 +18,6 @@ It is possible to use different storage mechanism for Sessions data: [Redis](htt
 
 `docker-compose.yml` запускает контейнер Redis и монтирует `config/app.redis.json`
 в `config/app.json` внутри контейнера приложения. Redis доступен по хосту `redis:6379`.
+Секреты приложения при этом должны приходить из окружения:
+`SESSION_SECRET` и `CRYPTO_SECRET`. Удобнее всего задать их через `.env`
+рядом с `docker-compose.yml`.
