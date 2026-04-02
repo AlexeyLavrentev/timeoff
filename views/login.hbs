@@ -5,6 +5,7 @@
 {{> show_flash_messages }}
 
 <form class="form-horizontal" action="/login" method="post" id="local_login_form">
+  <input type="hidden" name="_csrf" value="{{csrf_token}}">
 
   <div class="row">&nbsp;</div>
 
@@ -46,6 +47,7 @@
 <hr>
 
 <form class="form-horizontal" action="/login/sso" method="post" id="sso_login_form">
+  <input type="hidden" name="_csrf" value="{{csrf_token}}">
   <div class="form-group">
     <div class="col-md-5 col-md-offset-4">
       <h3>{{t "login.ssoTitle"}}</h3>
@@ -56,7 +58,7 @@
   {{#if sso_login.direct_sso_available}}
   <div class="form-group">
     <div class="col-md-offset-4 col-md-5">
-      <a href="{{sso_login.direct_sso_url}}" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
+      <a href="{{sso_login.direct_sso_url}}" class="btn btn-success" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
       <p class="help-block">{{t "login.ssoDirectHint" company=sso_login.direct_sso_company_name provider=sso_login.direct_sso_provider_label}}</p>
     </div>
   </div>
@@ -71,7 +73,7 @@
 
   <div class="form-group">
     <div class="col-md-offset-4 col-md-5">
-      <button type="submit" class="btn btn-default single-click" id="go_to_sso_login">{{t "login.continueWithSso"}}</button>
+      <button type="submit" class="btn btn-success single-click" id="go_to_sso_login">{{t "login.continueWithSso"}}</button>
     </div>
   </div>
   {{/if}}
@@ -79,7 +81,7 @@
 {{else}}
 <div class="row">
   <div class="col-md-offset-4 col-md-5">
-    <a href="/login/sso/" class="btn btn-default" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
+    <a href="/login/sso/" class="btn btn-success" id="go_to_sso_login">{{t "login.continueWithSso"}}</a>
   </div>
 </div>
 {{/if}}
