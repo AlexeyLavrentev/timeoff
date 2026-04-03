@@ -145,7 +145,7 @@ http://localhost:3000
 2. зарегистрируйте компанию;
 3. первый пользователь автоматически станет администратором этой компании.
 
-Подробная инструкция: [docs/install-local-npm.md](/home/sdigitaladmin/timeoff/docs/install-local-npm.md)
+Подробная инструкция: [docs/install-local-npm.md](docs/install-local-npm.md)
 
 ## Быстрый старт №2: npm + внешний MySQL и Redis
 
