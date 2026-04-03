@@ -180,6 +180,11 @@ label.label-plain {
  font-weight: bolder;
 }
 
+.calendar_weekend_header {
+  background: rgba(92, 114, 138, 0.12);
+  color: #4f5d6b;
+}
+
 
 div.month_container {
     height : 250px;
@@ -225,6 +230,10 @@ td.calendar_cell span {
     display    : block;
     text-align : center;
     z-index : 10;
+}
+td.calendar_weekend_cell {
+  background-image: linear-gradient(rgba(92, 114, 138, 0.08), rgba(92, 114, 138, 0.08));
+  box-shadow: inset 0 1px 0 rgba(92, 114, 138, 0.14), inset 0 -1px 0 rgba(92, 114, 138, 0.14);
 }
 td.current_day_cell {
   background: #FFCDD2;
@@ -604,6 +613,16 @@ div.feeds-holder {
 
   .calendar_month td {
     color: #e6e6e6;
+  }
+
+  .calendar_weekend_header {
+    background: rgba(116, 134, 156, 0.2);
+    color: #d6dde5;
+  }
+
+  td.calendar_weekend_cell {
+    background-image: linear-gradient(rgba(116, 134, 156, 0.12), rgba(116, 134, 156, 0.12));
+    box-shadow: inset 0 1px 0 rgba(116, 134, 156, 0.22), inset 0 -1px 0 rgba(116, 134, 156, 0.22);
   }
 
   td.current_day_cell {

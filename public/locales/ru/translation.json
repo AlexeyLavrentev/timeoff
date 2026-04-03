@@ -324,7 +324,7 @@
       "ssoCompanyUnknown": "Не удалось определить, какую SSO-конфигурацию компании нужно использовать для этого входа.",
       "ssoCompanyAmbiguous": "Этому email-домену соответствует несколько компаний. Обратитесь к администратору.",
       "ssoProvisioningDisabled": "Для этого SSO-пользователя ещё нет локальной учётной записи. Обратитесь к администратору.",
-      "ssoCompanyMismatch": "Эта SSO-учётная запись относится к другой компании в TimeOff.Management.",
+      "ssoCompanyMismatch": "Эта SSO-учётная запись относится к другой компании в системе управления отпусками.",
       "useSsoLogin": "Для этой учётной записи используется SSO. Продолжите вход через корпоративного провайдера идентификации."
     },
     "continueWithSso": "Войти через SSO",
@@ -353,7 +353,7 @@
   "feeds": {
     "title": "Мои фиды",
     "subtitle": "Фиды для внешних календарей",
-    "description": "Поделитесь данными TimeOff.Management с внешними календарями, такими как Microsoft Outlook, Apple Calendar (iCal) или Google Calendar.",
+    "description": "Поделитесь данными системы управления отпусками с внешними календарями, такими как Microsoft Outlook, Apple Calendar (iCal) или Google Calendar.",
     "streamsFrom": "Мы предоставляем следующие потоки:",
     "myCalendar": "Мой календарь",
     "myCalendarDescription": "— передаёт все данные из Мой календарь",
@@ -453,7 +453,7 @@
   "integrationApi": {
     "title": "Integration API (beta)",
     "subtitle": "Настройка доступа к данным через Integration API",
-    "description": "TimeOff.Management поддерживает передачу данных компании {{company}} в другое ПО через REST API.",
+    "description": "Система управления отпусками поддерживает передачу данных компании {{company}} в другое ПО через REST API.",
     "toggleDisable": "На этой странице вы можете отключить доступ.",
     "toggleEnable": "На этой странице вы можете включить доступ.",
     "enable": "Включить Integration API",
@@ -478,7 +478,7 @@
       "body": "Спасибо за регистрацию аккаунта на"
     },
     "forgotPassword": {
-      "subject": "Сброс пароля для TimeOff.Management",
+      "subject": "Сброс пароля для системы управления отпусками",
       "body": "Кто-то запросил ссылку для сброса пароля на",
       "ldapNotice": "Для вашей компании используется LDAP, поэтому мы не можем сбросить пароль.",
       "ldapContact": "Обратитесь к администратору, чтобы сбросить пароль в Active Directory.",
@@ -487,19 +487,19 @@
       "manualLink": "Или скопируйте ссылку в браузер:"
     },
     "resetPassword": {
-      "subject": "Сброс пароля для TimeOff.Management",
+      "subject": "Сброс пароля для системы управления отпусками",
       "body": "Ваш пароль для"
     },
     "addNewUser": {
-      "subject": "Новый аккаунт TimeOff.Management для {{name}}",
+      "subject": "Новый аккаунт в системе управления отпусками для {{name}}",
       "body": "{{admin}} зарегистрировал(а) для вас новый аккаунт сотрудника в {{company}}.",
       "passwordContact": "Свяжитесь с {{admin}} по поводу пароля и войдите на",
       "alternative": "Или перейдите по ссылке ниже, чтобы задать пароль",
       "action": "Задать новый пароль"
     },
     "confirmRegistration": {
-      "subject": "Подтверждение регистрации в TimeOff.Management",
-      "body": "Чтобы завершить регистрацию в TimeOff.Management, перейдите по ссылке:"
+      "subject": "Подтверждение регистрации в системе управления отпусками",
+      "body": "Чтобы завершить регистрацию в системе управления отпусками, перейдите по ссылке:"
     },
     "leaveRequest": {
       "subjectNew": "Новая заявка на отпуск",
@@ -786,10 +786,10 @@
     "title": "LDAP аутентификация",
     "subtitle": "Детали LDAP аутентификации",
     "descriptionTitle": "Описание",
-    "descriptionParagraph1": "TimeOff.Management поддерживает LDAP аутентификацию для клиентов, которые хотят интегрировать приложение с остальной инфраструктурой. Очевидная причина — позволить сотрудникам использовать свои учётные данные Active Directory в TimeOff.Management.",
-    "descriptionParagraph2": "Эта страница позволяет настроить TimeOff.Management для работы с пользовательским LDAP сервером.",
-    "descriptionParagraph3": "Обратите внимание, что сотрудники должны использовать свой LDAP email и LDAP пароль (а не имя пользователя). Это связано с мультиарендной природой TimeOff.Management, позволяющей размещать несколько компаний в одной установке.",
-    "descriptionParagraph4": "В форме ниже есть примеры настройки TimeOff.Management для использования бесплатного тестового LDAP сервера, описанного",
+    "descriptionParagraph1": "Система управления отпусками поддерживает LDAP-аутентификацию для клиентов, которые хотят интегрировать приложение с остальной инфраструктурой. Очевидная причина — позволить сотрудникам использовать свои учётные данные Active Directory в системе управления отпусками.",
+    "descriptionParagraph2": "Эта страница позволяет настроить систему управления отпусками для работы с пользовательским LDAP-сервером.",
+    "descriptionParagraph3": "Обратите внимание, что сотрудники должны использовать свой LDAP email и LDAP пароль (а не имя пользователя). Это связано с мультиарендной природой системы управления отпусками, позволяющей размещать несколько компаний в одной установке.",
+    "descriptionParagraph4": "В форме ниже есть примеры настройки системы управления отпусками для использования бесплатного тестового LDAP-сервера, описанного",
     "descriptionLink": "здесь",
     "configurationTitle": "Настройка",
     "enableLabel": "Включить LDAP аутентификацию",
@@ -803,7 +803,7 @@
     "adminPasswordNoticePrefix": "Чтобы избежать ситуации, когда аккаунт компании будет заблокирован, текущий администратор (",
     "adminPasswordNoticeSuffix": ") должен ввести пароль, связанный с его/её email в LDAP сервере.",
     "adminPasswordNoticeSecondPrefix": "Это нужно, чтобы",
-    "adminPasswordNoticeSecondSuffix": "смог(ла) войти в TimeOff.Management с новыми LDAP настройками.",
+    "adminPasswordNoticeSecondSuffix": "смог(ла) войти в систему управления отпусками с новыми LDAP-настройками.",
     "currentPasswordLabel": "Мой пароль LDAP",
     "currentPasswordHelpPrefix": "Пароль для",
     "currentPasswordHelpSuffix": "в новом LDAP сервере.",
@@ -909,8 +909,8 @@
     "description": "Open source система управления отсутствиями сотрудников"
   },
   "brand": {
-    "name": "TimeOff.Management",
-    "nameLower": "TimeOff.management"
+    "name": "Управление отпусками",
+    "nameLower": "управление отпусками"
   },
   "footer": {
     "copyrightPrefix": "©",
