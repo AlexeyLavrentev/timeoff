@@ -300,6 +300,9 @@
       "contactSupport": "Please contact customer service.",
       "forgotPasswordSent": "Please check your email box for further instructions",
       "forgotPasswordFailed": "Failed to proceed with submitted data.",
+      "useSsoPasswordRecovery": "This account uses SSO. Reset your password through your company identity provider.",
+      "invalidCsrfToken": "Your form session expired. Please try again.",
+      "tooManyAuthAttempts": "Too many authentication attempts. Please try again in {{seconds}} seconds.",
       "resetLinkUnknown": "Unknown reset password link, please submit request again",
       "resetPasswordMismatch": "Confirmed password does not match password",
       "resetPasswordUseNew": "Please use new password to login into system",
@@ -316,7 +319,7 @@
       "ssoCompanyUnknown": "We could not determine which company SSO configuration should be used for this sign-in.",
       "ssoCompanyAmbiguous": "More than one company matches this email domain. Please contact your administrator.",
       "ssoProvisioningDisabled": "No local account exists for this SSO user yet. Contact your administrator.",
-      "ssoCompanyMismatch": "This SSO account belongs to a different company in TimeOff.Management.",
+      "ssoCompanyMismatch": "This SSO account belongs to a different company in the leave management system.",
       "useSsoLogin": "This account uses SSO. Continue with your company identity provider."
     },
     "continueWithSso": "Continue with SSO",
@@ -331,7 +334,8 @@
   "forgotPassword": {
     "title": "Forgot password",
     "employeeEmail": "Employee email:",
-    "submit": "Send instructions"
+    "submit": "Send instructions",
+    "ssoHint": "If your company uses SSO, password reset is not available here. Use your company sign-in instead."
   },
   "resetPassword": {
     "title": "Reset password",
@@ -344,7 +348,7 @@
   "feeds": {
     "title": "My feeds",
     "subtitle": "Feeds for external calendars",
-    "description": "Share your TimeOff.Management data with external calendar providers such as Microsoft Outlook, Apple Calendar (iCal) or Google Calendar.",
+    "description": "Share your leave management data with external calendar providers such as Microsoft Outlook, Apple Calendar (iCal) or Google Calendar.",
     "streamsFrom": "We provide following streams from:",
     "myCalendar": "My Calendar",
     "myCalendarDescription": "page - feeds all data from My Calendar page",
@@ -444,7 +448,7 @@
   "integrationApi": {
     "title": "Integration API (beta)",
     "subtitle": "Configure access to account data via integration API",
-    "description": "TimeOff.Management supports sharing {{company}}'s data to other software via REST API.",
+    "description": "The leave management system supports sharing {{company}}'s data to other software via REST API.",
     "toggleDisable": "This page allows you to disable access.",
     "toggleEnable": "This page allows you to enable access.",
     "enable": "Enable integration API",
@@ -469,7 +473,7 @@
       "body": "Thank you for registering a new account on"
     },
     "forgotPassword": {
-      "subject": "Reset password for TimeOff.Management",
+      "subject": "Reset password for Leave Management",
       "body": "Somebody just requested a reset password link for your account at",
       "ldapNotice": "The company your account belongs to uses LDAP authentication so we cannot reset the password for you.",
       "ldapContact": "Please contact your system administrator in order to reset the password in Active directory server.",
@@ -478,19 +482,19 @@
       "manualLink": "Alternatively copy and paste the following link into your browser:"
     },
     "resetPassword": {
-      "subject": "Reset password for TimeOff.Management",
+      "subject": "Reset password for Leave Management",
       "body": "Your password for"
     },
     "addNewUser": {
-      "subject": "New TimeOff.Management account for {{name}}",
+      "subject": "New Leave Management account for {{name}}",
       "body": "{{admin}} just registered new account for you as an employee of {{company}}.",
       "passwordContact": "Please contact {{admin}} about your new password and login at",
       "alternative": "Alternatively follow the link below to set a new password",
       "action": "Set new password"
     },
     "confirmRegistration": {
-      "subject": "Confirm registration on TimeOff.Management",
-      "body": "To complete your registration process in TimeOff.Management please click on the following link:"
+      "subject": "Confirm registration in Leave Management",
+      "body": "To complete your registration process in Leave Management please click on the following link:"
     },
     "leaveRequest": {
       "subjectNew": "New leave request",
@@ -777,10 +781,10 @@
     "title": "LDAP authentication",
     "subtitle": "LDAP authentication details",
     "descriptionTitle": "Description",
-    "descriptionParagraph1": "TimeOff.Management supports LDAP authentication for customers that want to integrate the application with the rest of their infrastructure. The obvious reason is to allow employees to reuse their Active directory credentials in TimeOff.Management.",
-    "descriptionParagraph2": "This page allows you to setup the TimeOff.Management to communicate with a custom LDAP server.",
-    "descriptionParagraph3": "Please note that employees have to use their LDAP email with LDAP password (rather than username). This is due to the multi-tenant nature of TimeOff.Management application that allows hosting more than one company within a single installation.",
-    "descriptionParagraph4": "Form below has placeholders with examples how to setup TimeOff.Management to use free test LDAP server described",
+    "descriptionParagraph1": "The leave management system supports LDAP authentication for customers that want to integrate the application with the rest of their infrastructure. The obvious reason is to allow employees to reuse their Active Directory credentials in the leave management system.",
+    "descriptionParagraph2": "This page allows you to set up the leave management system to communicate with a custom LDAP server.",
+    "descriptionParagraph3": "Please note that employees have to use their LDAP email with LDAP password rather than username. This is due to the multi-tenant nature of the leave management application, which allows hosting more than one company within a single installation.",
+    "descriptionParagraph4": "The form below includes placeholder examples for setting up the leave management system to use the free test LDAP server described",
     "descriptionLink": "here",
     "configurationTitle": "Configuration",
     "enableLabel": "Enable LDAP authentication",
@@ -794,7 +798,7 @@
     "adminPasswordNoticePrefix": "In order to prevent a situation where a company account locks itself out, the current administrator (",
     "adminPasswordNoticeSuffix": ") has to enter the password associated with her/his email on the LDAP server.",
     "adminPasswordNoticeSecondPrefix": "This is to ensure that",
-    "adminPasswordNoticeSecondSuffix": "can login into TimeOff.Management with new LDAP settings.",
+    "adminPasswordNoticeSecondSuffix": "can log in to Leave Management with the new LDAP settings.",
     "currentPasswordLabel": "My LDAP password",
     "currentPasswordHelpPrefix": "Password for",
     "currentPasswordHelpSuffix": "in the new LDAP server.",
@@ -900,8 +904,8 @@
     "description": "Open source Staff Time off management system"
   },
   "brand": {
-    "name": "TimeOff.Management",
-    "nameLower": "TimeOff.management"
+    "name": "Leave Management",
+    "nameLower": "leave management"
   },
   "footer": {
     "copyrightPrefix": "©",

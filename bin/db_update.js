@@ -4,7 +4,7 @@ var path = require('path');
 var Umzug = require('umzug');
 var db = require('../lib/model/db');
 
-Promise.resolve(db.ready)
+db.connect()
   .then(function() {
     var sequelize = db.sequelize;
     var umzug = new Umzug({

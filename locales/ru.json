@@ -1,7 +1,7 @@
 {
   "brand": {
-    "name": "TimeOff.Management",
-    "nameLower": "TimeOff.management"
+    "name": "Управление отпусками",
+    "nameLower": "управление отпусками"
   },
   "footer": {
     "copyrightPrefix": "©",

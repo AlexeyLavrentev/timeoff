@@ -1,257 +1,436 @@
 # TimeOff.Management
 
-Веб‑приложение для управления отсутствиями сотрудников.
+Веб-приложение для управления отпусками, больничными, отгулами и другими отсутствиями сотрудников.
 
-<a href="https://travis-ci.org/timeoff-management/timeoff-management-application"><img align="right" src="https://travis-ci.org/timeoff-management/timeoff-management-application.svg?branch=master" alt="Build status" /></a>
+Проект можно:
 
-## Возможности
+- быстро поднять локально для знакомства и тестирования;
+- запустить как внутренний сервис компании;
+- развернуть с `MySQL` и `Redis` через `docker compose`;
+- подключить к корпоративной аутентификации через LDAP/SSO.
 
-**Несколько представлений отсутствий**
+## Что умеет приложение
 
-Календарный вид, обзор команды или простой список.
+- календарный и табличный просмотр отсутствий;
+- роли сотрудника, руководителя и администратора;
+- согласование отпусков;
+- разные типы отсутствий;
+- экспорт в CSV;
+- интеграция с календарями;
+- локализация интерфейса;
+- LDAP и SSO (`OIDC`/`SAML`).
 
-**Гибкая настройка под политику компании**
+## Какой способ установки выбрать
 
-Добавляйте собственные типы отсутствий: больничный, декрет, удалённая работа, день рождения и т.д. Определяйте, влияет ли тип на отпускной баланс.
+| Сценарий | Рекомендуемый способ |
+|---|---|
+| Просто посмотреть и протестировать приложение на одном ПК | `npm` + `SQLite` |
+| Разработка без Docker | `npm` + `SQLite` или внешний `MySQL` |
+| Корпоративный пилот / внутренний сервер | `docker compose` |
+| Нужны `MySQL` и `Redis` "из коробки" | `docker compose` |
 
-Опционально ограничивайте количество дней, доступных для каждого типа отсутствия (например, не более 10 больничных в год).
+Если нужна самая простая установка для обычного пользователя, начинайте с `npm` + `SQLite`.
 
-Настраивайте государственные и корпоративные выходные.
+Если нужна конфигурация, похожая на рабочую корпоративную среду, используйте `docker compose`.
 
-Группируйте сотрудников по отделам, задавайте руководителя для каждого отдела.
+## Что понадобится заранее
 
-Поддерживается индивидуальный рабочий график для компании и сотрудников.
+### Для установки через npm
 
-**Интеграция с календарями**
+- `Node.js 20` или новее
+- `npm`
 
-Публикация отсутствий в MS Outlook, Google Calendar и iCal.
+### Для установки через Docker
 
-Создавайте фиды для сотрудников, отделов или всей компании.
+- `Docker`
+- `Docker Compose` plugin (`docker compose`)
 
-**Трёхшаговый процесс согласования**
+## Что нужно проверить и при необходимости отредактировать до первого запуска
 
-Сотрудник запрашивает отпуск или отзывает его.
+### 1. Файл `.env`
 
-Руководитель получает уведомление по почте и принимает решение.
+Для `docker compose` это обязательный шаг.
 
-Отсутствие учитывается, коллеги видят его в командном обзоре и календарях.
-
-**Контроль доступа**
-
-Есть роли: сотрудник, руководитель, администратор.
-
-Поддерживается LDAP‑аутентификация.
-
-**Экспорт данных**
-
-Возможность выгрузки данных по отпускам в CSV для резервного копирования и работы в табличных редакторах.
-
-**Работа на мобильных устройствах**
-
-Основные сценарии оптимизированы для мобильных:
-
-* запрос нового отпуска;
-* согласование отпуска руководителем.
-
-**Дополнительные улучшения**
-
-* Интернационализация интерфейса (EN/RU) через i18next и шаблоны Handlebars.
-* Группы пользователей с CRUD‑управлением и фильтрами в интерфейсе.
-* Ограничение пересечения отпусков критически важных сотрудников по отделу.
-
-## Скриншоты
-
-![TimeOff.Management Screenshot](https://raw.githubusercontent.com/timeoff-management/application/master/public/img/readme_screenshot.png)
-
-## Установка
-
-### Облачный хостинг
-
-Перейдите на http://timeoff.management/
-
-Создайте аккаунт компании и используйте облачную версию.
-
-### Самостоятельный хостинг
-
-Убедитесь, что установлены Node.js (>=13.0.0) и SQLite.
+Скопируйте шаблон:
 
 ```bash
-git clone https://github.com/timeoff-management/application.git timeoff-management
-cd timeoff-management
+cp .env.example .env
+```
+
+Минимум, что нужно заменить:
+
+- `SESSION_SECRET`
+- `CRYPTO_SECRET`
+- `MYSQL_PASSWORD`
+- `MYSQL_ROOT_PASSWORD`
+
+Если нужно, также меняют:
+
+- `APP_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `TRUST_PROXY`
+- `SESSION_COOKIE_SECURE`
+- `SESSION_COOKIE_SAME_SITE`
+
+### 2. Файл `config/app.json`
+
+Нужно редактировать, если вы запускаете приложение напрямую через `npm`.
+
+Чаще всего меняют:
+
+- `application_domain` — адрес приложения, который видят пользователи;
+- `default_language` и `supported_languages`;
+- `allow_create_new_accounts` — разрешать ли самостоятельную регистрацию;
+- `send_emails` и `email_transporter` — если хотите реальные почтовые уведомления;
+- `sessionStore.useRedis` и `sessionStore.redisConnectionConfiguration` — если локальный запуск через `npm` должен использовать `Redis`.
+
+### 3. Файл `config/app.redis.json`
+
+Нужно редактировать, если вы запускаете приложение через `docker compose`.
+
+Именно этот файл монтируется в контейнер как основной `config/app.json`.
+
+Обычно меняют:
+
+- `application_domain`;
+- `default_language` и `supported_languages`;
+- `send_emails` и `email_transporter`;
+- `allow_create_new_accounts` — по умолчанию уже `false`;
+- `sessionStore.redisConnectionConfiguration`, если Redis будет не в контейнере `redis`.
+
+## Быстрый старт №1: npm + SQLite
+
+Это самый простой способ попробовать приложение локально.
+
+### Шаг 1. Установите зависимости
+
+```bash
 npm install
+```
+
+### Шаг 2. Примените миграции
+
+```bash
+npm run db-update
+```
+
+### Шаг 3. Запустите приложение
+
+```bash
 npm start
 ```
 
-Откройте http://localhost:3000/ в браузере.
+### Шаг 4. Откройте приложение
 
-## Работа через Docker
+Откройте в браузере:
 
-### Сборка образа
-
-```bash
-docker build -t timeoff:local .
+```text
+http://localhost:3000
 ```
 
-### Запуск контейнера
+### Что происходит в этом режиме
+
+- по умолчанию используется `SQLite`;
+- база лежит в файле `db.development.sqlite`;
+- сессии по умолчанию хранятся в базе, а не в `Redis`;
+- секреты для `development` подставляются автоматически, если вы не задали их вручную.
+
+### Как появляется первый администратор
+
+В этом режиме самостоятельная регистрация включена по умолчанию, поэтому:
+
+1. откройте `/register/`;
+2. зарегистрируйте компанию;
+3. первый пользователь автоматически станет администратором этой компании.
+
+Подробная инструкция: [docs/install-local-npm.md](docs/install-local-npm.md)
+
+## Быстрый старт №2: npm + внешний MySQL и Redis
+
+Этот режим подходит, если Docker не нужен, но вы хотите работать не с `SQLite`, а с реальными сервисами.
+
+### Перед запуском
+
+1. Поднимите свой `MySQL`.
+2. Поднимите свой `Redis`.
+3. Отредактируйте `config/app.json`:
+   - включите `sessionStore.useRedis: true`;
+   - пропишите адрес `Redis`.
+4. Задайте переменные окружения для БД.
+
+Пример:
 
 ```bash
-docker run --rm -p 3000:3000 timeoff:local
+export DB_DIALECT=mysql
+export DB_HOST=127.0.0.1
+export DB_PORT=3306
+export DB_NAME=timeoff
+export DB_USER=timeoff
+export DB_PASSWORD=strong_password
+export SESSION_SECRET=replace-me
+export CRYPTO_SECRET=replace-me
 ```
 
-После запуска приложение будет доступно на http://localhost:3000/.
-
-### Docker Compose для MySQL (production)
-
-Для продакшен‑сценариев используйте MySQL и `docker-compose.yml`, который поднимает базу и приложение вместе.
+### Дальше
 
 ```bash
-docker compose up --build
+npm install
+npm run db-update
+npm start
 ```
 
-После запуска:
+## Быстрый старт №3: Docker Compose
 
-* Приложение: http://localhost:3000/
-* MySQL: `db:3306` внутри сети compose
+Это рекомендуемый способ для пилота, внутреннего сервера и "почти production" запуска.
 
-Инициализацию/миграции можно запустить вручную:
+### Шаг 1. Подготовьте `.env`
+
+```bash
+cp .env.example .env
+```
+
+Замените секреты и пароли.
+
+### Шаг 2. При необходимости отредактируйте `config/app.redis.json`
+
+Обычно заранее меняют:
+
+- `application_domain`;
+- email-настройки;
+- языки интерфейса;
+- политику регистрации пользователей.
+
+### Шаг 3. Поднимите сервисы
+
+```bash
+docker compose up --build -d
+```
+
+### Шаг 4. Примените миграции
 
 ```bash
 docker compose run --rm app npm run db-update
 ```
 
-Переменные подключения к базе можно переопределить через окружение:
+### Шаг 5. Откройте приложение
 
-* `DB_DIALECT`, `DB_HOST`, `DB_PORT`
-* `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-* `DB_STORAGE`, `DB_LOGGING`
-* также поддерживаются `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
-
-Чтобы убрать подробные SQL‑логи Sequelize, установите `DB_LOGGING=false`
-в окружении (уже задано в `docker-compose.yml`).
-
-Compose автоматически читает `.env`, поэтому секреты и локальные значения
-лучше выносить туда, а не редактировать `docker-compose.yml`.
-
-#### Диагностика ошибки доступа к MySQL
-
-Если при запуске в контейнере появляется ошибка вида:
-
-```
-SequelizeAccessDeniedError: ER_ACCESS_DENIED_ERROR: Access denied for user
+```text
+http://localhost:3000
 ```
 
-то чаще всего уже существует том MySQL, созданный с другими учётными данными.
-В таком случае удалите том и пересоздайте контейнеры:
+Или `http://localhost:<APP_PORT>`, если вы меняли порт в `.env`.
+
+### Как создать первого администратора в compose-сценарии
+
+По умолчанию в `config/app.redis.json` стоит:
+
+```json
+"allow_create_new_accounts": false
+```
+
+Это хорошо для корпоративной эксплуатации, но неудобно для самого первого старта.
+
+Практический вариант для первичной инициализации:
+
+1. временно поставьте в `config/app.redis.json` значение `true`;
+2. выполните `docker compose up --build -d`;
+3. откройте `/register/` и зарегистрируйте первую компанию;
+4. первый пользователь автоматически станет администратором;
+5. верните `allow_create_new_accounts` обратно в `false`;
+6. перезапустите контейнер приложения:
 
 ```bash
-docker compose down -v
-docker compose up --build
+docker compose restart app
 ```
 
-Либо убедитесь, что значения `MYSQL_USER`/`MYSQL_PASSWORD` в `docker-compose.yml`
-совпадают с `DB_USER`/`DB_PASSWORD` для приложения.
+Подробная инструкция: [docs/docker-compose.md](/docs/docker-compose.md)
 
-Если появляется ошибка `ER_NO_SUCH_TABLE: Table 'timeoff.Sessions' doesn't exist`,
-убедитесь, что таблицы созданы:
+## Как проверить, что приложение вообще работает
+
+### Быстрая ручная проверка
+
+1. Открывается страница входа.
+2. Нет ошибки `500 Internal Server Error`.
+3. После входа доступны календарь и настройки.
+
+### Проверка контейнеров
 
 ```bash
-docker compose run --rm app npm run db-update
+docker compose ps
 ```
 
-#### Docker Compose с Redis для хранения сессий
+Ожидаемый результат: `app`, `db`, `redis` находятся в состоянии `running` или `healthy`.
 
-В `docker-compose.yml` уже добавлен контейнер Redis и подключена конфигурация
-`config/app.redis.json`, чтобы сессии хранились в Redis.
-
-Для запуска:
+### Проверка HTTP-ответа
 
 ```bash
-docker compose up --build
+curl -I http://localhost:3000
 ```
 
-Redis будет доступен внутри сети compose по хосту `redis:6379`.
+Если приложение отвечает, вы увидите HTTP-статус и заголовки.
 
-### Docker Compose для разработки
+## Как проверить, что используется MySQL, а не SQLite
 
-Для разработки используйте override-файл:
+### В Docker Compose
+
+Проверьте диалект и параметры подключения изнутри контейнера приложения:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker compose exec app node -e "const db=require('./lib/model/db'); console.log({dialect: db.sequelize.getDialect(), host: db.sequelize.config.host, database: db.sequelize.config.database}); db.sequelize.close();"
 ```
 
-Он использует dev-target образа, монтирует проект в контейнер и сохраняет
-`node_modules` внутри контейнера, чтобы локальные зависимости хоста не
-перетирали Linux-сборку модулей.
+Ожидаемый результат:
 
-## Запуск тестов
+- `dialect: 'mysql'`
+- `host: 'db'` или ваш MySQL-хост
 
-Тесты покрывают основные пользовательские сценарии.
-
-Убедитесь, что в системе установлен Chrome Driver и браузер Chrome.
-
-Чтобы увидеть выполнение сценариев в браузере, задайте `SHOW_CHROME=1`.
+Дополнительно можно проверить сам MySQL:
 
 ```bash
-USE_CHROME=1 npm test
+docker compose exec db mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "SHOW DATABASES;"
 ```
 
-(Приложение с настройками по умолчанию должно быть запущено.)
+### В локальном запуске через npm
 
-## Обновление существующей инсталляции
+```bash
+node -e "const db=require('./lib/model/db'); console.log({dialect: db.sequelize.getDialect(), host: db.sequelize.config.host, storage: db.sequelize.options.storage}); db.sequelize.close();"
+```
 
-Если нужно обновить текущую установку новой версией:
+Признаки:
+
+- если `dialect` равен `mysql`, приложение работает с `MySQL`;
+- если `dialect` равен `sqlite`, приложение работает с `SQLite`;
+- у `SQLite` обычно будет `storage: './db.development.sqlite'`.
+
+## Как проверить, что Redis подключен и работает нормально
+
+### Проверка самого Redis
+
+```bash
+docker compose exec redis redis-cli ping
+```
+
+Ожидаемый ответ:
+
+```text
+PONG
+```
+
+### Проверка сессий в Redis
+
+1. Войдите в приложение в браузере.
+2. Выполните:
+
+```bash
+docker compose exec redis redis-cli KEYS 'sess:*'
+```
+
+Если ключи появились, сессии пишутся в Redis.
+
+### Проверка из логов приложения
+
+В логах приложения должна появляться строка:
+
+```text
+Connected to redis successfully
+```
+
+Посмотреть логи:
+
+```bash
+docker compose logs app
+```
+
+### Важно
+
+При обычном локальном запуске через `npm` Redis по умолчанию не используется, потому что в `config/app.json` стоит:
+
+```json
+"useRedis": false
+```
+
+Если вам нужен Redis в режиме `npm`, это нужно включить вручную.
+
+## Как протестировать приложение
+
+### 1. Быстрый ручной smoke test
+
+- открыть страницу входа;
+- войти под администратором;
+- создать сотрудника;
+- создать тип отсутствия;
+- завести заявку на отпуск;
+- убедиться, что календарь и список отображаются.
+
+### 2. Автотесты
+
+```bash
+npm test
+```
+
+В проекте часть тестов опирается на браузерный стек. Если хотите прогонять сценарии через Chrome, смотрите раздел в:
+
+[docs/verification-and-troubleshooting.md](/docs/verification-and-troubleshooting.md)
+
+## Обновление существующей установки
+
+### Для npm-установки
 
 ```bash
 git fetch
-git pull origin master
+git pull
 npm install
-npm run-script db-update
+npm run db-update
 npm start
 ```
 
-## Как настроить?
+### Для Docker Compose
 
-Есть несколько параметров для кастомизации.
+```bash
+git fetch
+git pull
+docker compose up --build -d
+docker compose run --rm app npm run db-update
+```
 
-### Язык интерфейса
+Миграции пропускать нельзя: новая версия кода может ожидать уже изменённую схему БД.
 
-По умолчанию используется язык из `config/app.json`:
+## Частые вопросы
 
-* `default_language` — язык по умолчанию для интерфейса и писем (например, `en` или `ru`).
-* `supported_languages` — список доступных языков (например, `["en", "ru"]`).
+### Можно ли сначала работать на SQLite, а потом перейти на MySQL?
 
-В интерфейсе доступен переключатель языка в правой части верхней панели. Он сохраняет выбор в cookie.
+Да, но это не автоматическая миграция данных. Нужно отдельно переносить данные и отдельно проверять схему.
 
-### Добавление нового языка
+### Нужно ли редактировать `.env` при запуске через npm?
 
-1. Создайте новый каталог перевода: `public/locales/<код_языка>/translation.json`.
-2. Скопируйте структуру ключей из `public/locales/en/translation.json` и переведите значения.
-3. Добавьте код языка в `supported_languages` и при необходимости укажите `default_language` в `config/app.json`.
-4. Перезапустите приложение.
+Нет, не обязательно. Для `development` приложение использует безопасные fallback-секреты. Но для реальной рабочей установки лучше задавать свои значения.
 
-### SSO через Keycloak
+### Какой порт используется?
 
-Подробная инструкция по настройке единого входа через Keycloak для обоих поддерживаемых режимов лежит в [docs/sso-keycloak.md](docs/sso-keycloak.md).
+- локальный `npm start`: `3000`, если не задан `PORT`;
+- `docker compose`: контейнер слушает `3000`, наружу публикуется `${APP_PORT:-3000}`.
 
-Важно: приложение поддерживает только один активный SSO-метод на компанию одновременно: либо `OIDC`, либо `SAML 2.0`.
+### Почему через Docker используется `config/app.redis.json`, а не `config/app.json`?
 
-### Локализация сортировки
+Потому что compose специально монтирует конфиг с включенным Redis-хранилищем сессий.
 
-Если в компании есть сотрудники с именами на разных языках, может быть важно сортировать по соответствующему алфавиту.
+### Где смотреть инструкции по SSO?
 
-Для этого в `config/app.json` есть параметр `locale_code_for_sorting`.
-По умолчанию значение `en` (английский), но можно указать `cs`, `fr`, `de` и т.д.
+Документ здесь:
 
-### Принудительный выбор типа отпуска
+[docs/sso-keycloak.md](/docs/sso-keycloak.md)
 
-Некоторые организации требуют, чтобы сотрудник каждый раз выбирал тип отсутствия при создании заявки, чтобы избежать «ошибочных» отпусков.
+## Карта документации
 
-Для этого установите `is_force_to_explicitly_select_type_when_requesting_new_leave` в `true` в файле `config/app.json`.
-
-## Использование Redis для сессий
-
-Следуйте инструкциям на [этой странице](docs/SessionStoreInRedis.md).
+- [Локальная установка через npm](/docs/install-local-npm.md)
+- [Установка и запуск через Docker Compose](/docs/docker-compose.md)
+- [Проверка работы, диагностика и типовые проблемы](/docs/verification-and-troubleshooting.md)
+- [FAQ для пользователей и администраторов](/docs/faq.md)
+- [Redis как хранилище сессий](/docs/SessionStoreInRedis.md)
+- [SSO через Keycloak](/docs/sso-keycloak.md)
 
 ## Обратная связь
 
-Сообщайте об ошибках или оставляйте отзывы через <a href="https://twitter.com/FreeTimeOffApp">twitter</a> или по email: pavlo at timeoff.management
+Если вы нашли ошибку в коде или документации, создайте issue в репозитории или обновите инструкции под свою рабочую схему развёртывания.
