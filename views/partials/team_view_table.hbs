@@ -10,7 +10,7 @@
         </td>
 
       {{#each department.header_days }}
-        <td colspan="2" class="team-view-header">
+        <td colspan="2" class="team-view-header{{#if (is_calendar_weekend this.moment)}} calendar_weekend_header{{/if}}">
           <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
         </td>
       {{/each}}

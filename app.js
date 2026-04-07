@@ -14,6 +14,26 @@ const { initI18next } = require('./lib/i18n');
 
 var app = express();
 
+const parseTrustProxy = (value) => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalizedValue = value.toLowerCase();
+
+    if (['true', '1', 'yes', 'on'].includes(normalizedValue)) {
+      return 1;
+    }
+
+    if (['false', '0', 'no', 'off'].includes(normalizedValue)) {
+      return false;
+    }
+  }
+
+  return value || false;
+};
+
 if (typeof os.tmpDir !== 'function') {
   os.tmpDir = os.tmpdir;
 }
@@ -28,6 +48,7 @@ var handlebars = require('express-handlebars')
 
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
+app.set('trust proxy', parseTrustProxy(config.get('trust_proxy')));
 
 // Add single reference to the model into application object
 // and reuse it whenever an access to DB is needed
@@ -44,13 +65,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const i18next = initI18next();
 app.use(i18nextMiddleware.handle(i18next));
-
-app.use(function(req, res, next) {
-  if (!dbModel.ready) {
-    return next();
-  }
-  return dbModel.ready.then(() => next()).catch(next);
-});
 
 
 

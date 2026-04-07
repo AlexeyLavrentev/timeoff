@@ -2,7 +2,21 @@ Migrations are going to be handled with sequelize-cli.
 
 To automatically apply any outstanding migrations run following command:
 
-  npm run-script db-update
+  npm run db-update
+
+Release rule:
+
+  Every deploy/release must execute npm run db-update before the application
+  starts serving traffic.
+
+Post-check after migrations:
+
+  1. Verify the command output does not contain errors.
+  2. Verify SequelizeMeta contains 20260322120000-add-sso-auth-to-company.js
+  3. Verify Companies contains:
+     - sso_auth_enabled
+     - sso_auth_provider
+     - sso_auth_config
 
 
 How to?

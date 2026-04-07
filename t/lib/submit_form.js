@@ -6,8 +6,101 @@ Key            = require('selenium-webdriver').Key,
 expect         = require('chai').expect,
 _              = require('underscore'),
 Promise        = require("bluebird"),
-until          = require('selenium-webdriver').until,
-check_elements = require('./check_elements');
+until          = require('selenium-webdriver').until;
+
+var DEFAULT_WAIT_TIMEOUT = 5000;
+
+function fill_form_field(driver, test_case) {
+  if (Object.keys(test_case).length === 0 ){
+    return Promise.resolve(1);
+  }
+
+  return driver.findElement(By.css(test_case.selector))
+    .then(function(el){
+      if ( test_case.hasOwnProperty('option_selector') ) {
+        el.click();
+        return el.findElement(By.css( test_case.option_selector ))
+          .then(function(optionEl){ return optionEl.click(); });
+      } else if ( test_case.hasOwnProperty('tick')) {
+        return el.click();
+      } else if (test_case.file) {
+        return el.sendKeys(test_case.value);
+      } else if (test_case.hasOwnProperty('dropdown_option')) {
+        return el.click()
+          .then(function(){ return driver.findElement(By.css(test_case.dropdown_option)); })
+          .then(function(dd){ return dd.click(); });
+      } else {
+        // Prevent the browser validations to allow backend validations to occur
+        if (test_case.change_step) {
+          driver.executeScript("return arguments[0].step = '0.1'", el);
+        }
+
+        return el.clear().then(function(){
+          el.sendKeys(test_case.value);
+          // Tabs to trigger the calendars overlays
+          // to close so the modal submit button can be clicked
+          return el.sendKeys(Key.TAB);
+        });
+      }
+    });
+}
+
+function read_alert_texts(driver) {
+  return driver.findElements(By.css('div.alert'))
+    .then(function(els){
+      return Promise.all(_.map(els, function(el){ return el.getText(); }));
+    });
+}
+
+function wait_for_matching_alert(driver, message, multi_line_message) {
+  return driver.wait(function(){
+    return read_alert_texts(driver)
+      .then(function(texts){
+        if (!texts.length) {
+          return false;
+        }
+
+        if (multi_line_message) {
+          return _.any(texts, function(text){ return message.test(text); }) ? texts : false;
+        }
+
+        return _.find(texts, function(text){ return message.test(text); }) || false;
+      })
+      .catch(function(){
+        return false;
+      });
+  }, DEFAULT_WAIT_TIMEOUT);
+}
+
+function wait_for_expected_elements(driver, elements_to_check) {
+  if (!elements_to_check.length) {
+    return Promise.resolve(true);
+  }
+
+  return driver.wait(function(){
+    return Promise.all(_.map(elements_to_check, function(test_case){
+      return driver.findElement(By.css(test_case.selector))
+        .then(function(el){
+          if (test_case.hasOwnProperty('tick')) {
+            return el.isSelected().then(function(yes){
+              return yes ? 'on' : 'off';
+            });
+          }
+
+          return el.getAttribute('value');
+        })
+        .then(function(value){
+          return value === test_case.value;
+        });
+    }))
+    .then(function(checks){
+      return _.every(checks, function(check){ return check; });
+    })
+    .catch(function(){
+      return false;
+    });
+  }, DEFAULT_WAIT_TIMEOUT);
+}
 
 
 var submit_form_func = Promise.promisify( function(args, callback){
@@ -38,126 +131,71 @@ var submit_form_func = Promise.promisify( function(args, callback){
       submit_button_selector = args.submit_button_selector ||'button[type="submit"]';
 
 
-    driver.call(function(){
-      // Enter form parameters
-      Promise.all([
-          _.map(
-              form_params,
-              function( test_case ){
+    Promise.resolve()
+      .then(function(){
+        return Promise.all(_.map(form_params, function(test_case){
+          return fill_form_field(driver, test_case);
+        }));
+      })
+      .then(function(){
+        if (confirm_dialog) {
+          return driver.executeScript('window.confirm = function(msg) { return true; }');
+        }
+      })
+      .then(function(){
+        return driver.findElement(By.css(submit_button_selector));
+      })
+      .then(function(el){
+        return el.click();
+      })
+      .then(function(){
+        return driver.wait(until.elementLocated(By.css('body')), DEFAULT_WAIT_TIMEOUT);
+      })
+      .then(function(){
+        if (!should_be_successful) {
+          return wait_for_matching_alert(driver, message, multi_line_message);
+        }
 
-                  // Handle case when test case is empty
-                  if (Object.keys(test_case).length === 0 ){
-                      return Promise.resolve(1);
-                  }
-
-                  driver
-                  .findElement(By.css( test_case.selector ))
-                  .then(function(el){
-                      if ( test_case.hasOwnProperty('option_selector') ) {
-                          el.click();
-                          return el.findElement(By.css( test_case.option_selector ))
-                            .then(function(el){ return el.click(); });
-                      } else if ( test_case.hasOwnProperty('tick')) {
-                          return el.click();
-                      } else if (test_case.file) {
-                        return Promise.resolve()
-                          .then(() => el.sendKeys( test_case.value ));
-                      } else if (test_case.hasOwnProperty('dropdown_option')) {
-                        return el.click()
-                          .then(() => driver.findElement(By.css(test_case.dropdown_option)))
-                          .then(dd => dd.click())
-                      } else {
-                          // Prevent the browser validations to allow backend validations to occur
-                          if (test_case.change_step) {
-                            driver.executeScript("return arguments[0].step = '0.1'", el);
-                          }
-
-                          return el.clear().then(function(){
-                              el.sendKeys( test_case.value );
-                              // Tabs to trigger the calendars overlays
-                              // to close so the modal submit button can be clicked
-                              el.sendKeys(Key.TAB)
-                          });
-                      }
-                  });
-              })
-      ]);
-    });
-
-    // Accept the confirm dialog
-    if (confirm_dialog) {
-      driver.executeScript('window.confirm = function(msg) { return true; }');
-    }
-
-    // Submit the form
-    driver
-        .findElement( By.css( submit_button_selector ) )
-        .then(function(el){
-            el.click();
-
-            driver.wait(until.elementLocated(By.css('title')), 1000);
-        });
-
-    // TODO this is not doing what it supposed to be doing
-    if ( should_be_successful ) {
-
-      driver.call(function(){
-        Promise.resolve(
-            check_elements({
-                driver : driver,
-                elements_to_check : elements_to_check,
-            })
-            .then(function(data){
-                driver = data.driver;
-            })
-        );
-      });
-
-    }
-
-    // Check that message is as expected
-    if (multi_line_message) {
-      driver.findElements( By.css('div.alert') )
-        .then(function(els){
-
-          return Promise.all(
-            _.map(els, function(el){ return el.getText(); })
-          )
-          .then(function(texts){
-            expect(
-              _.any(texts, function(text){ return message.test(text); })
-            ).to.be.equal(true);
-
-            // "export" current driver
-            result_callback(
-                null,
-                {
-                    driver : driver,
+        return wait_for_expected_elements(driver, elements_to_check)
+          .then(function(){
+            return wait_for_matching_alert(driver, message, multi_line_message)
+              .catch(function(){
+                if (String(message) === '/.*/') {
+                  return null;
                 }
-            );
+
+                return read_alert_texts(driver)
+                  .then(function(alertTexts){
+                    throw new Error(
+                      'Timed out waiting for flash message after successful submit. '
+                      + 'Expected: ' + message + '. '
+                      + 'Current alerts: ' + JSON.stringify(alertTexts)
+                    );
+                  });
+              });
           });
-        });
+      })
+      .then(function(alertResult){
+        if (alertResult && !multi_line_message && typeof alertResult === 'string') {
+          expect(alertResult).to.match(message);
+        }
 
-    } else {
+        if (alertResult && multi_line_message) {
+          expect(
+            _.any(alertResult, function(text){ return message.test(text); })
+          ).to.be.equal(true);
+        }
 
-      driver
-        .findElement( By.css('div.alert') )
-        .then(function(el){
-            return el.getText();
-        })
-
-        .then(function(text){
-          expect(text).to.match(message);
-
-          // "export" current driver
-          result_callback(
-            null,
-            {
-              driver : driver,
-            }
-          );
-        });
-    }
+        result_callback(
+          null,
+          {
+            driver : driver,
+          }
+        );
+      })
+      .catch(function(error){
+        result_callback(error);
+      });
 });
 
 

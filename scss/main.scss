@@ -180,6 +180,11 @@ label.label-plain {
  font-weight: bolder;
 }
 
+.calendar_weekend_header {
+  background: rgba(92, 114, 138, 0.12);
+  color: #4f5d6b;
+}
+
 
 div.month_container {
     height : 250px;
@@ -225,6 +230,10 @@ td.calendar_cell span {
     display    : block;
     text-align : center;
     z-index : 10;
+}
+td.calendar_weekend_cell {
+  background-image: linear-gradient(rgba(92, 114, 138, 0.08), rgba(92, 114, 138, 0.08));
+  box-shadow: inset 0 1px 0 rgba(92, 114, 138, 0.14), inset 0 -1px 0 rgba(92, 114, 138, 0.14);
 }
 td.current_day_cell {
   background: #FFCDD2;
@@ -454,6 +463,39 @@ div.feeds-holder {
     color: #8abcf5;
   }
 
+  a.btn,
+  a.btn:hover,
+  a.btn:focus,
+  a.btn:active {
+    color: #ffffff;
+  }
+
+  .btn-default,
+  .btn-default:focus {
+    background-color: #1f2327;
+    border-color: #3a4046;
+    color: #e6e6e6;
+  }
+
+  .btn-default:hover,
+  .btn-default:active,
+  .btn-default.active,
+  .open > .dropdown-toggle.btn-default {
+    background-color: #2a2f34;
+    border-color: #4a5158;
+    color: #ffffff;
+  }
+
+  .btn-default[disabled],
+  .btn-default.disabled,
+  fieldset[disabled] .btn-default {
+    background-color: #2d3742;
+    border-color: #5b87b8;
+    color: #ffffff;
+    opacity: 1;
+    box-shadow: none;
+  }
+
   .navbar-default {
     background-color: #1d2125;
     border-color: #2a2f34;
@@ -571,6 +613,16 @@ div.feeds-holder {
 
   .calendar_month td {
     color: #e6e6e6;
+  }
+
+  .calendar_weekend_header {
+    background: rgba(116, 134, 156, 0.2);
+    color: #d6dde5;
+  }
+
+  td.calendar_weekend_cell {
+    background-image: linear-gradient(rgba(116, 134, 156, 0.12), rgba(116, 134, 156, 0.12));
+    box-shadow: inset 0 1px 0 rgba(116, 134, 156, 0.22), inset 0 -1px 0 rgba(116, 134, 156, 0.22);
   }
 
   td.current_day_cell {
