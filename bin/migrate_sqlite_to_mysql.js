@@ -3,6 +3,7 @@
 var fs = require('fs');
 var path = require('path');
 var mysql = require('mysql');
+var moment = require('moment');
 var sqlite3 = require('sqlite3').verbose();
 
 var sourceSqlitePath = process.argv[2];
@@ -75,13 +76,43 @@ function sqliteClose(db) {
   });
 }
 
-function normalizeRowValue(value) {
+function normalizeDateValue(value, mysqlColumnType) {
+  if (value === null || typeof value === 'undefined' || value === '') {
+    return null;
+  }
+
+  var normalizedType = String(mysqlColumnType || '').toLowerCase();
+  var parsed = moment.utc(value);
+
+  if (!parsed.isValid()) {
+    return value;
+  }
+
+  if (normalizedType.indexOf('date') === 0 && normalizedType.indexOf('datetime') !== 0) {
+    return parsed.format('YYYY-MM-DD');
+  }
+
+  if (
+    normalizedType.indexOf('datetime') === 0
+    || normalizedType.indexOf('timestamp') === 0
+  ) {
+    return parsed.format('YYYY-MM-DD HH:mm:ss');
+  }
+
+  return value;
+}
+
+function normalizeRowValue(value, mysqlColumn) {
   if (Buffer.isBuffer(value)) {
     return value;
   }
 
   if (typeof value === 'undefined') {
     return null;
+  }
+
+  if (typeof value === 'string' && mysqlColumn && mysqlColumn.Type) {
+    return normalizeDateValue(value, mysqlColumn.Type);
   }
 
   return value;
@@ -120,9 +151,7 @@ async function getTargetColumns(mysqlConnection, tableName) {
     'SHOW COLUMNS FROM ' + escapeIdentifier(tableName)
   );
 
-  return rows.map(function(row) {
-    return row.Field;
-  });
+  return rows;
 }
 
 async function clearTargetTables(mysqlConnection, tableNames) {
@@ -148,8 +177,14 @@ async function copyTable(sqliteDb, mysqlConnection, tableName) {
   }
 
   var targetColumns = await getTargetColumns(mysqlConnection, tableName);
+  var targetColumnMap = {};
+
+  targetColumns.forEach(function(column) {
+    targetColumnMap[column.Field] = column;
+  });
+
   var sourceColumns = Object.keys(sourceRows[0]).filter(function(columnName) {
-    return targetColumns.indexOf(columnName) >= 0;
+    return Object.prototype.hasOwnProperty.call(targetColumnMap, columnName);
   });
 
   if (!sourceColumns.length) {
@@ -173,7 +208,7 @@ async function copyTable(sqliteDb, mysqlConnection, tableName) {
 
     batch.forEach(function(row) {
       sourceColumns.forEach(function(columnName) {
-        values.push(normalizeRowValue(row[columnName]));
+        values.push(normalizeRowValue(row[columnName], targetColumnMap[columnName]));
       });
     });
 
