@@ -4,6 +4,38 @@ var path = require('path');
 var Umzug = require('umzug');
 var db = require('../lib/model/db');
 
+function normalizeTableName(table) {
+  if (typeof table === 'string') {
+    return table;
+  }
+
+  if (table && typeof table === 'object') {
+    return table.tableName || table.name || '';
+  }
+
+  return '';
+}
+
+function bootstrapEmptyDatabase(sequelize) {
+  var queryInterface = sequelize.getQueryInterface();
+
+  return queryInterface.showAllTables().then(function(tables) {
+    var existingTables = (tables || [])
+      .map(normalizeTableName)
+      .filter(Boolean)
+      .filter(function(tableName) {
+        return tableName !== 'SequelizeMeta';
+      });
+
+    if (existingTables.length > 0) {
+      return null;
+    }
+
+    console.log('Database is empty, creating base schema with sequelize.sync()');
+    return sequelize.sync();
+  });
+}
+
 db.connect()
   .then(function() {
     var sequelize = db.sequelize;
@@ -19,7 +51,10 @@ db.connect()
       },
     });
 
-    return umzug.up()
+    return bootstrapEmptyDatabase(sequelize)
+      .then(function() {
+        return umzug.up();
+      })
       .then(function(migrations) {
         console.log('Applied migrations:', migrations.map(function(migration) {
           return migration.file || migration;

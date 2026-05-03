@@ -5,6 +5,9 @@ const models = require('../lib/model/db');
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
+    if ('sqlite' !== queryInterface.sequelize.getDialect()) {
+      return Promise.resolve();
+    }
 
     return queryInterface.describeTable('Companies').then(attributes => {
 
