@@ -64,6 +64,7 @@
     "start:dev": "node --watch bin/wwww",
     "db-update": "node bin/db_update.js",
     "carry-over-allowance": "node bin/calculate_carry_over_allowance_for_all_users.js",
+    "send-upcoming-leave-reminders": "node bin/send_upcoming_leave_reminders.js",
     "compile-sass": "sass scss/main.scss public/css/style.css",
     "watch-css": "sass --watch scss/main.scss:public/css/style.css",
     "build-css": "npm run compile-sass"
