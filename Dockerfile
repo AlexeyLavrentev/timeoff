@@ -12,6 +12,9 @@ RUN apt-get update \
     g++ \
   && rm -rf /var/lib/apt/lists/*
 
+ENV CHROMEDRIVER_SKIP_DOWNLOAD=true \
+    PUPPETEER_SKIP_DOWNLOAD=true
+
 COPY package.json package-lock.json ./
 RUN npm ci
 
