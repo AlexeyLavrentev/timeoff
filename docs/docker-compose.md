@@ -93,13 +93,27 @@ docker compose run --rm app npm run db-update
 
 ### 3. Настройте ежедневные reminder-уведомления
 
-Если в отделах включены напоминания перед отпуском, запускайте отдельную ежедневную задачу тем же образом:
+Если в отделах включены напоминания перед отпуском, можно включить встроенный scheduler приложения через `.env`:
+
+```env
+LEAVE_REMINDER_SCHEDULER_ENABLED=true
+LEAVE_REMINDER_SCHEDULER_TIME=09:00
+LEAVE_REMINDER_SCHEDULER_TIMEZONE=UTC
+```
+
+После этого достаточно пересоздать контейнер `app`:
+
+```bash
+docker compose up -d --build app
+```
+
+Ручная команда остаётся доступной для проверки и аварийного запуска:
 
 ```bash
 docker compose run --rm app npm run send-upcoming-leave-reminders
 ```
 
-Обычно эту команду ставят в cron на хосте или в внешний scheduler. Она безопасна для ежедневного запуска и не должна отправлять дубли по уже обработанным отпускам.
+Она безопасна для повторного запуска и не должна отправлять дубли по уже обработанным отпускам.
 
 ### 4. Откройте приложение
 
@@ -146,6 +160,9 @@ http://localhost:3000
 
 - `APP_PORT`
 - `RUN_DB_MIGRATIONS`
+- `LEAVE_REMINDER_SCHEDULER_ENABLED`
+- `LEAVE_REMINDER_SCHEDULER_TIME`
+- `LEAVE_REMINDER_SCHEDULER_TIMEZONE`
 
 ## Когда включать `RUN_DB_MIGRATIONS=true`
 
