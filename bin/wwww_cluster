@@ -2,6 +2,7 @@
 
 var debug = require('debug')('vacation-tracker');
 var app   = require('../app');
+var leaveReminderScheduler = require('../lib/scheduler/leave_start_reminders');
 
 var cluster = require('cluster');
 
@@ -21,6 +22,10 @@ if (cluster.isMaster ) {
 
   app.get('db_model').connect()
     .then(function () {
+      leaveReminderScheduler.startLeaveReminderScheduler({
+        models : app.get('db_model'),
+      });
+
       var server = app.listen(app.get('port'), function() {
         console.log('Started to listen on port ' + server.address().port);
       });
