@@ -71,6 +71,17 @@
   </div>
 
   <div class="form-group">
+    <label for="work_calendar_id" class="control-label">{{t "departments.workCalendar"}}</label>
+    <select class="form-control" name="work_calendar_id" id="work_calendar_id">
+      <option value="">{{t "departments.commonCalendarOnly"}}</option>
+      {{#each company.work_calendars}}
+        <option value="{{this.id}}" {{#if_equal ../department.WorkCalendarId this.id}}selected="selected"{{/if_equal}}>{{this.name}}</option>
+      {{/each}}
+    </select>
+    <span class="help-block">{{t "departments.workCalendarHelp"}} <a href="/settings/bankholidays/">{{t "departments.workCalendarLink"}}</a>.</span>
+  </div>
+
+  <div class="form-group">
     <label for="is_accrued_allowance_inp" class="control-label">
       <input class="" id="is_accrued_allowance_inp" name="is_accrued_allowance" type="checkbox" {{# if department.is_accrued_allowance}} checked="checked" {{/if}} >
       {{t "departments.accruedAllowance"}}
