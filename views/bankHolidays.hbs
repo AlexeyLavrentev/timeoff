@@ -4,8 +4,30 @@
 <h1>{{t "bankHolidays.title"}}</h1>
 
 <div class="row">
+  <div class="col-md-12">
+    <ul class="nav nav-tabs">
+      <li role="presentation" {{#unless selectedWorkCalendar}}class="active"{{/unless}}>
+        <a href="?year={{yearCurrent}}">{{t "bankHolidays.commonCalendar"}}</a>
+      </li>
+      {{#each workCalendars}}
+      <li role="presentation" {{#if_equal ../workCalendarId this.id}}class="active"{{/if_equal}}>
+        <a href="?year={{../yearCurrent}}&work_calendar={{this.id}}">{{this.name}}</a>
+      </li>
+      {{/each}}
+      <li role="presentation"><a href="#" data-toggle="modal" data-target="#add_work_calendar_modal"><span class="fa fa-plus"></span> {{t "bankHolidays.addCalendar"}}</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="row">&nbsp;</div>
+
+<div class="row">
   <div class="col-md-6 lead">
-    {{t "bankHolidays.publicHolidaysForYear" company=company.name year=yearCurrent}}
+    {{#if selectedWorkCalendar}}
+      {{t "bankHolidays.localDaysForYear" calendar=selectedWorkCalendar.name year=yearCurrent}}
+    {{else}}
+      {{t "bankHolidays.publicHolidaysForYear" company=company.name year=yearCurrent}}
+    {{/if}}
   </div>
   <div class="col-md-3 col-md-offset-3">
     <div class="btn-group pull-right">
@@ -19,6 +41,11 @@
         <li><a href="#" id="add_new_department" data-toggle="modal" data-target="#add_new_bank_holiday_modal">{{t "bankHolidays.addNew"}}</a></li>
       </ul>
     </div>
+    {{#if selectedWorkCalendar}}
+    <form method="POST" action="/settings/bankholidays/calendars/delete/{{selectedWorkCalendar.id}}/" class="pull-right">
+      <button type="submit" class="btn btn-link text-danger"><span class="fa fa-trash"></span> {{t "bankHolidays.removeCalendar"}}</button>
+    </form>
+    {{/if}}
   </div>
 </div>
 
@@ -28,13 +55,13 @@
 
 <div class="row">
   <div class="col-xs-2">
-    <a class="btn btn-default" href="?year={{yearPrev}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{yearPrev}} </a>
+    <a class="btn btn-default" href="?year={{yearPrev}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{/if}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{yearPrev}} </a>
   </div>
   <div class="col-xs-8 calendar-section-caption">
     <strong>{{t "bankHolidays.monthRange" year=yearCurrent}}</strong>
   </div>
   <div class="col-xs-2">
-    <a class="btn btn-default pull-right" href="?year={{yearNext}}">{{yearNext}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
+    <a class="btn btn-default pull-right" href="?year={{yearNext}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{/if}}">{{yearNext}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
   </div>
 </div>
 
@@ -79,7 +106,8 @@
 
     <div class="row">
       <div class="col-md-4"><label class="control-label">{{t "common.date"}}</label></div>
-      <div class="col-md-6"><label class="control-label">{{t "bankHolidays.holidayName"}}</label></div>
+      <div class="col-md-4"><label class="control-label">{{t "bankHolidays.holidayName"}}</label></div>
+      <div class="col-md-2"><label class="control-label">{{t "bankHolidays.dayType"}}</label></div>
     </div>
 
     <div class="row">&nbsp;</div>
@@ -93,9 +121,11 @@
 
     <form id="delete_bankholiday_form" method="post" action="/settings/bankholidays/delete/">
       <input name="year" value="{{yearCurrent}}" type="hidden">
+      <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     </form>
     <form id="import_bankholiday_form" method="post" action="/settings/bankholidays/import/?year={{yearCurrent}}"></form>
     <form id="update_bankholiday_form" method="post" action="/settings/bankholidays/?year={{yearCurrent}}">
+    <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     {{#each bankHolidays}}
     <div class="row">
       <div class="col-md-4">
@@ -104,8 +134,14 @@
         <span class="add-on"><i class="icon-th"></i></span>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
         <input type="text" class="form-control" value="{{name}}" name="name__{{id}}" tom-test-hook="name__{{@index}}">
+      </div>
+      <div class="col-md-2">
+        <select class="form-control" name="day_type__{{id}}">
+          <option value="{{../dayTypeNonWorking}}" {{#if_equal this.day_type ../dayTypeNonWorking}}selected="selected"{{/if_equal}}>{{t "bankHolidays.dayTypes.nonWorking"}}</option>
+          <option value="{{../dayTypeWorking}}" {{#if_equal this.day_type ../dayTypeWorking}}selected="selected"{{/if_equal}}>{{t "bankHolidays.dayTypes.working"}}</option>
+        </select>
       </div>
       <div class="col-md-2">
         <button class="btn btn-default pull-right bankholiday-remove-btn" type="button" value="{{id}}" tom-test-hook="remove__{{@index}}"><span class="fa fa-remove"></span></button>
@@ -142,6 +178,32 @@
   form_action='/settings/bankholidays/'
   startDateOfYearCurrent=startDateOfYearCurrent
   yearCurrent=yearCurrent
+  workCalendarId=workCalendarId
+  dayTypeNonWorking=dayTypeNonWorking
+  dayTypeWorking=dayTypeWorking
 }}
+
+<div class="modal fade" id="add_work_calendar_modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="/settings/bankholidays/calendars/">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">{{t "bankHolidays.addCalendar"}}</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="work_calendar_name" class="control-label">{{t "bankHolidays.calendarName"}}</label>
+            <input type="text" class="form-control" id="work_calendar_name" name="name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link" data-dismiss="modal">{{t "common.cancel"}}</button>
+          <button type="submit" class="btn btn-success single-click">{{t "common.create"}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {{> footer }}
