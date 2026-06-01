@@ -149,6 +149,16 @@
     "publicHolidaysForYear": "Public holidays for {{company}}`s account in {{year}}",
     "importDefault": "Import default holidays for {{year}}",
     "addNew": "Add new bank holiday",
+    "commonCalendar": "Company-wide days",
+    "localDaysForYear": "Local calendar {{calendar}} in {{year}}",
+    "addCalendar": "Add branch calendar",
+    "removeCalendar": "Remove calendar",
+    "calendarName": "Branch calendar name",
+    "dayType": "Type",
+    "dayTypes": {
+      "nonWorking": "Day off",
+      "working": "Working"
+    },
     "monthRange": "January - December {{year}}",
     "holidayName": "Holiday Name",
     "noRecords": "No Bank holiday records",
@@ -160,7 +170,15 @@
       "importFailed": "Failed to import bank holidays",
       "removeWrongParams": "Cannot remove bank holiday: wrong parameters",
       "removed": "Bank holiday was successfully removed",
-      "dateInvalid": "New day for {{name}} should be date"
+      "dateInvalid": "New day for {{name}} should be date",
+      "dayTypeInvalid": "Day type for {{name}} is invalid",
+      "calendarNameRequired": "Branch calendar name is required",
+      "calendarCreated": "Branch calendar {{name}} was created",
+      "calendarCreateFailed": "Failed to create branch calendar",
+      "calendarRemoveWrongParams": "Cannot remove branch calendar: wrong parameters",
+      "calendarRemoveHasDepartments": "Cannot remove branch calendar while it is assigned to departments",
+      "calendarRemoved": "Branch calendar was removed",
+      "calendarRemoveFailed": "Failed to remove branch calendar"
     }
   },
   "requests": {
@@ -790,6 +808,10 @@
     "publicHolidaysHelpPrefix": "Determine if employees from {{department}} have",
     "publicHolidaysHelpLink": "bank holidays",
     "publicHolidaysHelpSuffix": "in addition to their allowance.",
+    "workCalendar": "Branch work calendar",
+    "commonCalendarOnly": "Company-wide days only",
+    "workCalendarHelp": "Add local days off and working-day overrides for this department in",
+    "workCalendarLink": "calendar settings",
     "accruedAllowanceHelp": "If set to YES, holiday allowance starts to build up - or accrue - from the first day of employment. It accrues in proportion to the annual entitlement. E.g. an employee in the ninth month of employment would have built up 9/12ths (or three-quarters) of annual entitlement.",
     "publicHolidaysHelp": "If set to YES, employees from department have Bank Holidays added on top of their allowance",
     "bulkEditTitle": "Departments settings bulk edit",
@@ -807,6 +829,7 @@
       "allowanceRange": "New allowance for {{department}} should be between 0.5 and 50 days",
       "bossNumeric": "New boss reference for {{department}} should be numeric",
       "bossUnknown": "New boss for {{department}} is unknown",
+      "workCalendarUnknown": "Selected branch calendar for {{department}} is unknown",
       "criticalOverlapRange": "Max critical overlap for {{department}} should be a number between 1 and 50",
       "saved": "Changes to departments were saved",
       "createFailed": "Failed to add new department, please contact customer service",

@@ -323,4 +323,52 @@ describe('Leave deducted days by deduction unit', function(){
         })
       ).to.be.equal(3);
     });
+
+    it('excludes a branch-specific day off from working day deduction', function(){
+      var leave_type = model.LeaveType.build({
+        name : 'Holiday',
+        use_allowance : true,
+        deduction_unit : 'working_days',
+      });
+      var localHoliday = model.BankHoliday.build({
+        name : 'Local holiday',
+        date : '2026-05-04',
+        day_type : 'non_working',
+        workCalendarId : 7,
+      });
+
+      user.department = { WorkCalendarId : 7 };
+      user.company = { bank_holidays : bank_holidays.concat([localHoliday]) };
+
+      expect(
+        leave.get_deducted_days_number({
+          user : user,
+          leave_type : leave_type,
+        })
+      ).to.be.equal(0);
+    });
+
+    it('allows a branch working day to override a company-wide holiday', function(){
+      var leave_type = model.LeaveType.build({
+        name : 'Holiday',
+        use_allowance : true,
+        deduction_unit : 'working_days',
+      });
+      var localWorkingDay = model.BankHoliday.build({
+        name : 'Working override',
+        date : '2026-05-01',
+        day_type : 'working',
+        workCalendarId : 7,
+      });
+
+      user.department = { WorkCalendarId : 7 };
+      user.company = { bank_holidays : bank_holidays.concat([localWorkingDay]) };
+
+      expect(
+        leave.get_deducted_days_number({
+          user : user,
+          leave_type : leave_type,
+        })
+      ).to.be.equal(2);
+    });
 });
