@@ -30937,6 +30937,132 @@
         }
       ]
     },
+    "KZ": {
+      "name": "Kazakhstan",
+      "bank_holidays": [
+        {
+          "date": "2026-01-01",
+          "name": "New Year"
+        },
+        {
+          "date": "2026-01-02",
+          "name": "New Year"
+        },
+        {
+          "date": "2026-01-07",
+          "name": "Orthodox Christmas"
+        },
+        {
+          "date": "2026-03-08",
+          "name": "International Women's Day"
+        },
+        {
+          "date": "2026-03-21",
+          "name": "Nauryz"
+        },
+        {
+          "date": "2026-03-22",
+          "name": "Nauryz"
+        },
+        {
+          "date": "2026-03-23",
+          "name": "Nauryz"
+        },
+        {
+          "date": "2026-05-01",
+          "name": "Unity Day"
+        },
+        {
+          "date": "2026-05-07",
+          "name": "Defender of the Fatherland Day"
+        },
+        {
+          "date": "2026-05-09",
+          "name": "Victory Day"
+        },
+        {
+          "date": "2026-05-27",
+          "name": "Kurban Ait"
+        },
+        {
+          "date": "2026-07-06",
+          "name": "Capital City Day"
+        },
+        {
+          "date": "2026-08-30",
+          "name": "Constitution Day"
+        },
+        {
+          "date": "2026-10-25",
+          "name": "Republic Day"
+        },
+        {
+          "date": "2026-12-16",
+          "name": "Independence Day"
+        }
+      ]
+    },
+    "RU": {
+      "name": "Russian Federation",
+      "bank_holidays": [
+        {
+          "date": "2026-01-01",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-02",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-03",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-04",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-05",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-06",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-01-07",
+          "name": "Christmas"
+        },
+        {
+          "date": "2026-01-08",
+          "name": "New Year Holidays"
+        },
+        {
+          "date": "2026-02-23",
+          "name": "Defender of the Fatherland Day"
+        },
+        {
+          "date": "2026-03-08",
+          "name": "International Women's Day"
+        },
+        {
+          "date": "2026-05-01",
+          "name": "Spring and Labour Day"
+        },
+        {
+          "date": "2026-05-09",
+          "name": "Victory Day"
+        },
+        {
+          "date": "2026-06-12",
+          "name": "Russia Day"
+        },
+        {
+          "date": "2026-11-04",
+          "name": "Unity Day"
+        }
+      ]
+    },
     "ZZ": {
       "name": "Other",
       "bank_holidays": [
