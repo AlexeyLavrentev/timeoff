@@ -1,0 +1,7 @@
+{{#if_equal action 'approve'}}{{t "emails.timeBalance.subjectApproved"}}{{else}}{{t "emails.timeBalance.subjectRejected"}}{{/if_equal}}
+=====
+<p>{{t "emails.greeting" name=(full_name requester)}}</p>
+
+<p>{{#if_equal action 'approve'}}{{#if_equal entry.entry_type 'time_off'}}{{t "emails.timeBalance.approved" approver=(full_name approver) hours=entry.hours type=(t "emails.timeBalance.entryTypes.time_off")}}{{else}}{{t "emails.timeBalance.approved" approver=(full_name approver) hours=entry.hours type=(t "emails.timeBalance.entryTypes.worked_extra")}}{{/if_equal}}{{else}}{{#if_equal entry.entry_type 'time_off'}}{{t "emails.timeBalance.rejected" approver=(full_name approver) hours=entry.hours type=(t "emails.timeBalance.entryTypes.time_off")}}{{else}}{{t "emails.timeBalance.rejected" approver=(full_name approver) hours=entry.hours type=(t "emails.timeBalance.entryTypes.worked_extra")}}{{/if_equal}}{{/if_equal}}</p>
+
+<p>{{t "emails.thanks"}}</p>

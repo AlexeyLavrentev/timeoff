@@ -21,6 +21,7 @@
           {{# unless keep_team_view_hidden }}
             <li><a href="/calendar/teamview/">{{t "nav.teamView"}}</a></li>
           {{/ unless }}
+          <li><a href="/time-balance/">{{t "nav.timeBalance"}} <span id="time-balance-nav-badge" class="label label-info hidden"></span></a></li>
           {{# if logged_user.admin }}
             <li class="hidden-xs"><a href="/users/">{{t "nav.employees"}}</a></li>
           {{/if}}

@@ -194,6 +194,11 @@ app.use(
 );
 
 app.use(
+  '/time-balance/',
+  require('./lib/route/time_balance')
+);
+
+app.use(
   '/audit/',
   require('./lib/route/audit')
 );
