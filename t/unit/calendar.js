@@ -107,4 +107,15 @@ describe('Check calendar month object', function(){
         expect(mar.is_bank_holiday(10)).not.to.be.ok;
     });
 
+    it('Treats an explicitly working weekend as a working day', function(){
+        var may = new CalendarMonth('2026-05-01', {
+            working_day_overrides : [{date : '2026-05-02'}],
+            schedule : schedule,
+            today : moment.utc()
+        });
+
+        expect(may.is_weekend(2)).not.to.be.ok;
+        expect(may.is_weekend(3)).to.be.ok;
+    });
+
 });
