@@ -17,6 +17,7 @@
     "emailsAudit": "Emails audit",
     "reports": "Reports",
     "requests": "Requests",
+    "timeBalance": "Time balance",
     "feeds": "Feeds",
     "logout": "Logout",
     "login": "Login",
@@ -61,7 +62,9 @@
   },
   "notifications": {
     "pendingRequest": "{{count}} leave request to process",
-    "pendingRequest_plural": "{{count}} leave requests to process"
+    "pendingRequest_plural": "{{count}} leave requests to process",
+    "pendingTimeBalanceRequest": "{{count}} time balance request to process",
+    "pendingTimeBalanceRequest_plural": "{{count}} time balance requests to process"
   },
   "errors": {
     "requestFailed": "Request failed.",
@@ -547,6 +550,24 @@
       "employeeAction": "Please make sure you submit the required leave application and complete all internal procedures for {{department}}.",
       "openCalendar": "Open your calendar:",
       "calendarLink": "My calendar"
+    },
+    "timeBalance": {
+      "subjectNew": "New time balance request",
+      "subjectAwaiting": "Time balance request is awaiting decision",
+      "subjectApproved": "Time balance request was accepted",
+      "subjectRejected": "Time balance request was denied",
+      "newRequest": "{{requester}} sent a new time balance request: {{type}}, {{hours}} hours.",
+      "sentTo": "Your time balance request was sent to {{approver}}: {{type}}, {{hours}} hours.",
+      "sentWithoutSupervisor": "Your time balance request was registered: {{hours}} hours. Your company administrator can process it.",
+      "followUp": "There will be another email upon decision.",
+      "approved": "{{approver}} approved your time balance request: {{type}}, {{hours}} hours.",
+      "rejected": "{{approver}} rejected your time balance request: {{type}}, {{hours}} hours.",
+      "pendingRequests": "Please visit",
+      "pendingRequestsLink": "Time balance requests",
+      "entryTypes": {
+        "time_off": "paid time off to compensate",
+        "worked_extra": "extra worked time"
+      }
     }
   },
   "teamView": {
@@ -635,6 +656,7 @@
     "pickColor": "Pick a color for the new type",
     "pickColorHelp": "Determine how leaves of new type are going to be highlighted on Calendar/Team view pages.",
     "limitHelp": "If set to non-zero value determines maximum number of days of new leave type each employee could take during the year.",
+    "deductionUnitHelp": "Choose working days for classic allowance tracking or calendar days for KZ/RU-style annual leave.",
     "minimumConsecutiveHelp": "If set, employees should have at least one leave request of this type for the specified number of consecutive days within a calendar year."
   },
   "generalSettings": {
@@ -667,6 +689,10 @@
     "leaveTypeNameHelp": "Tick one to always be on top of the list",
     "leaveTypeLimitLabel": "Limit",
     "leaveTypeLimitHelp": "Days/year",
+    "leaveTypeDeductionUnitLabel": "Count as",
+    "leaveTypeDeductionUnitHelp": "Deduction basis",
+    "leaveTypeDeductionWorkingDays": "Working days",
+    "leaveTypeDeductionCalendarDays": "Calendar days",
     "leaveTypeMinConsecutiveLabel": "Min consecutive days",
     "leaveTypeMinConsecutiveHelp": "Days/year",
     "noLeaveTypes": "No Leave type records",
@@ -729,7 +755,8 @@
         "limitInvalid": "New limit for {{name}} should be a valid number",
         "limitNonNegative": "New limit for {{name}} should be positive number or 0",
         "minimumInvalid": "Minimum consecutive days for {{name}} should be a valid number",
-        "minimumNonNegative": "Minimum consecutive days for {{name}} should be positive number or 0"
+        "minimumNonNegative": "Minimum consecutive days for {{name}} should be positive number or 0",
+        "deductionUnitInvalid": "Deduction basis for {{name}} should be working days or calendar days"
       }
     }
   },
@@ -1031,5 +1058,51 @@
     "emailDomainsHelp": "Optional. Add one domain per line or separate them with commas. These domains are used to find the correct company SSO configuration during login.",
     "autoCreateUsersLabel": "Allow automatic user provisioning",
     "autoCreateUsersHelp": "When enabled, a successful SSO login can create a new employee automatically if no local account exists yet."
+  },
+  "timeBalance": {
+    "title": "Time balance",
+    "subtitle": "Track paid time off that will be compensated later with extra work time.",
+    "newEntryTitle": "New time balance request",
+    "balancesTitle": "Approved balance",
+    "pendingTitle": "Requests to approve",
+    "myEntriesTitle": "My time balance history",
+    "employee": "Employee",
+    "department": "Department",
+    "hours": "Hours",
+    "balance": "Balance, hours",
+    "comment": "Comment",
+    "approver": "Approver",
+    "status": "Status",
+    "create": "Create request",
+    "approve": "Approve",
+    "reject": "Reject",
+    "noPendingEntries": "No time balance requests to approve",
+    "noMyEntries": "No time balance records yet",
+    "entryType": {
+      "label": "Type",
+      "timeOff": "Paid time off to compensate",
+      "workedExtra": "Extra worked time"
+    },
+    "statuses": {
+      "new": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "canceled": "Canceled"
+    },
+    "messages": {
+      "loadFailed": "Failed to load time balance.",
+      "entryTypeInvalid": "Unknown time balance type.",
+      "hoursInvalid": "Hours should be a number between 0.25 and 24.",
+      "dateInvalid": "Date is invalid.",
+      "userInvalid": "Employee is invalid.",
+      "created": "Time balance request was created.",
+      "createFailed": "Failed to create time balance request.",
+      "actionInvalid": "Cannot process time balance request: wrong parameters.",
+      "actionForbidden": "You cannot process this time balance request.",
+      "approved": "Time balance request was approved.",
+      "rejected": "Time balance request was rejected.",
+      "approveFailed": "Failed to approve time balance request.",
+      "rejectFailed": "Failed to reject time balance request."
+    }
   }
 }

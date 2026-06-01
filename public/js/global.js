@@ -242,6 +242,17 @@ $(document).ready(function() {
 
           const dropDown = $('#header-notification-dropdown ul.dropdown-menu');
           const badge = $('#header-notification-dropdown .notification-badge');
+          const timeBalanceBadge = $('#time-balance-nav-badge');
+
+          const timeBalanceNotification = (data || []).filter(function(notification) {
+            return notification.type === 'pending_time_balance_request';
+          })[0];
+
+          if (timeBalanceNotification) {
+            timeBalanceBadge.removeClass('hidden').text(timeBalanceNotification.numberOfRequests);
+          } else {
+            timeBalanceBadge.addClass('hidden').text('');
+          }
 
           if (!data || !data.length) {
             badge.addClass('hidden');

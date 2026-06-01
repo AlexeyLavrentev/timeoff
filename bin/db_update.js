@@ -27,11 +27,27 @@ function bootstrapEmptyDatabase(sequelize) {
         return tableName !== 'SequelizeMeta';
       });
 
-    if (existingTables.length > 0) {
+    var requiredBaseTables = [
+      'Companies',
+      'Departments',
+      'LeaveTypes',
+      'Users',
+      'schedule',
+    ];
+    var missingBaseTables = requiredBaseTables.filter(function(tableName) {
+      return existingTables.indexOf(tableName) === -1;
+    });
+
+    if (existingTables.length > 0 && missingBaseTables.length === 0) {
       return null;
     }
 
-    console.log('Database is empty, creating base schema with sequelize.sync()');
+    console.log(
+      existingTables.length === 0
+        ? 'Database is empty, creating base schema with sequelize.sync()'
+        : 'Database schema is incomplete, creating missing base tables with sequelize.sync(): '
+          + missingBaseTables.join(', ')
+    );
     return sequelize.sync();
   });
 }

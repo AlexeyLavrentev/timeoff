@@ -261,3 +261,66 @@ describe('Case when leave request is within one day', function(){
     });
 
 });
+
+describe('Leave deducted days by deduction unit', function(){
+    var schedule = {
+      is_it_working_day : function(args) {
+        return args.day.isoWeekday() < 6;
+      },
+    };
+
+    var bank_holidays = [
+      model.BankHoliday.build({
+        name : 'Holiday',
+        date : '2026-05-01',
+      }),
+    ];
+
+    var user = model.User.build({
+      name : 'Ivan',
+      lastname : 'Ivanov',
+      email : 'ivan@example.test',
+      password : 'password',
+    });
+
+    user.cached_schedule = schedule;
+    user.company = { bank_holidays : bank_holidays };
+
+    var leave = model.Leave.build({
+      status : model.Leave.status_approved(),
+      date_start : '2026-05-01',
+      date_end : '2026-05-04',
+      day_part_start : model.Leave.leave_day_part_all(),
+      day_part_end : model.Leave.leave_day_part_all(),
+    });
+
+    it('keeps existing working day deduction behavior', function(){
+      var leave_type = model.LeaveType.build({
+        name : 'Holiday',
+        use_allowance : true,
+        deduction_unit : 'working_days',
+      });
+
+      expect(
+        leave.get_deducted_days_number({
+          user : user,
+          leave_type : leave_type,
+        })
+      ).to.be.equal(1);
+    });
+
+    it('counts weekends for calendar day deduction but excludes holidays', function(){
+      var leave_type = model.LeaveType.build({
+        name : 'Annual leave',
+        use_allowance : true,
+        deduction_unit : 'calendar_days',
+      });
+
+      expect(
+        leave.get_deducted_days_number({
+          user : user,
+          leave_type : leave_type,
+        })
+      ).to.be.equal(3);
+    });
+});
