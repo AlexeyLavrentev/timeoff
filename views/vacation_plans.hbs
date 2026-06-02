@@ -1,0 +1,90 @@
+{{> header }}
+
+<h1>{{t "vacationPlans.title"}}</h1>
+<p class="lead">{{t "vacationPlans.subtitle"}}</p>
+
+{{> show_flash_messages }}
+
+<div class="row">
+  <div class="col-xs-2">
+    <a class="btn btn-default" href="?year={{yearPrev}}"><span class="fa fa-chevron-left"></span> {{yearPrev}}</a>
+  </div>
+  <div class="col-xs-8 calendar-section-caption"><strong>{{year}}</strong></div>
+  <div class="col-xs-2">
+    <a class="btn btn-default pull-right" href="?year={{yearNext}}">{{yearNext}} <span class="fa fa-chevron-right"></span></a>
+  </div>
+</div>
+
+<div class="row">&nbsp;</div>
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{t "vacationPlans.newTitle"}}</div>
+      <div class="panel-body">
+        <form method="POST" action="/vacation-plans/create/">
+          <div class="form-group">
+            <label for="vacation_plan_user_id">{{t "vacationPlans.employee"}}</label>
+            <select class="form-control" id="vacation_plan_user_id" name="user_id">
+              {{#each manageableUsers}}
+              <option value="{{this.id}}" {{#if_equal this.id ../logged_user.id}}selected="selected"{{/if_equal}}>{{full_name this}}</option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="vacation_plan_leave_type_id">{{t "leave.type"}}</label>
+            <select class="form-control" id="vacation_plan_leave_type_id" name="leave_type_id" required>
+              {{#each leaveTypes}}
+              <option value="{{this.id}}">{{this.name}}</option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="vacation_plan_date_start">{{t "common.from"}}</label>
+            <input class="form-control" id="vacation_plan_date_start" name="date_start" value="{{as_date booking_start}}" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company}}{{this.get_default_date_format_for_date_picker}}{{/with}}" required>
+          </div>
+          <div class="form-group">
+            <label for="vacation_plan_date_end">{{t "common.to"}}</label>
+            <input class="form-control" id="vacation_plan_date_end" name="date_end" value="{{as_date booking_end}}" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company}}{{this.get_default_date_format_for_date_picker}}{{/with}}" required>
+          </div>
+          <div class="form-group">
+            <label for="vacation_plan_comment">{{t "vacationPlans.comment"}}</label>
+            <textarea class="form-control" id="vacation_plan_comment" name="employee_comment"></textarea>
+          </div>
+          <button type="submit" class="btn btn-success single-click">{{t "vacationPlans.submit"}}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{t "vacationPlans.pendingTitle"}}{{#if pendingPlans.length}} <span class="badge">{{pendingPlans.length}}</span>{{/if}}</div>
+      {{#unless pendingPlans.length}}
+      <div class="panel-body text-muted">{{t "vacationPlans.noPending"}}</div>
+      {{else}}
+      {{> vacation_plan_table plans=pendingPlans show_actions=true leaveTypes=leaveTypes}}
+      {{/unless}}
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">{{t "vacationPlans.teamTitle"}}</div>
+  {{#unless teamPlans.length}}
+  <div class="panel-body text-muted">{{t "vacationPlans.noTeamPlans"}}</div>
+  {{else}}
+  {{> vacation_plan_table plans=teamPlans leaveTypes=leaveTypes}}
+  {{/unless}}
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">{{t "vacationPlans.myTitle"}}</div>
+  {{#unless myPlans.length}}
+  <div class="panel-body text-muted">{{t "vacationPlans.noMyPlans"}}</div>
+  {{else}}
+  {{> vacation_plan_table plans=myPlans show_cancel=true show_book=true leaveTypes=leaveTypes}}
+  {{/unless}}
+</div>
+
+{{> footer }}

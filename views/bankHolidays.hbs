@@ -7,7 +7,7 @@
   <div class="col-md-12">
     <ul class="nav nav-tabs">
       <li role="presentation" {{#unless selectedWorkCalendar}}class="active"{{/unless}}>
-        <a href="?year={{yearCurrent}}">{{t "bankHolidays.commonCalendar"}}</a>
+        <a href="?year={{yearCurrent}}&week_type={{weekType}}">{{t "bankHolidays.commonCalendar"}}</a>
       </li>
       {{#each workCalendars}}
       <li role="presentation" {{#if_equal ../workCalendarId this.id}}class="active"{{/if_equal}}>
@@ -37,7 +37,6 @@
         <span class="sr-only">{{t "common.toggleDropdown"}}</span>
       </button>
       <ul class="dropdown-menu">
-        <li><a href="#" id="bankholiday-import-btn">{{t "bankHolidays.importDefault" year=yearCurrent}}</a></li>
         <li><a href="#" id="add_new_department" data-toggle="modal" data-target="#add_new_bank_holiday_modal">{{t "bankHolidays.addNew"}}</a></li>
       </ul>
     </div>
@@ -55,13 +54,13 @@
 
 <div class="row">
   <div class="col-xs-2">
-    <a class="btn btn-default" href="?year={{yearPrev}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{/if}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{yearPrev}} </a>
+    <a class="btn btn-default" href="?year={{yearPrev}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{else}}&week_type={{weekType}}{{/if}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{yearPrev}} </a>
   </div>
   <div class="col-xs-8 calendar-section-caption">
     <strong>{{t "bankHolidays.monthRange" year=yearCurrent}}</strong>
   </div>
   <div class="col-xs-2">
-    <a class="btn btn-default pull-right" href="?year={{yearNext}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{/if}}">{{yearNext}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
+    <a class="btn btn-default pull-right" href="?year={{yearNext}}{{#if workCalendarId}}&work_calendar={{workCalendarId}}{{else}}&week_type={{weekType}}{{/if}}">{{yearNext}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
   </div>
 </div>
 
@@ -123,7 +122,6 @@
       <input name="year" value="{{yearCurrent}}" type="hidden">
       <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     </form>
-    <form id="import_bankholiday_form" method="post" action="/settings/bankholidays/import/?year={{yearCurrent}}"></form>
     <form id="update_bankholiday_form" method="post" action="/settings/bankholidays/?year={{yearCurrent}}">
     <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     {{#each bankHolidays}}
@@ -170,6 +168,67 @@
   </div>
 </div>
 
+
+<div class="row">&nbsp;</div>
+
+{{#unless selectedWorkCalendar}}
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">{{t "bankHolidays.importPreviewTitle" year=yearCurrent}}</div>
+      <div class="panel-body">
+        <p>{{t "bankHolidays.importPreviewHelp"}}</p>
+        <form method="GET" action="/settings/bankholidays/" class="form-inline">
+          <input type="hidden" name="year" value="{{yearCurrent}}">
+          <div class="form-group">
+            <label for="bankholiday_week_type">{{t "bankHolidays.weekType"}}</label>
+            <select class="form-control" id="bankholiday_week_type" name="week_type">
+              <option value="{{weekTypeFiveDay}}" {{#if_equal weekType weekTypeFiveDay}}selected="selected"{{/if_equal}}>{{t "bankHolidays.weekTypes.fiveDay"}}</option>
+              <option value="{{weekTypeSixDay}}" {{#if_equal weekType weekTypeSixDay}}selected="selected"{{/if_equal}}>{{t "bankHolidays.weekTypes.sixDay"}}</option>
+            </select>
+          </div>
+          <button class="btn btn-default" type="submit">{{t "bankHolidays.previewImport"}}</button>
+        </form>
+        <div class="row">&nbsp;</div>
+        {{#unless importPreview.length}}
+        <p class="text-muted">{{t "bankHolidays.importPreviewEmpty"}}</p>
+        {{else}}
+        <div class="table-responsive">
+          <table class="table table-condensed">
+            <thead>
+              <tr>
+                <th>{{t "common.date"}}</th>
+                <th>{{t "bankHolidays.holidayName"}}</th>
+                <th>{{t "bankHolidays.importAction"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each importPreview}}
+              <tr>
+                <td>{{as_date this.date}}</td>
+                <td>{{this.name}}</td>
+                <td>
+                  {{#if_equal this.action "add"}}<span class="label label-success">{{t "bankHolidays.importActions.add"}}</span>{{/if_equal}}
+                  {{#if_equal this.action "update"}}<span class="label label-info">{{t "bankHolidays.importActions.update"}}</span>{{/if_equal}}
+                  {{#if_equal this.action "keep"}}<span class="text-muted">{{t "bankHolidays.importActions.keep"}}</span>{{/if_equal}}
+                </td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        {{/unless}}
+        <form method="POST" action="/settings/bankholidays/import/?year={{yearCurrent}}">
+          <input type="hidden" name="week_type" value="{{weekType}}">
+          <button class="btn btn-success single-click" type="submit" {{#unless importChangesCount}}disabled="disabled"{{/unless}}>
+            <span class="fa fa-download"></span> {{t "bankHolidays.applyImport"}}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{/unless}}
 
 <div class="row">&nbsp;</div>
 

@@ -199,6 +199,11 @@ app.use(
 );
 
 app.use(
+  '/vacation-plans/',
+  require('./lib/route/vacation_plans')
+);
+
+app.use(
   '/audit/',
   require('./lib/route/audit')
 );
