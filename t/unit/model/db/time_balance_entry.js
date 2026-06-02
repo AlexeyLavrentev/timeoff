@@ -42,4 +42,24 @@ describe('TimeBalanceEntry', function(){
     expect(entry.is_new()).to.be.equal(false);
     expect(entry.is_approved()).to.be.equal(true);
   });
+
+  it('expires positive compensation hours after their use-before date', function(){
+    var expired = model.TimeBalanceEntry.build({
+      entry_type : model.TimeBalanceEntry.entry_type_worked_extra(),
+      hours : 2,
+      status : model.TimeBalanceEntry.status_approved(),
+      date : '2000-01-01',
+      expires_at : '2000-12-31',
+    });
+    var future = model.TimeBalanceEntry.build({
+      entry_type : model.TimeBalanceEntry.entry_type_worked_extra(),
+      hours : 2,
+      status : model.TimeBalanceEntry.status_approved(),
+      date : '2026-01-01',
+      expires_at : '2999-12-31',
+    });
+
+    expect(expired.is_expired()).to.equal(true);
+    expect(future.is_expired()).to.equal(false);
+  });
 });

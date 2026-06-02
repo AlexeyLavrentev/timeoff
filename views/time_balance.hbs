@@ -40,6 +40,26 @@
           </div>
 
           <div class="form-group">
+            <label for="time_balance_reason" class="control-label">{{t "timeBalance.reason"}}</label>
+            <select class="form-control" id="time_balance_reason" name="reason">
+              <option value="family_time_off">{{t "timeBalance.reasons.family_time_off"}}</option>
+              <option value="overtime_compensation">{{t "timeBalance.reasons.overtime_compensation"}}</option>
+              <option value="weekend_compensation">{{t "timeBalance.reasons.weekend_compensation"}}</option>
+              {{#if logged_user.admin}}<option value="hr_adjustment">{{t "timeBalance.reasons.hr_adjustment"}}</option>{{/if}}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="time_balance_expires_at" class="control-label">{{t "timeBalance.expiresAt"}}</label>
+            <input type="text" class="form-control" id="time_balance_expires_at" name="expires_at" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company}}{{this.get_default_date_format_for_date_picker}}{{/with}}">
+          </div>
+
+          <div class="form-group">
+            <label for="time_balance_reference" class="control-label">{{t "timeBalance.reference"}}</label>
+            <input type="text" class="form-control" id="time_balance_reference" name="reference">
+          </div>
+
+          <div class="form-group">
             <label for="time_balance_hours" class="control-label">{{t "timeBalance.hours"}}</label>
             <input type="number" class="form-control" id="time_balance_hours" name="hours" step="0.25" min="0.25" max="24" required>
           </div>
@@ -93,7 +113,10 @@
               <th>{{t "timeBalance.department"}}</th>
               <th>{{t "common.date"}}</th>
               <th>{{t "timeBalance.entryType.label"}}</th>
+              <th>{{t "timeBalance.reason"}}</th>
               <th>{{t "timeBalance.hours"}}</th>
+              <th>{{t "timeBalance.expiresAt"}}</th>
+              <th>{{t "timeBalance.reference"}}</th>
               <th>{{t "timeBalance.comment"}}</th>
               <th colspan="2"></th>
             </tr>
@@ -107,7 +130,10 @@
               <td>
                 {{#if_equal this.entry_type ../entryTypeTimeOff}}{{t "timeBalance.entryType.timeOff"}}{{else}}{{t "timeBalance.entryType.workedExtra"}}{{/if_equal}}
               </td>
+              <td>{{t (concatenate "timeBalance.reasons." this.reason)}}</td>
               <td>{{this.hours}}</td>
+              <td>{{#if this.expires_at}}{{as_date this.expires_at}}{{/if}}</td>
+              <td>{{this.reference}}</td>
               <td>{{this.employee_comment}}</td>
               <td>
                 <form action="/time-balance/reject/" method="POST">
@@ -144,7 +170,10 @@
             <tr>
               <th>{{t "common.date"}}</th>
               <th>{{t "timeBalance.entryType.label"}}</th>
+              <th>{{t "timeBalance.reason"}}</th>
               <th>{{t "timeBalance.hours"}}</th>
+              <th>{{t "timeBalance.expiresAt"}}</th>
+              <th>{{t "timeBalance.reference"}}</th>
               <th>{{t "timeBalance.status"}}</th>
               <th>{{t "timeBalance.comment"}}</th>
               <th>{{t "timeBalance.approver"}}</th>
@@ -157,7 +186,10 @@
               <td>
                 {{#if_equal this.entry_type ../entryTypeTimeOff}}{{t "timeBalance.entryType.timeOff"}}{{else}}{{t "timeBalance.entryType.workedExtra"}}{{/if_equal}}
               </td>
+              <td>{{t (concatenate "timeBalance.reasons." this.reason)}}</td>
               <td>{{this.hours}}</td>
+              <td>{{#if this.expires_at}}{{as_date this.expires_at}}{{/if}}</td>
+              <td>{{this.reference}}</td>
               <td>
                 {{#if_equal this.status 1}}{{t "timeBalance.statuses.new"}}{{/if_equal}}
                 {{#if_equal this.status 2}}{{t "timeBalance.statuses.approved"}}{{/if_equal}}

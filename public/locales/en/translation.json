@@ -18,6 +18,7 @@
     "reports": "Reports",
     "requests": "Requests",
     "timeBalance": "Time balance",
+    "vacationPlans": "Vacation plan",
     "feeds": "Feeds",
     "logout": "Logout",
     "login": "Login",
@@ -64,7 +65,9 @@
     "pendingRequest": "{{count}} leave request to process",
     "pendingRequest_plural": "{{count}} leave requests to process",
     "pendingTimeBalanceRequest": "{{count}} time balance request to process",
-    "pendingTimeBalanceRequest_plural": "{{count}} time balance requests to process"
+    "pendingTimeBalanceRequest_plural": "{{count}} time balance requests to process",
+    "pendingVacationPlan": "{{count}} vacation plan to process",
+    "pendingVacationPlan_plural": "{{count}} vacation plans to process"
   },
   "errors": {
     "requestFailed": "Request failed.",
@@ -162,6 +165,22 @@
     "monthRange": "January - December {{year}}",
     "holidayName": "Holiday Name",
     "noRecords": "No Bank holiday records",
+    "importPreviewTitle": "Official calendar import preview for {{year}}",
+    "importPreviewHelp": "Review the bundled country calendar before applying it. Manual branch calendar exceptions are not changed.",
+    "importPreviewEmpty": "No official calendar records are bundled for this year.",
+    "importAction": "Action",
+    "applyImport": "Apply official calendar",
+    "previewImport": "Refresh preview",
+    "weekType": "Workweek",
+    "weekTypes": {
+      "fiveDay": "Five-day workweek",
+      "sixDay": "Six-day workweek"
+    },
+    "importActions": {
+      "add": "Add",
+      "update": "Update",
+      "keep": "No changes"
+    },
     "messages": {
       "saved": "Changes to bank holidays were saved",
       "updateFailed": "Failed to update bank holidays, please contact customer service",
@@ -1094,6 +1113,9 @@
     "hours": "Hours",
     "balance": "Balance, hours",
     "comment": "Comment",
+    "reason": "Reason",
+    "expiresAt": "Use before",
+    "reference": "Reference",
     "approver": "Approver",
     "status": "Status",
     "create": "Create request",
@@ -1106,6 +1128,13 @@
       "timeOff": "Paid time off to compensate",
       "workedExtra": "Extra worked time"
     },
+    "reasons": {
+      "legacy": "Legacy record",
+      "family_time_off": "Family circumstances",
+      "overtime_compensation": "Overtime compensation",
+      "weekend_compensation": "Work on weekend or public holiday",
+      "hr_adjustment": "HR adjustment"
+    },
     "statuses": {
       "new": "Pending",
       "approved": "Approved",
@@ -1116,6 +1145,10 @@
       "loadFailed": "Failed to load time balance.",
       "entryTypeInvalid": "Unknown time balance type.",
       "hoursInvalid": "Hours should be a number between 0.25 and 24.",
+      "reasonInvalid": "Unknown time balance reason.",
+      "reasonTypeMismatch": "Selected reason does not match the balance operation type.",
+      "hrAdjustmentForbidden": "Only an administrator can create an HR adjustment.",
+      "expirationInvalid": "Use-before date is invalid.",
       "dateInvalid": "Date is invalid.",
       "userInvalid": "Employee is invalid.",
       "created": "Time balance request was created.",
@@ -1126,6 +1159,54 @@
       "rejected": "Time balance request was rejected.",
       "approveFailed": "Failed to approve time balance request.",
       "rejectFailed": "Failed to reject time balance request."
+    }
+  },
+  "vacationPlans": {
+    "title": "Annual vacation plan",
+    "subtitle": "Collect preferred vacation dates before creating formal leave requests.",
+    "newTitle": "Submit preferred dates",
+    "pendingTitle": "Plans to approve",
+    "teamTitle": "Team vacation plan",
+    "myTitle": "My planned vacations",
+    "employee": "Employee",
+    "department": "Department",
+    "status": "Status",
+    "conflicts": "Overlaps",
+    "comment": "Comment",
+    "submit": "Submit plan",
+    "approve": "Approve",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "bookAbsence": "Create leave request",
+    "selectLeaveType": "Select leave type",
+    "leaveTypeNotSelected": "Select when creating request",
+    "noPending": "No vacation plans to approve.",
+    "noTeamPlans": "No planned vacations for the selected year.",
+    "noMyPlans": "You have not submitted vacation plans for the selected year.",
+    "statuses": {
+      "submitted": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "canceled": "Canceled",
+      "booked": "Leave request created"
+    },
+    "messages": {
+      "loadFailed": "Failed to load vacation plans.",
+      "userInvalid": "Employee is invalid.",
+      "leaveTypeInvalid": "Leave type is invalid.",
+      "dateRangeInvalid": "End date should not be earlier than start date.",
+      "created": "Vacation plan was submitted.",
+      "createFailed": "Failed to submit vacation plan.",
+      "actionInvalid": "Cannot process vacation plan: wrong parameters.",
+      "actionForbidden": "You cannot process this vacation plan.",
+      "actionFailed": "Failed to process vacation plan.",
+      "approved": "Vacation plan was approved.",
+      "rejected": "Vacation plan was rejected.",
+      "canceled": "Vacation plan was canceled.",
+      "booked": "Leave request was created from the approved plan.",
+      "bookForbidden": "This vacation plan cannot be converted into a leave request.",
+      "leaveTypeRequired": "Select a leave type before creating the request.",
+      "bookFailed": "Failed to create a leave request from this vacation plan."
     }
   }
 }

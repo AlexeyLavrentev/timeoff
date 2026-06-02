@@ -1,0 +1,91 @@
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>{{t "vacationPlans.employee"}}</th>
+        <th>{{t "vacationPlans.department"}}</th>
+        <th>{{t "leave.type"}}</th>
+        <th>{{t "common.from"}}</th>
+        <th>{{t "common.to"}}</th>
+        <th>{{t "vacationPlans.status"}}</th>
+        <th>{{t "vacationPlans.conflicts"}}</th>
+        <th>{{t "vacationPlans.comment"}}</th>
+        {{#if show_actions}}<th colspan="2"></th>{{/if}}
+        {{#if show_cancel}}<th></th>{{/if}}
+        {{#if show_book}}<th></th>{{/if}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each plans}}
+      <tr>
+        <td>{{full_name this.user}}</td>
+        <td>{{this.user.department.name}}</td>
+        <td>{{#if this.leave_type}}{{this.leave_type.name}}{{else}}<span class="text-muted">{{t "vacationPlans.leaveTypeNotSelected"}}</span>{{/if}}</td>
+        <td>{{as_date this.date_start}}</td>
+        <td>{{as_date this.date_end}}</td>
+        <td>
+          {{#if_equal this.status 1}}{{t "vacationPlans.statuses.submitted"}}{{/if_equal}}
+          {{#if_equal this.status 2}}{{t "vacationPlans.statuses.approved"}}{{/if_equal}}
+          {{#if_equal this.status 3}}{{t "vacationPlans.statuses.rejected"}}{{/if_equal}}
+          {{#if_equal this.status 4}}{{t "vacationPlans.statuses.canceled"}}{{/if_equal}}
+          {{#if this.leaveId}}<div class="text-success">{{t "vacationPlans.statuses.booked"}}</div>{{/if}}
+        </td>
+        <td>
+          {{#if this.conflicts.length}}
+          <span class="label label-warning">{{this.conflicts.length}}</span>
+          {{#each this.conflicts}}<div>{{full_name this.user}}</div>{{/each}}
+          {{else}}
+          <span class="text-muted">0</span>
+          {{/if}}
+        </td>
+        <td>{{this.employee_comment}}</td>
+        {{#if ../show_actions}}
+        <td>
+          <form method="POST" action="/vacation-plans/reject/">
+            <input type="hidden" name="plan_id" value="{{this.id}}">
+            <button class="btn btn-warning btn-sm single-click" type="submit">{{t "vacationPlans.reject"}}</button>
+          </form>
+        </td>
+        <td>
+          <form method="POST" action="/vacation-plans/approve/">
+            <input type="hidden" name="plan_id" value="{{this.id}}">
+            <button class="btn btn-success btn-sm single-click" type="submit">{{t "vacationPlans.approve"}}</button>
+          </form>
+        </td>
+        {{/if}}
+        {{#if ../show_cancel}}
+        <td>
+          {{#if_equal this.status 1}}
+          <form method="POST" action="/vacation-plans/cancel/">
+            <input type="hidden" name="plan_id" value="{{this.id}}">
+            <button class="btn btn-default btn-sm single-click" type="submit">{{t "vacationPlans.cancel"}}</button>
+          </form>
+          {{/if_equal}}
+        </td>
+        {{/if}}
+        {{#if ../show_book}}
+        <td>
+          {{#if_equal this.status 2}}
+            {{#unless this.leaveId}}
+            <form method="POST" action="/vacation-plans/book/">
+              <input type="hidden" name="plan_id" value="{{this.id}}">
+              {{#unless this.leaveTypeId}}
+              <select class="form-control input-sm" name="leave_type_id" required>
+                <option value="">{{t "vacationPlans.selectLeaveType"}}</option>
+                {{#each ../leaveTypes}}
+                <option value="{{this.id}}">{{this.name}}</option>
+                {{/each}}
+              </select>
+              <div class="row">&nbsp;</div>
+              {{/unless}}
+              <button class="btn btn-success btn-sm single-click" type="submit">{{t "vacationPlans.bookAbsence"}}</button>
+            </form>
+            {{/unless}}
+          {{/if_equal}}
+        </td>
+        {{/if}}
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
