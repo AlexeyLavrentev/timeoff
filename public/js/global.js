@@ -186,17 +186,25 @@ $(document).ready(function(){
 $(document).ready(function(){
   var translations = (window.timeoff && window.timeoff.translations) || {};
 
+  function sidePopoverPlacement(tip, element) {
+    var elementRect = element.getBoundingClientRect();
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    var popoverWidth = tip && tip.offsetWidth ? tip.offsetWidth : 320;
+
+    return elementRect.right + popoverWidth + 24 > viewportWidth ? 'left' : 'right';
+  }
+
   $('.user-details-summary-trigger').popover({
     title: translations.employeeSummary,
     container: 'body',
     html: true,
     trigger: 'hover',
-    placement: 'auto',
+    placement: sidePopoverPlacement,
     viewport: {
       selector: 'body',
       padding: 12,
     },
-    delay: {show: 1000, hide: 10},
+    delay: {show: 700, hide: 120},
     content: function(){
       var divId =  "tmp-id-" + $.now();
       return detailsInPopup($(this).attr('data-user-id'), divId);
@@ -218,17 +226,25 @@ $(document).ready(function(){
 $(document).ready(function(){
   var translations = (window.timeoff && window.timeoff.translations) || {};
 
+  function sidePopoverPlacement(tip, element) {
+    var elementRect = element.getBoundingClientRect();
+    var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    var popoverWidth = tip && tip.offsetWidth ? tip.offsetWidth : 320;
+
+    return elementRect.right + popoverWidth + 24 > viewportWidth ? 'left' : 'right';
+  }
+
   $('.leave-details-summary-trigger').popover({
     title: translations.leaveSummary,
     container: 'body',
     html: true,
     trigger: 'hover',
-    placement: 'auto',
+    placement: sidePopoverPlacement,
     viewport: {
       selector: 'body',
       padding: 12,
     },
-    delay: {show: 1000, hide: 10},
+    delay: {show: 700, hide: 120},
     content: function(){
       var divId =  "tmp-id-" + $.now();
       return detailsInPopup($(this).attr('data-leave-id'), divId);
