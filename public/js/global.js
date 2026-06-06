@@ -331,6 +331,7 @@ $(document).ready(function(){
   }
 
   var $themeLabel = $themeMenu.find('.theme-label');
+  var $themeIcon = $themeMenu.find('.theme-icon');
 
   function applyTheme(theme) {
     if (theme === 'dark') {
@@ -345,6 +346,10 @@ $(document).ready(function(){
     if ($item.length) {
       $themeLabel.text($item.text());
     }
+
+    $themeIcon
+      .toggleClass('fa-sun-o', theme !== 'dark')
+      .toggleClass('fa-moon-o', theme === 'dark');
   }
 
   var storedTheme;

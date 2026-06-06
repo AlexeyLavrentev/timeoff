@@ -35,29 +35,31 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown" id="theme-menu">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-            {{t "theme.label"}}: <span class="theme-label">{{t "theme.light"}}</span>
+          <a href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "theme.label"}}" title="{{t "theme.label"}}">
+            <span class="fa fa-sun-o theme-icon" aria-hidden="true"></span>
+            <span class="sr-only">{{t "theme.label"}}: <span class="theme-label">{{t "theme.light"}}</span></span>
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#" data-theme-value="light">{{t "theme.light"}}</a></li>
-            <li><a href="#" data-theme-value="dark">{{t "theme.dark"}}</a></li>
+            <li><a href="#" data-theme-value="light"><span class="fa fa-sun-o nav-menu-icon" aria-hidden="true"></span>{{t "theme.light"}}</a></li>
+            <li><a href="#" data-theme-value="dark"><span class="fa fa-moon-o nav-menu-icon" aria-hidden="true"></span>{{t "theme.dark"}}</a></li>
           </ul>
         </li>
         <li class="dropdown hidden-xs">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-            {{t "language.label"}}: {{#if_equal locale "ru"}}{{t "language.russian"}}{{else}}{{t "language.english"}}{{/if_equal}}
+          <a href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "language.label"}}" title="{{t "language.label"}}">
+            <span class="fa fa-language" aria-hidden="true"></span>
+            <span class="sr-only">{{t "language.label"}}: {{#if_equal locale "ru"}}{{t "language.russian"}}{{else}}{{t "language.english"}}{{/if_equal}}</span>
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="/language/en">{{t "language.english"}}</a></li>
-            <li><a href="/language/ru">{{t "language.russian"}}</a></li>
+            <li><a href="/language/en"><span class="fa fa-language nav-menu-icon" aria-hidden="true"></span>{{t "language.english"}}</a></li>
+            <li><a href="/language/ru"><span class="fa fa-language nav-menu-icon" aria-hidden="true"></span>{{t "language.russian"}}</a></li>
           </ul>
         </li>
         {{#if logged_user }}
           <li class="dropdown" id="header-notification-dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-              <span class="fa fa-bell-o"></span>
+            <a href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "nav.notificationsEmpty"}}" title="{{t "nav.notificationsEmpty"}}">
+              <span class="fa fa-bell-o" aria-hidden="true"></span>
               <span class="label label-info notification-badge hidden"></span>
             </a>
             <ul class="dropdown-menu" role="menu">
@@ -66,31 +68,31 @@
           </li>
           {{#if logged_user.admin }}
           <li class="dropdown hidden-xs">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="fa fa-gears"></span> <span class="caret"></span></a>
-            <ul class="dropdown-menu" role="menu">
-              <li><a href="/settings/general/">{{t "nav.general"}}</a></li>
+            <a href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "nav.settings"}}" title="{{t "nav.settings"}}"><span class="fa fa-cog" aria-hidden="true"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu settings-dropdown-menu" role="menu">
+              <li><a href="/settings/general/"><span class="fa fa-cog nav-menu-icon" aria-hidden="true"></span>{{t "nav.general"}}</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="/settings/departments/">{{t "nav.departments"}}</a></li>
-              <li><a href="/settings/groups/">{{t "nav.groups"}}</a></li>
-              <li><a href="/settings/bankholidays/">{{t "nav.bankHolidays"}}</a></li>
-              <li><a href="/settings/company/authentication/">{{t "nav.authConfig"}}</a></li>
-              <li><a href="/settings/company/integration-api/">{{t "nav.apiConfig"}}</a></li>
-              <li><a href="/users/import/">{{t "nav.importEmployees"}}</a></li>
+              <li><a href="/settings/departments/"><span class="fa fa-sitemap nav-menu-icon" aria-hidden="true"></span>{{t "nav.departments"}}</a></li>
+              <li><a href="/settings/groups/"><span class="fa fa-users nav-menu-icon" aria-hidden="true"></span>{{t "nav.groups"}}</a></li>
+              <li><a href="/settings/bankholidays/"><span class="fa fa-calendar-o nav-menu-icon" aria-hidden="true"></span>{{t "nav.bankHolidays"}}</a></li>
+              <li><a href="/settings/company/authentication/"><span class="fa fa-lock nav-menu-icon" aria-hidden="true"></span>{{t "nav.authConfig"}}</a></li>
+              <li><a href="/settings/company/integration-api/"><span class="fa fa-plug nav-menu-icon" aria-hidden="true"></span>{{t "nav.apiConfig"}}</a></li>
+              <li><a href="/users/import/"><span class="fa fa-upload nav-menu-icon" aria-hidden="true"></span>{{t "nav.importEmployees"}}</a></li>
               <li role="separator" class="divider"></li>
-              <li><a href="/audit/email/">{{t "nav.emailsAudit"}}</a></li>
-              <li><a href="/reports/">{{t "nav.reports"}}</a></li>
+              <li><a href="/audit/email/"><span class="fa fa-envelope-o nav-menu-icon" aria-hidden="true"></span>{{t "nav.emailsAudit"}}</a></li>
+              <li><a href="/reports/"><span class="fa fa-line-chart nav-menu-icon" aria-hidden="true"></span>{{t "nav.reports"}}</a></li>
             </ul>
           </li>
           {{/if}}
           <li class="visible-xs-block"><a href="/requests/">{{t "nav.requests"}}</a></li>
           <li class="visible-xs-block"><a href="/logout/">{{t "nav.logout"}}</a></li>
           <li class="dropdown hidden-xs">
-            <a id="me_menu" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{t "nav.me"}} <span class="caret"></span></a>
+            <a id="me_menu" href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "nav.me"}}" title="{{t "nav.me"}}"><span class="fa fa-user" aria-hidden="true"></span> <span class="caret"></span></a>
             <ul class="dropdown-menu" role="menu">
-              <li><a href="/requests/">{{t "nav.requests"}}</a></li>
-              <li class="hidden-xs"><a href="/calendar/feeds/">{{t "nav.feeds"}}</a></li>
+              <li><a href="/requests/"><span class="fa fa-inbox nav-menu-icon" aria-hidden="true"></span>{{t "nav.requests"}}</a></li>
+              <li class="hidden-xs"><a href="/calendar/feeds/"><span class="fa fa-rss nav-menu-icon" aria-hidden="true"></span>{{t "nav.feeds"}}</a></li>
               <li role="separator" class="divider hidden-xs"></li>
-              <li><a href="/logout/">{{t "nav.logout"}}</a></li>
+              <li><a href="/logout/"><span class="fa fa-sign-out nav-menu-icon" aria-hidden="true"></span>{{t "nav.logout"}}</a></li>
             </ul>
           </li>
         {{else}}
