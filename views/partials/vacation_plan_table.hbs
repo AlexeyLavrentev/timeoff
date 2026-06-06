@@ -1,5 +1,5 @@
-<div class="table-responsive">
-  <table class="table table-hover">
+<div class="table-responsive vacation-plan-table-wrap">
+  <table class="table table-hover vacation-plan-table">
     <thead>
       <tr>
         <th>{{t "vacationPlans.employee"}}</th>
@@ -75,13 +75,13 @@
         </td>
         <td>{{this.employee_comment}}</td>
         {{#if ../show_actions}}
-        <td>
+        <td class="table-action-cell">
           <form method="POST" action="/vacation-plans/reject/">
             <input type="hidden" name="plan_id" value="{{this.id}}">
             <button class="btn btn-warning btn-sm single-click" type="submit">{{t "vacationPlans.reject"}}</button>
           </form>
         </td>
-        <td>
+        <td class="table-action-cell">
           <form method="POST" action="/vacation-plans/approve/">
             <input type="hidden" name="plan_id" value="{{this.id}}">
             <button class="btn btn-success btn-sm single-click" type="submit">{{t "vacationPlans.approve"}}</button>
@@ -89,7 +89,7 @@
         </td>
         {{/if}}
         {{#if ../show_cancel}}
-        <td>
+        <td class="table-action-cell">
           {{#if_equal this.status 1}}
           <form method="POST" action="/vacation-plans/cancel/">
             <input type="hidden" name="plan_id" value="{{this.id}}">
@@ -99,7 +99,7 @@
         </td>
         {{/if}}
         {{#if ../show_book}}
-        <td>
+        <td class="table-action-cell">
           {{#if_equal this.status 2}}
             {{#unless this.leaveId}}
             <form method="POST" action="/vacation-plans/book/">

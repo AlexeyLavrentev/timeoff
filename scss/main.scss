@@ -438,6 +438,61 @@ textarea.form-control {
   vertical-align: middle;
 }
 
+.request-workbench {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.request-form-column .panel-body {
+  padding: 14px;
+}
+
+.request-form-column .form-group {
+  margin-bottom: 12px;
+}
+
+.request-form-column textarea.form-control {
+  min-height: 82px;
+}
+
+.request-table-column {
+  min-width: 0;
+}
+
+.vacation-plan-table {
+  min-width: 980px;
+}
+
+.time-balance-table {
+  min-width: 1040px;
+}
+
+.vacation-plan-table > thead > tr > th,
+.time-balance-table > thead > tr > th {
+  white-space: nowrap;
+}
+
+.table-action-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.table-action-cell form {
+  display: inline-block;
+  margin: 0;
+}
+
+.table-action-cell .btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+  .request-workbench {
+    display: block;
+  }
+}
+
 .vacation-plan-conflict-details {
   max-width: 340px;
   margin-top: 7px;
