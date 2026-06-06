@@ -42,11 +42,23 @@ $(function () {
     $.fn.datepicker.defaults.language = datepickerLocale;
   }
 
-  $('[data-toggle="tooltip"]').tooltip()
+  $('[data-toggle="tooltip"]').tooltip({
+    container: 'body',
+    viewport: {
+      selector: 'body',
+      padding: 8,
+    },
+  })
 })
 
 $(function () {
-  $('[data-toggle="popover"]').popover()
+  $('[data-toggle="popover"]').popover({
+    container: 'body',
+    viewport: {
+      selector: 'body',
+      padding: 8,
+    },
+  })
 })
 
 /*
@@ -176,9 +188,14 @@ $(document).ready(function(){
 
   $('.user-details-summary-trigger').popover({
     title: translations.employeeSummary,
+    container: 'body',
     html: true,
     trigger: 'hover',
     placement: 'auto',
+    viewport: {
+      selector: 'body',
+      padding: 12,
+    },
     delay: {show: 1000, hide: 10},
     content: function(){
       var divId =  "tmp-id-" + $.now();
@@ -203,9 +220,14 @@ $(document).ready(function(){
 
   $('.leave-details-summary-trigger').popover({
     title: translations.leaveSummary,
+    container: 'body',
     html: true,
     trigger: 'hover',
     placement: 'auto',
+    viewport: {
+      selector: 'body',
+      padding: 12,
+    },
     delay: {show: 1000, hide: 10},
     content: function(){
       var divId =  "tmp-id-" + $.now();
