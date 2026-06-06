@@ -186,20 +186,20 @@
         {{t "generalSettings.leaveTypesTitle"}}
       </div>
       <div class="panel-body">
-        <div class="row">
-          <div class="col-md-4">
+        <div class="row leave-types-header">
+          <div class="col-md-4 leave-types-name-cell">
             <label class="control-label">{{t "generalSettings.leaveTypeNameLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeNameHelp"}}</em></p>
           </div>
-          <div class="col-md-offset-2 col-md-2">
+          <div class="col-md-offset-2 col-md-2 leave-types-limit-cell">
             <label class="control-label">{{t "generalSettings.leaveTypeLimitLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeLimitHelp"}}</em></p>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 leave-types-deduction-cell">
             <label class="control-label">{{t "generalSettings.leaveTypeDeductionUnitLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeDeductionUnitHelp"}}</em></p>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 leave-types-min-cell">
             <label class="control-label">{{t "generalSettings.leaveTypeMinConsecutiveLabel"}}</label>
             <p><em>{{t "generalSettings.leaveTypeMinConsecutiveHelp"}}</em></p>
           </div>
@@ -217,8 +217,8 @@
         {{/unless}}
 
         {{#each leave_types}}
-        <div class="row">
-          <div class="col-md-4">
+        <div class="row leave-types-row">
+          <div class="col-md-4 leave-types-name-cell">
 
             <div class="input-group">
               <span class="input-group-addon">
@@ -238,29 +238,29 @@
 
           </div>
 
-          <div class="col-md-2">
-            <div>
+          <div class="col-md-2 leave-types-options-cell">
+            <div class="leave-types-checkbox">
               <input name="use_allowance__{{ this.id }}" id="use_allowance__{{ this.id }}" type="checkbox" {{#if use_allowance}}checked="checked"{{/if}} data-tom-leave-type-order="allowance_{{@index}}">
               <label for="use_allowance__{{ this.id }}" class="control-label">{{t "generalSettings.leaveTypeUseAllowance"}}</label>
             </div>
-            <div>
+            <div class="leave-types-checkbox">
               <input name="auto_approve__{{ this.id }}" id="auto_approve__{{ this.id }}" type="checkbox" {{#if auto_approve}}checked="checked"{{/if}} data-tom-leave-type-order="approve_{{@index}}">
               <label for="auto_approve__{{ this.id }}" class="control-label">{{t "generalSettings.leaveTypeAutoApprove"}}</label>
             </div>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 leave-types-limit-cell">
             <input type="number" class="form-control" value="{{limit}}" name="limit__{{ this.id }}" data-tom-leave-type-order="limit_{{@index}}">
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 leave-types-deduction-cell">
             <select class="form-control" name="deduction_unit__{{ this.id }}" data-tom-leave-type-order="deduction_unit_{{@index}}">
               <option value="working_days" {{# if_equal deduction_unit "working_days" }}selected="selected"{{/if_equal}}>{{t "generalSettings.leaveTypeDeductionWorkingDays"}}</option>
               <option value="calendar_days" {{# if_equal deduction_unit "calendar_days" }}selected="selected"{{/if_equal}}>{{t "generalSettings.leaveTypeDeductionCalendarDays"}}</option>
             </select>
           </div>
-          <div class="col-md-2">
+          <div class="col-md-2 leave-types-min-cell">
             <input type="number" class="form-control" value="{{minimum_consecutive_days}}" name="minimum_consecutive_days__{{ this.id }}" data-tom-leave-type-order="minimum_consecutive_days_{{@index}}">
           </div>
-          <div class="col-md-1">
+          <div class="col-md-1 leave-types-remove-cell">
             <button class="btn btn-default pull-right leavetype-remove-btn" value="{{ this.id }}" data-tom-leave-type-order="remove_{{@index}}"><span class="fa fa-remove"></span></button>
           </div>
         </div>
