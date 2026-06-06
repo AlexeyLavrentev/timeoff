@@ -419,6 +419,26 @@ textarea.form-control {
   vertical-align: middle;
 }
 
+.vacation-plan-conflict-details {
+  max-width: 340px;
+  margin-top: 7px;
+  color: #526777;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.vacation-plan-conflict-group + .vacation-plan-conflict-group {
+  margin-top: 8px;
+}
+
+.vacation-plan-conflict-list {
+  margin: 3px 0 0;
+}
+
+.vacation-plan-conflict-list li {
+  padding: 2px 0;
+}
+
 .list-group-item {
   border-color: #e3e9ef;
 }

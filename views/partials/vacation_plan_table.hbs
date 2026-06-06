@@ -31,11 +31,46 @@
           {{#if this.leaveId}}<div class="text-success">{{t "vacationPlans.statuses.booked"}}</div>{{/if}}
         </td>
         <td>
-          {{#if this.conflicts.length}}
-          <span class="label label-warning">{{this.conflicts.length}}</span>
-          {{#each this.conflicts}}<div>{{full_name this.user}}</div>{{/each}}
+          {{#if this.conflict_summary.has_blocking_critical}}
+          <span class="label label-danger">{{t "vacationPlans.conflictLevels.critical"}}</span>
           {{else}}
-          <span class="text-muted">0</span>
+            {{#if this.conflict_summary.has_conflicts}}
+            <span class="label label-warning">{{t "vacationPlans.conflictLevels.warning"}}</span>
+            {{else}}
+            <span class="text-muted">{{t "vacationPlans.conflictLevels.none"}}</span>
+            {{/if}}
+          {{/if}}
+
+          {{#if this.conflict_summary.has_conflicts}}
+          <div class="vacation-plan-conflict-details">
+            {{#if this.conflict_summary.has_critical}}
+            <div class="vacation-plan-conflict-group">
+              <strong>{{t "vacationPlans.criticalOverlaps"}}</strong>
+              {{#each this.critical_conflict_groups}}
+              <div>
+                {{this.name}}:
+                {{t "vacationPlans.criticalLimitHint" count=this.count max=this.max}}
+              </div>
+              <ul class="list-unstyled vacation-plan-conflict-list">
+                {{#each this.conflicts}}
+                <li>{{this.employee}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type}}{{/if}}</li>
+                {{/each}}
+              </ul>
+              {{/each}}
+            </div>
+            {{/if}}
+
+            {{#if this.conflict_summary.has_department}}
+            <div class="vacation-plan-conflict-group">
+              <strong>{{t "vacationPlans.departmentOverlaps" count=this.conflict_summary.department_count}}</strong>
+              <ul class="list-unstyled vacation-plan-conflict-list">
+                {{#each this.department_conflicts}}
+                <li>{{full_name this.user}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type.name}}{{/if}}</li>
+                {{/each}}
+              </ul>
+            </div>
+            {{/if}}
+          </div>
           {{/if}}
         </td>
         <td>{{this.employee_comment}}</td>
