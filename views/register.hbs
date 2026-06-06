@@ -9,57 +9,57 @@
   <div class="col-md-6 lead">{{t "register.subtitle"}}</div>
 </div>
 
-<div class="row">
-  <div class="col-md-9">
+<div class="auth-shell">
+  <div class="auth-card auth-card-wide">
     <form class="form-horizontal" action="/register" method="post">
       <input type="hidden" name="_csrf" value="{{csrf_token}}">
 
       <div class="form-group">
-        <label for="company_name_inp" class="col-md-2 control-label">{{t "register.companyName"}}</label>
-        <div class="col-md-6">
+        <label for="company_name_inp" class="col-sm-4 control-label">{{t "register.companyName"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="company_name_inp" placeholder="{{t "register.companyNamePlaceholder"}}" name="company_name" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="name_inp" class="col-md-2 control-label">{{t "register.firstName"}}</label>
-        <div class="col-md-6">
+        <label for="name_inp" class="col-sm-4 control-label">{{t "register.firstName"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="name_inp" placeholder="{{t "register.firstNamePlaceholder"}}" name="name" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="lastname_inp" class="col-md-2 control-label">{{t "register.lastName"}}</label>
-        <div class="col-md-6">
+        <label for="lastname_inp" class="col-sm-4 control-label">{{t "register.lastName"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="lastname_inp" placeholder="{{t "register.lastNamePlaceholder"}}" name="lastname" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="email_inp" class="col-md-2 control-label">{{t "register.emailAddress"}}</label>
-        <div class="col-md-6">
+        <label for="email_inp" class="col-sm-4 control-label">{{t "register.emailAddress"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="email_inp" type="email" placeholder="{{t "register.emailPlaceholder"}}" name="email" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="pass_inp" class="col-md-2 control-label">{{t "register.password"}}</label>
-        <div class="col-md-6">
+        <label for="pass_inp" class="col-sm-4 control-label">{{t "register.password"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="pass_inp" type="password" placeholder="{{t "register.passwordPlaceholder"}}" name="password" required>
         </div>
       </div>
 
 
       <div class="form-group">
-        <label for="confirm_pass_inp" class="col-md-2 control-label">{{t "register.confirmPassword"}}</label>
-        <div class="col-md-6">
+        <label for="confirm_pass_inp" class="col-sm-4 control-label">{{t "register.confirmPassword"}}</label>
+        <div class="col-sm-8">
           <input class="form-control" id="confirm_pass_inp" type="password" placeholder="{{t "register.passwordPlaceholder"}}" name="password_confirmed" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="country_inp" class="col-md-2 control-label">{{t "register.country"}}</label>
-        <div class="col-md-6">
+        <label for="country_inp" class="col-sm-4 control-label">{{t "register.country"}}</label>
+        <div class="col-sm-8">
           <select class="form-control" id="country_inp" placeholder="{{t "register.countryPlaceholder"}}" name="country">
             {{#each countries}}
             <option value="{{@key}}" {{#if this.default }} selected="selected" {{/if}}>{{@key}}: {{this.name}}</option>
@@ -69,8 +69,8 @@
       </div>
 
       <div class="form-group">
-        <label for="timezone_inp" class="col-md-2 control-label">{{t "register.timezone"}}</label>
-        <div class="col-md-6">
+        <label for="timezone_inp" class="col-sm-4 control-label">{{t "register.timezone"}}</label>
+        <div class="col-sm-8">
           <select class="form-control" id="timezone_inp" placeholder="{{t "register.timezonePlaceholder"}}" name="timezone">
             {{#each timezones_available}}
             <option value="{{this}}" {{#if_equal this 'Europe/London' }} selected="selected" {{/if_equal}}>{{this}}</option>
@@ -80,7 +80,7 @@
       </div>
 
       <div class="form-group">
-        <div class="col-md-offset-2 col-md-6">
+        <div class="col-sm-offset-4 col-sm-8">
           <button id="submit_registration" type="submit" class="btn btn-success">{{t "common.create"}}</button>
         </div>
       </div>
