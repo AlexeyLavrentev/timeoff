@@ -6,8 +6,8 @@
 
 {{> show_flash_messages }}
 
-<div class="row">
-  <div class="col-md-5">
+<div class="row request-workbench">
+  <div class="col-md-4 col-lg-3 request-form-column">
     <div class="panel panel-default">
       <div class="panel-heading">{{t "timeBalance.newEntryTitle"}}</div>
       <div class="panel-body">
@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <div class="col-md-7">
+  <div class="col-md-8 col-lg-9 request-table-column">
     <div class="panel panel-default">
       <div class="panel-heading">{{t "timeBalance.balancesTitle"}}</div>
       <table class="table table-hover">
@@ -106,7 +106,7 @@
         <div class="panel-body text-muted">{{t "timeBalance.noPendingEntries"}}</div>
       {{else}}
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover time-balance-table">
           <thead>
             <tr>
               <th>{{t "timeBalance.employee"}}</th>
@@ -135,16 +135,16 @@
               <td>{{#if this.expires_at}}{{as_date this.expires_at}}{{/if}}</td>
               <td>{{this.reference}}</td>
               <td>{{this.employee_comment}}</td>
-              <td>
+              <td class="table-action-cell">
                 <form action="/time-balance/reject/" method="POST">
                   <input type="hidden" name="entry_id" value="{{this.id}}">
-                  <button type="submit" class="btn btn-warning single-click">{{t "timeBalance.reject"}}</button>
+                  <button type="submit" class="btn btn-warning btn-sm single-click">{{t "timeBalance.reject"}}</button>
                 </form>
               </td>
-              <td>
+              <td class="table-action-cell">
                 <form action="/time-balance/approve/" method="POST">
                   <input type="hidden" name="entry_id" value="{{this.id}}">
-                  <button type="submit" class="btn btn-success single-click">{{t "timeBalance.approve"}}</button>
+                  <button type="submit" class="btn btn-success btn-sm single-click">{{t "timeBalance.approve"}}</button>
                 </form>
               </td>
             </tr>
@@ -165,7 +165,7 @@
         <div class="panel-body text-muted">{{t "timeBalance.noMyEntries"}}</div>
       {{else}}
       <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover time-balance-table">
           <thead>
             <tr>
               <th>{{t "common.date"}}</th>
