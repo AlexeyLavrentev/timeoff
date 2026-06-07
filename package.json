@@ -32,7 +32,6 @@
     "morgan": "^1.11.0",
     "mysql": "^2.18.1",
     "nconf": "^0.13.0",
-    "node-uuid": "^1.4.7",
     "nodemailer": "^1.11.0",
     "nodemailer-smtp-transport": "^1.1.0",
     "openid-client": "^5.7.1",
