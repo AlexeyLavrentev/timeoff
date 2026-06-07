@@ -501,6 +501,15 @@ textarea.form-control {
   line-height: 1.45;
 }
 
+.vacation-plan-conflict-toggle {
+  padding: 0;
+  vertical-align: baseline;
+}
+
+.vacation-plan-conflict-details-placeholder {
+  margin-top: 7px;
+}
+
 .vacation-plan-conflict-group + .vacation-plan-conflict-group {
   margin-top: 8px;
 }

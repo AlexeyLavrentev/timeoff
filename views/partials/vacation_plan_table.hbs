@@ -42,34 +42,17 @@
           {{/if}}
 
           {{#if this.conflict_summary.has_conflicts}}
-          <div class="vacation-plan-conflict-details">
-            {{#if this.conflict_summary.has_critical}}
-            <div class="vacation-plan-conflict-group">
-              <strong>{{t "vacationPlans.criticalOverlaps"}}</strong>
-              {{#each this.critical_conflict_groups}}
-              <div>
-                {{this.name}}:
-                {{t "vacationPlans.criticalLimitHint" count=this.count max=this.max}}
-              </div>
-              <ul class="list-unstyled vacation-plan-conflict-list">
-                {{#each this.conflicts}}
-                <li>{{this.employee}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type}}{{/if}}</li>
-                {{/each}}
-              </ul>
-              {{/each}}
-            </div>
-            {{/if}}
-
-            {{#if this.conflict_summary.has_department}}
-            <div class="vacation-plan-conflict-group">
-              <strong>{{t "vacationPlans.departmentOverlaps" count=this.conflict_summary.department_count}}</strong>
-              <ul class="list-unstyled vacation-plan-conflict-list">
-                {{#each this.department_conflicts}}
-                <li>{{full_name this.user}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type.name}}{{/if}}</li>
-                {{/each}}
-              </ul>
-            </div>
-            {{/if}}
+          <button
+            class="btn btn-link btn-xs vacation-plan-conflict-toggle"
+            type="button"
+            data-conflict-url="/vacation-plans/conflicts/{{this.id}}/"
+            aria-expanded="false"
+            title="{{t "vacationPlans.conflicts"}}"
+          >
+            <span class="fa fa-info-circle"></span>
+            {{this.conflict_summary.department_count}}{{#if this.conflict_summary.has_critical}}/{{this.conflict_summary.critical_count}}{{/if}}
+          </button>
+          <div class="vacation-plan-conflict-details-placeholder hidden">
           </div>
           {{/if}}
         </td>

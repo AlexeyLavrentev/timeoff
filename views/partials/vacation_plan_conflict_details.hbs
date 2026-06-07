@@ -1,0 +1,31 @@
+{{#if plan.conflict_summary.has_conflicts}}
+<div class="vacation-plan-conflict-details">
+  {{#if plan.conflict_summary.has_critical}}
+  <div class="vacation-plan-conflict-group">
+    <strong>{{t "vacationPlans.criticalOverlaps"}}</strong>
+    {{#each plan.critical_conflict_groups}}
+    <div>
+      {{this.name}}:
+      {{t "vacationPlans.criticalLimitHint" count=this.count max=this.max}}
+    </div>
+    <ul class="list-unstyled vacation-plan-conflict-list">
+      {{#each this.conflicts}}
+      <li>{{this.employee}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type}}{{/if}}</li>
+      {{/each}}
+    </ul>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  {{#if plan.conflict_summary.has_department}}
+  <div class="vacation-plan-conflict-group">
+    <strong>{{t "vacationPlans.departmentOverlaps" count=plan.conflict_summary.department_count}}</strong>
+    <ul class="list-unstyled vacation-plan-conflict-list">
+      {{#each plan.department_conflicts}}
+      <li>{{full_name this.user}} - {{as_date this.date_start}} - {{as_date this.date_end}}{{#if this.leave_type}}, {{this.leave_type.name}}{{/if}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+</div>
+{{/if}}
