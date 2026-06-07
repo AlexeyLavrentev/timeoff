@@ -26,6 +26,38 @@ $(document).ready(function(){
   });
 });
 
+$(document).ready(function(){
+  var translations = (window.timeoff && window.timeoff.translations) || {};
+
+  $(document).on('click', '.vacation-plan-conflict-toggle', function(){
+    var $button = $(this);
+    var $placeholder = $button.next('.vacation-plan-conflict-details-placeholder');
+
+    if (!$placeholder.length) {
+      return;
+    }
+
+    if (!$placeholder.hasClass('hidden')) {
+      $placeholder.addClass('hidden');
+      $button.attr('aria-expanded', 'false');
+      return;
+    }
+
+    $button.attr('aria-expanded', 'true');
+    $placeholder.removeClass('hidden');
+
+    if ($placeholder.data('loaded')) {
+      return;
+    }
+
+    $placeholder
+      .html('<span class="text-muted">' + translations.loading + '</span>')
+      .load($button.data('conflict-url'), function(){
+        $placeholder.data('loaded', true);
+      });
+  });
+});
+
 
 /*
  * Bootstrap-datepicker
