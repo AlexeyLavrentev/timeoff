@@ -36,7 +36,7 @@ a {
 
 a:hover,
 a:focus {
-  color: #205f9e;
+  color: rgb(31.5, 94.5, 157.5);
 }
 
 h1,
@@ -473,13 +473,21 @@ textarea.form-control {
     display: block;
   }
 }
-
 .vacation-plan-conflict-details {
   max-width: 340px;
   margin-top: 7px;
   color: #526777;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.vacation-plan-conflict-toggle {
+  padding: 0;
+  vertical-align: baseline;
+}
+
+.vacation-plan-conflict-details-placeholder {
+  margin-top: 7px;
 }
 
 .vacation-plan-conflict-group + .vacation-plan-conflict-group {
