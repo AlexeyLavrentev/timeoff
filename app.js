@@ -44,6 +44,10 @@ var handlebars = require('express-handlebars')
     defaultLayout : 'main',
     extname       : '.hbs',
     helpers       : require('./lib/view/helpers')(),
+    runtimeOptions: {
+      allowProtoMethodsByDefault: true,
+      allowProtoPropertiesByDefault: true,
+    },
   });
 
 app.engine('.hbs', handlebars.engine);
