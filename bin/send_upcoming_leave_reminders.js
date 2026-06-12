@@ -1,13 +1,13 @@
 'use strict';
 
-var optimist = require('optimist').argv;
+var argv = require('minimist')(process.argv.slice(2));
 
 var models = require('../lib/model/db');
 var EmailTransport = require('../lib/email');
 var leaveReminder = require('../lib/model/leave/upcoming_leave_reminder');
 
-var date = optimist.date || null;
-var companyId = optimist.company_id ? Number(optimist.company_id) : null;
+var date = argv.date || null;
+var companyId = argv.company_id ? Number(argv.company_id) : null;
 
 models.connect()
   .then(function() {

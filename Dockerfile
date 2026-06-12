@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim AS base
+FROM node:22-bookworm-slim AS base
 
 WORKDIR /app
 
@@ -13,7 +13,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ENV CHROMEDRIVER_SKIP_DOWNLOAD=true \
-    PUPPETEER_SKIP_DOWNLOAD=true
+    PUPPETEER_SKIP_DOWNLOAD=true \
+    # sqlite3 6 prebuilt-бинари собраны под glibc 2.38 (Ubuntu 24.04), а Debian
+    # bookworm — glibc 2.36. Собираем нативные модули из исходников под локальный glibc.
+    npm_config_build_from_source=true
 
 COPY package.json package-lock.json ./
 RUN npm ci

@@ -145,12 +145,23 @@ describe('Vacation planning', function(){
     })).to.equal(true);
   });
 
-  it('does not allow an employee to approve their own plan', function(){
+  it('allows an admin to approve their own plan', function(){
+    // Самосогласование разрешено для админов/руководителей — как и у обычных заявок на отпуск
     const plan = buildPlan({id : 1, userId : 10, departmentId : 3, start : '2026-07-01', end : '2026-07-14', status : 1});
 
     expect(vacationPlan.canActOnPlan({
       plan,
       actingUser : { id : 10, is_admin : function(){ return true; } },
+    })).to.equal(true);
+  });
+
+  it('does not allow a regular employee to approve their own plan', function(){
+    // Обычный сотрудник (не админ и не руководитель отдела, bossId=7) не может
+    const plan = buildPlan({id : 1, userId : 10, departmentId : 3, start : '2026-07-01', end : '2026-07-14', status : 1});
+
+    expect(vacationPlan.canActOnPlan({
+      plan,
+      actingUser : { id : 10, is_admin : function(){ return false; } },
     })).to.equal(false);
   });
 });
