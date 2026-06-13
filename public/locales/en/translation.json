@@ -513,7 +513,7 @@
       "body": "Thank you for registering a new account on"
     },
     "forgotPassword": {
-      "subject": "Reset password for Leave Management",
+      "subject": "Reset password for {{brand}}",
       "body": "Somebody just requested a reset password link for your account at",
       "ldapNotice": "The company your account belongs to uses LDAP authentication so we cannot reset the password for you.",
       "ldapContact": "Please contact your system administrator in order to reset the password in Active directory server.",
@@ -522,19 +522,19 @@
       "manualLink": "Alternatively copy and paste the following link into your browser:"
     },
     "resetPassword": {
-      "subject": "Reset password for Leave Management",
+      "subject": "Reset password for {{brand}}",
       "body": "Your password for"
     },
     "addNewUser": {
-      "subject": "New Leave Management account for {{name}}",
+      "subject": "New {{brand}} account for {{name}}",
       "body": "{{admin}} just registered new account for you as an employee of {{company}}.",
       "passwordContact": "Please contact {{admin}} about your new password and login at",
       "alternative": "Alternatively follow the link below to set a new password",
       "action": "Set new password"
     },
     "confirmRegistration": {
-      "subject": "Confirm registration in Leave Management",
-      "body": "To complete your registration process in Leave Management please click on the following link:"
+      "subject": "Confirm registration in {{brand}}",
+      "body": "To complete your registration process in {{brand}} please click on the following link:"
     },
     "leaveRequest": {
       "subjectNew": "New leave request",
@@ -1216,6 +1216,11 @@
       "bookForbidden": "This vacation plan cannot be converted into a leave request.",
       "leaveTypeRequired": "Select a leave type before creating the request.",
       "bookFailed": "Failed to create a leave request from this vacation plan."
+    }
+  },
+  "features": {
+    "messages": {
+      "disabled": "This feature is not enabled for this installation."
     }
   }
 }

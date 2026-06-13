@@ -8,6 +8,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
 var config       = require('./lib/config');
+var branding     = require('./lib/branding');
+var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
 const i18nextMiddleware = require('i18next-express-middleware');
 const { initI18next } = require('./lib/i18n');
@@ -104,6 +106,9 @@ app.use(function(req,res,next){
   res.locals.locale = req.language || 'en';
   res.locals.supported_languages = config.get('supported_languages') || ['en'];
   res.locals.default_language = config.get('default_language') || 'en';
+  res.locals.branding = branding.get();
+  res.locals.features = features.getEnabledMap();
+  res.locals.disable_notifications = process.env.DISABLE_NOTIFICATIONS_POLLING === 'true';
   res.locals.req = req;
   // For book leave request modal
   res.locals.booking_start = today,
@@ -157,8 +162,15 @@ app.use(
 
 app.use(
   '/integration/v1/',
+  features.requireFeature('integration_api'),
   require('./lib/route/integration_api')(passport)
 );
+
+if (process.env.DISABLE_NOTIFICATIONS_POLLING === 'true') {
+  app.get('/api/v1/notifications/', function(req, res) {
+    res.json({ data: [] });
+  });
+}
 
 app.use(
   '/',
@@ -174,6 +186,10 @@ app.use(
   '/calendar/',
   require('./lib/route/calendar')
 );
+
+app.use('/settings/groups', features.requireFeature('employee_groups'));
+app.use('/settings/company/authentication', features.requireFeature('sso_authentication'));
+app.use('/settings/company/integration-api', features.requireFeature('integration_api'));
 
 app.use(
   '/settings/',
@@ -199,11 +215,13 @@ app.use(
 
 app.use(
   '/time-balance/',
+  features.requireFeature('time_balance'),
   require('./lib/route/time_balance')
 );
 
 app.use(
   '/vacation-plans/',
+  features.requireFeature('vacation_planning'),
   require('./lib/route/vacation_plans')
 );
 
