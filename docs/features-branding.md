@@ -59,6 +59,10 @@ FEATURE_TIME_BALANCE=true npm start
 FEATURE_VACATION_PLANNING=false npm start
 ```
 
+`TIMEOFF_FEATURES`, `FEATURE_*`, and `features` in config are treated as unlicensed overrides. They work by default in development and test environments, but production-like environments (`production` and `staging`) ignore them unless `ALLOW_UNLICENSED_FEATURE_OVERRIDES=true` or `allow_unlicensed_feature_overrides` is set explicitly.
+
+Explicit `false` overrides always work as a kill switch, even for licensed features.
+
 `config/app.json` also supports:
 
 ```json
