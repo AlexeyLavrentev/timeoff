@@ -11,13 +11,17 @@ describe('Feature licensing', function() {
     'NODE_ENV',
     'TIMEOFF_FEATURES',
     'TIMEOFF_LICENSE',
+    'TIMEOFF_LICENSE_SECRET',
     'FEATURE_TIME_BALANCE',
     'ALLOW_UNLICENSED_FEATURE_OVERRIDES',
+    'ALLOW_UNSIGNED_LICENSES',
   ];
   const originalConfig = {
     licensedFeatures: config.get('licensed_features'),
     featureOverrides: config.get('features'),
     allowUnlicensedFeatureOverrides: config.get('allow_unlicensed_feature_overrides'),
+    allowUnsignedLicenses: config.get('allow_unsigned_licenses'),
+    licenseSecret: config.get('license_secret'),
   };
 
   beforeEach(function() {
@@ -29,6 +33,8 @@ describe('Feature licensing', function() {
     config.set('licensed_features', []);
     config.set('features', {});
     config.set('allow_unlicensed_feature_overrides', undefined);
+    config.set('allow_unsigned_licenses', undefined);
+    config.set('license_secret', undefined);
   });
 
   afterEach(function() {
@@ -43,6 +49,8 @@ describe('Feature licensing', function() {
     config.set('licensed_features', originalConfig.licensedFeatures);
     config.set('features', originalConfig.featureOverrides);
     config.set('allow_unlicensed_feature_overrides', originalConfig.allowUnlicensedFeatureOverrides);
+    config.set('allow_unsigned_licenses', originalConfig.allowUnsignedLicenses);
+    config.set('license_secret', originalConfig.licenseSecret);
   });
 
   it('allows TIMEOFF_FEATURES outside production-like environments', function() {
@@ -64,6 +72,54 @@ describe('Feature licensing', function() {
     config.set('licensed_features', ['time_balance']);
 
     expect(features.isEnabled('time_balance')).to.equal(true);
+  });
+
+  it('ignores unsigned TIMEOFF_LICENSE payloads in production-like environments', function() {
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      features: ['time_balance'],
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('keeps signed TIMEOFF_LICENSE payloads enabled in production-like environments', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+    const secret = 'test-license-secret';
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      signature: features.signLicensePayload(payload, secret),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(true);
+  });
+
+  it('rejects TIMEOFF_LICENSE payloads with mismatched signatures', function() {
+    const signedPayload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+    const tamperedPayload = {
+      customer: 'Example Ltd',
+      features: ['time_balance', 'vacation_planning'],
+    };
+    const secret = 'test-license-secret';
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload: tamperedPayload,
+      signature: features.signLicensePayload(signedPayload, secret),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.isEnabled('vacation_planning')).to.equal(false);
   });
 
   it('lets explicit false overrides disable licensed features', function() {
