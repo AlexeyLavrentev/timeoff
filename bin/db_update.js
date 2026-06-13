@@ -82,5 +82,14 @@ db.connect()
   })
   .catch(function(error) {
     console.error(error && error.stack || error);
+    if (error && error.parent) {
+      console.error(error.parent && error.parent.stack || error.parent);
+    }
+    if (error && error.sql) {
+      console.error(error.sql);
+    }
+    if (error && error.parent && error.parent.sql) {
+      console.error(error.parent.sql);
+    }
     process.exit(1);
   });

@@ -59,7 +59,7 @@
     "selenium-webdriver": "2.53.3"
   },
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha --recursive t",
+    "test": "node bin/test.js",
     "start": "node bin/wwww",
     "start:dev": "node --watch bin/wwww",
     "db-update": "node bin/db_update.js",

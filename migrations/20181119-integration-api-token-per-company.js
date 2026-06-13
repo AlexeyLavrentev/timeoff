@@ -6,6 +6,7 @@ var models = require('../lib/model/db');
 module.exports = {
   up: (queryInterface, Sequelize) => {
 
+    return Promise.all([
     queryInterface.describeTable('Companies').then(attributes => {
 
       if (attributes.hasOwnProperty('integration_api_token')) {
@@ -17,7 +18,7 @@ module.exports = {
         'integration_api_token',
         models.Company.attributes.integration_api_token
       );
-    });
+    }),
 
     queryInterface.describeTable('Companies').then(attributes => {
 
@@ -30,7 +31,8 @@ module.exports = {
         'integration_api_enabled',
         models.Company.attributes.integration_api_enabled
       );
-    });
+    })
+    ]);
 
   },
 
