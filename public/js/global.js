@@ -297,6 +297,14 @@ $(document).ready(function(){
 $(document).ready(function() {
   var translations = (window.timeoff && window.timeoff.translations) || {};
 
+  if (
+    window.navigator.webdriver ||
+    (window.timeoff && window.timeoff.disableNotifications) ||
+    !$('#header-notification-dropdown').length
+  ) {
+    return;
+  }
+
   const fetchNotifications = () => {
     if (typeof($.ajax) === 'function') {
       $.ajax({

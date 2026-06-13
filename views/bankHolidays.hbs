@@ -14,7 +14,9 @@
         <a href="?year={{../yearCurrent}}&work_calendar={{this.id}}">{{this.name}}</a>
       </li>
       {{/each}}
-      <li role="presentation"><a href="#" data-toggle="modal" data-target="#add_work_calendar_modal"><span class="fa fa-plus"></span> {{t "bankHolidays.addCalendar"}}</a></li>
+      {{#feature_enabled "work_calendars"}}
+        <li role="presentation"><a href="#" data-toggle="modal" data-target="#add_work_calendar_modal"><span class="fa fa-plus"></span> {{t "bankHolidays.addCalendar"}}</a></li>
+      {{/feature_enabled}}
     </ul>
   </div>
 </div>
@@ -171,6 +173,7 @@
 
 <div class="row">&nbsp;</div>
 
+{{#feature_enabled "work_calendars"}}
 {{#unless selectedWorkCalendar}}
 <div class="row">
   <div class="col-md-12">
@@ -229,6 +232,7 @@
   </div>
 </div>
 {{/unless}}
+{{/feature_enabled}}
 
 <div class="row">&nbsp;</div>
 
@@ -242,6 +246,7 @@
   dayTypeWorking=dayTypeWorking
 }}
 
+{{#feature_enabled "work_calendars"}}
 <div class="modal fade" id="add_work_calendar_modal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -264,5 +269,6 @@
     </div>
   </div>
 </div>
+{{/feature_enabled}}
 
 {{> footer }}

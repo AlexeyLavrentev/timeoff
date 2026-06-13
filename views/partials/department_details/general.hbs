@@ -70,16 +70,18 @@
     <span class="help-block">{{t "departments.publicHolidaysHelpPrefix" department=department.name}} <a href="/settings/general/">{{t "departments.publicHolidaysHelpLink"}}</a> {{t "departments.publicHolidaysHelpSuffix"}}</span>
   </div>
 
-  <div class="form-group">
-    <label for="work_calendar_id" class="control-label">{{t "departments.workCalendar"}}</label>
-    <select class="form-control" name="work_calendar_id" id="work_calendar_id">
-      <option value="">{{t "departments.commonCalendarOnly"}}</option>
-      {{#each company.work_calendars}}
-        <option value="{{this.id}}" {{#if_equal ../department.WorkCalendarId this.id}}selected="selected"{{/if_equal}}>{{this.name}}</option>
-      {{/each}}
-    </select>
-    <span class="help-block">{{t "departments.workCalendarHelp"}} <a href="/settings/bankholidays/">{{t "departments.workCalendarLink"}}</a>.</span>
-  </div>
+  {{#feature_enabled "work_calendars"}}
+    <div class="form-group">
+      <label for="work_calendar_id" class="control-label">{{t "departments.workCalendar"}}</label>
+      <select class="form-control" name="work_calendar_id" id="work_calendar_id">
+        <option value="">{{t "departments.commonCalendarOnly"}}</option>
+        {{#each company.work_calendars}}
+          <option value="{{this.id}}" {{#if_equal ../department.WorkCalendarId this.id}}selected="selected"{{/if_equal}}>{{this.name}}</option>
+        {{/each}}
+      </select>
+      <span class="help-block">{{t "departments.workCalendarHelp"}} <a href="/settings/bankholidays/">{{t "departments.workCalendarLink"}}</a>.</span>
+    </div>
+  {{/feature_enabled}}
 
   <div class="form-group">
     <label for="is_accrued_allowance_inp" class="control-label">

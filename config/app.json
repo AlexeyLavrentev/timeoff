@@ -20,6 +20,14 @@
   "ga_analytics_on" : false,
   "application_domain" : "http://app.timeoff.management",
   "promotion_website_domain" : "http://timeoff.management",
+  "branding": {
+    "name": "Leave Management",
+    "shortName": "Leave",
+    "logoUrl": "",
+    "faviconUrl": "/favicon.ico"
+  },
+  "licensed_features": [],
+  "features": {},
   "locale_code_for_sorting": "en",
   "default_language": "en",
   "supported_languages": ["en", "ru"],

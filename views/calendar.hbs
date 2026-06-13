@@ -58,7 +58,7 @@
       </dd>
       {{~/ each ~}}
       <dd><em>{{t "calendar.department"}}:</em> <span class="pull-right"><a href="/calendar/teamview/?department={{ current_user.department.id }}">{{ current_user.department.name }}</a></span></dd>
-      <dd><em>{{t "calendar.allowanceInYear" year=current_year}}:</em><span class="pull-right"> {{ user_allowance.total_number_of_days_in_allowance }} {{t "calendar.daysLabel"}}</span><dd>
+      <dd><em>{{t "calendar.allowanceInYear" year=current_year}}:</em><span class="pull-right" data-tom-total-days-in-allowance>{{ user_allowance.total_number_of_days_in_allowance }}</span> <span class="pull-right">{{t "calendar.daysLabel"}}</span><dd>
     </dl>
   </div>
 
