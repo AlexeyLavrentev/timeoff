@@ -23,8 +23,17 @@
   "branding": {
     "name": "Leave Management",
     "shortName": "Leave",
+    "applicationDomain": "http://app.timeoff.management",
+    "promotionWebsiteDomain": "http://timeoff.management",
+    "senderEmail": "email@test.com",
+    "senderName": "",
     "logoUrl": "",
-    "faviconUrl": "/favicon.ico"
+    "faviconUrl": "/favicon.ico",
+    "faviconPng32Url": "/favicon-32x32.png",
+    "faviconPng16Url": "/favicon-16x16.png",
+    "appIconUrl": "/icon-vacation.png",
+    "appleTouchIconUrl": "/apple-touch-icon.png",
+    "manifestUrl": "/manifest.webmanifest"
   },
   "licensed_features": [],
   "features": {},

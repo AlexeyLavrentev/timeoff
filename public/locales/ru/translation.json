@@ -97,7 +97,7 @@
     "departmentDetails": "Детали отдела",
     "groups": "Группы",
     "groupDetails": "Детали группы",
-    "login": "Time Off Management"
+    "login": "Leave Management"
   },
   "userPopup": {
     "available": "Доступно",
@@ -479,7 +479,7 @@
     "timezonePlaceholder": "Часовой пояс"
   },
   "home": {
-    "title": "TimeOff management",
+    "title": "Leave Management",
     "subtitle": "Open source система управления отсутствиями для компаний любого размера.",
     "signUp": "Зарегистрироваться",
     "orFork": "или форкните на",

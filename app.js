@@ -67,6 +67,30 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.get('/manifest.webmanifest', function(req, res) {
+  var currentBranding = branding.get();
+
+  res.type('application/manifest+json');
+  res.send({
+    name: currentBranding.name,
+    short_name: currentBranding.shortName,
+    icons: [
+      {
+        src: currentBranding.faviconPng32Url,
+        sizes: '32x32',
+        type: 'image/png',
+      },
+      {
+        src: currentBranding.appIconUrl,
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+    theme_color: '#ffffff',
+    background_color: '#ffffff',
+    display: 'standalone',
+  });
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 const i18next = initI18next();

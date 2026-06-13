@@ -86,7 +86,7 @@
     "departmentDetails": "Department details",
     "groups": "Groups",
     "groupDetails": "Group details",
-    "login": "Time Off Management"
+    "login": "Leave Management"
   },
   "userPopup": {
     "available": "Available",
@@ -468,7 +468,7 @@
     "timezonePlaceholder": "Time zone"
   },
   "home": {
-    "title": "TimeOff management",
+    "title": "Leave Management",
     "subtitle": "Open source Staff Time off management for companies of all sizes.",
     "signUp": "Sign up now",
     "orFork": "or fork us on",
