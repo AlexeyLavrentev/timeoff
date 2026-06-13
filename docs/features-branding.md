@@ -74,7 +74,7 @@ Explicit `false` overrides always work as a kill switch, even for licensed featu
 
 ## License Payload
 
-`TIMEOFF_LICENSE` may contain JSON or base64-encoded JSON:
+`TIMEOFF_LICENSE` may contain JSON or base64-encoded JSON. In development and test environments, an unsigned payload is accepted:
 
 ```json
 {
@@ -83,4 +83,20 @@ Explicit `false` overrides always work as a kill switch, even for licensed featu
 }
 ```
 
-The current implementation intentionally keeps license parsing simple. The rest of the app depends only on `features.isEnabled(name)`, so a future signed-license verifier can be added in `lib/features.js` without touching route and template checks.
+In production-like environments (`production` and `staging`), `TIMEOFF_LICENSE` must be signed unless `ALLOW_UNSIGNED_LICENSES=true` or `allow_unsigned_licenses` is set explicitly.
+
+Signed license envelope:
+
+```json
+{
+  "payload": {
+    "customer": "Example Ltd",
+    "features": ["sso_authentication", "integration_api"]
+  },
+  "signature": "hex-encoded-hmac-sha256"
+}
+```
+
+The signature is HMAC-SHA256 over canonical JSON of `payload`. The signing secret is read from `TIMEOFF_LICENSE_SECRET` or `license_secret`.
+
+The rest of the app depends only on `features.isEnabled(name)`, so route and template checks do not need to know where a feature came from.
