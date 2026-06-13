@@ -99,4 +99,12 @@ Signed license envelope:
 
 The signature is HMAC-SHA256 over canonical JSON of `payload`. The signing secret is read from `TIMEOFF_LICENSE_SECRET` or `license_secret`.
 
+Generate a signed license:
+
+```sh
+node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --secret "$TIMEOFF_LICENSE_SECRET"
+```
+
+Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
+
 The rest of the app depends only on `features.isEnabled(name)`, so route and template checks do not need to know where a feature came from.
