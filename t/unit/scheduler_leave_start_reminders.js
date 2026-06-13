@@ -5,6 +5,48 @@ var expect = require('chai').expect;
 var scheduler = require('../../lib/scheduler/leave_start_reminders');
 
 describe('Leave start reminder scheduler', function() {
+  var originalEnv = {};
+
+  beforeEach(function() {
+    originalEnv = {
+      NODE_ENV : process.env.NODE_ENV,
+      LEAVE_REMINDER_SCHEDULER_ENABLED : process.env.LEAVE_REMINDER_SCHEDULER_ENABLED,
+      TIMEOFF_FEATURES : process.env.TIMEOFF_FEATURES,
+      TIMEOFF_LICENSE : process.env.TIMEOFF_LICENSE,
+      TIMEOFF_LICENSE_SECRET : process.env.TIMEOFF_LICENSE_SECRET,
+      ALLOW_UNLICENSED_FEATURE_OVERRIDES : process.env.ALLOW_UNLICENSED_FEATURE_OVERRIDES,
+    };
+  });
+
+  afterEach(function() {
+    Object.keys(originalEnv).forEach(function(key) {
+      if (typeof originalEnv[key] === 'undefined') {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalEnv[key];
+      }
+    });
+  });
+
+  it('requires the premium feature to enable scheduler', function() {
+    process.env.NODE_ENV = 'production';
+    process.env.LEAVE_REMINDER_SCHEDULER_ENABLED = 'true';
+    delete process.env.TIMEOFF_FEATURES;
+    delete process.env.TIMEOFF_LICENSE;
+    delete process.env.TIMEOFF_LICENSE_SECRET;
+    delete process.env.ALLOW_UNLICENSED_FEATURE_OVERRIDES;
+
+    expect(scheduler.isSchedulerEnabled()).to.equal(false);
+  });
+
+  it('enables scheduler when environment and feature are enabled', function() {
+    process.env.NODE_ENV = 'test';
+    process.env.LEAVE_REMINDER_SCHEDULER_ENABLED = 'true';
+    process.env.TIMEOFF_FEATURES = 'leave_start_reminders';
+
+    expect(scheduler.isSchedulerEnabled()).to.equal(true);
+  });
+
   it('calculates next run today when schedule time is still ahead', function() {
     var nextRunAt = scheduler.getNextRunAt({
       now          : new Date('2026-05-08T08:30:00Z'),
