@@ -50,7 +50,7 @@ var test                 = require('selenium-webdriver/testing'),
 function check_teamview(data, emails){
 
   return open_page_func({
-    url    : application_host + 'calendar/teamview/',
+    url    : application_host + 'calendar/teamview/?save_current_department=1&save_current_group=1',
     driver : data.driver,
   })
   .then(function(data){

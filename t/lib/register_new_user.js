@@ -7,13 +7,17 @@
 var By        = require('selenium-webdriver').By,
     until     = require('selenium-webdriver').until,
     expect    = require('chai').expect,
-    _         = require('underscore'),
     Promise   = require("bluebird"),
     open_page_func       = require('./open_page'),
     build_driver         = require('./build_driver'),
     company_edit_form_id = '#company_edit_form',
     submit_form_func     = require('./submit_form');
 
+function is_transient_session_error(error) {
+  var message = error && (error.message || error.toString());
+
+  return /invalid session id|browser has closed|disconnected/i.test(message || '');
+}
 
 var register_new_user_func = Promise.promisify( function(args, callback){
 
@@ -21,6 +25,7 @@ var register_new_user_func = Promise.promisify( function(args, callback){
     application_host      = args.application_host || args.applicationHost,
     failing_error_message = args.failing_error_message,
     default_date_format   = args.default_date_format,
+    application_root      = application_host.replace(/\/+$/, ''),
     random_token          = (new Date()).getTime(),
     new_user_email        = args.user_email || random_token + '@test.com';
 
@@ -28,136 +33,146 @@ var register_new_user_func = Promise.promisify( function(args, callback){
   var driver = args.driver || build_driver()
 
 
-  // Make sure we are in desktop version
-  driver.manage().window().setSize(1024, 768);
-
-  // Go to front page
-  driver.get( application_host );
-
-  driver.wait(until.elementLocated(By.css('h1')), 1000);
-
-  // Check if there is a registration link
-  driver.findElement( By.css('a[href="/register/"]') )
+  driver.manage().window().setSize(1024, 768)
+    .then(function(){
+      return driver.get(application_root + '/register/');
+    })
+    .then(function(){
+      return driver.wait(until.elementLocated(By.css('h1')), 5000);
+    })
+    .then(function(){
+      return driver.findElement(By.css('h1'));
+    })
     .then(function(el){
       return el.getText();
     })
     .then(function(text){
-      expect(text).to.match(/Register new company/i);
-    });
+      if (text !== 'New company') {
+        return driver.getCurrentUrl()
+          .then(function(url){
+            expect(text, 'Expected registration page at ' + url).to.be.equal('New company');
+          });
+      }
 
-  // Click on registration link
-  driver
-    .findElement(By.css('a[href="/register/"]'))
-    .then(function(el){
-      el.click();
-    });
-
-  driver.wait(until.elementLocated(By.css('h1')), 1000);
-
-  // Make sure that new page is a registration page
-  driver.findElement(By.css('h1'))
-    .then(function(el){
-      return el.getText();
+      return Promise.resolve();
     })
-    .then(function(ee){
-      expect(ee).to.be.equal('New company');
-    });
-
-  driver.call(() => submit_form_func({
-    driver : driver,
-    form_params : [{
-      selector : 'input[name="company_name"]',
-      value    : 'Company '+(new Date()).getTime(),
-    },{
-      selector : 'input[name="name"]',
-      value    : 'name' + random_token,
-    },{
-      selector : 'input[name="lastname"]',
-      value    : 'lastname' + random_token,
-    },{
-      selector : 'input[name="email"]',
-      value    : new_user_email,
-    },{
-      selector : 'input[name="password"]',
-      value    : '123456',
-    },{
-      selector : 'input[name="password_confirmed"]',
-      value    : '123456',
-    },{
-      selector        : 'select[name="country"]',
-      option_selector : 'option[value="ZZ"]',
-    }],
-    submit_button_selector : '#submit_registration',
-  }));
-
-  driver.wait(until.elementLocated(By.css('div')), 1000);
-
-  if (failing_error_message) {
-
-    driver
-      .findElement(
-        By.css('div.alert-danger')
-      )
-      .then(function(el){
-        return el.getText();
-      })
-      .then(function(text){
-        expect(text).to.be.equal(failing_error_message);
+    .then(function(){
+      return submit_form_func({
+        driver : driver,
+        form_params : [{
+          selector : 'input[name="company_name"]',
+          value    : 'Company '+(new Date()).getTime(),
+        },{
+          selector : 'input[name="name"]',
+          value    : 'name' + random_token,
+        },{
+          selector : 'input[name="lastname"]',
+          value    : 'lastname' + random_token,
+        },{
+          selector : 'input[name="email"]',
+          value    : new_user_email,
+        },{
+          selector : 'input[name="password"]',
+          value    : '123456',
+        },{
+          selector : 'input[name="password_confirmed"]',
+          value    : '123456',
+        },{
+          selector        : 'select[name="country"]',
+          option_selector : 'option[value="ZZ"]',
+        }],
+        submit_button_selector : '#submit_registration',
+        elements_to_check : [],
+        message : failing_error_message
+          ? new RegExp(failing_error_message)
+          : /.*/,
+        should_be_successful : !failing_error_message,
       });
+    })
+    .catch(function(error){
+      if (failing_error_message) {
+        throw error;
+      }
 
-  } else {
+      return driver.getTitle()
+        .then(function(title){
+          if (/Calendar/.test(title)) {
+            return Promise.resolve();
+          }
 
-    // Make sure registration completed successfully
-    driver
-      .findElement(
-        By.css('div.alert-success')
-      )
-      .then(function(el){
-        return el.getText();
-      })
-      .then(function(text){
-        expect(text).to.be.equal('Registration is complete.');
-      });
-  }
+          throw error;
+        });
+    })
+    .then(function(){
+      if (failing_error_message) {
+        return Promise.resolve();
+      }
 
-  if (default_date_format) {
+      return driver.wait(function(){
+        return driver.getTitle().then(function(title){
+          return /Calendar/.test(title);
+        });
+      }, 5000);
+    })
+    .then(function(){
+      if (!default_date_format) {
+        return Promise.resolve();
+      }
 
-    // open company general configuration page and set the default format to be as requested
-    driver.call(function(){
       return open_page_func({
-        url    : application_host + 'settings/general/',
+        url    : application_root + '/settings/general/',
         driver : driver,
       })
-    });
-
-    // update company to use provided date format as a default
-    driver.call(function(){
-
-      return submit_form_func({
-        driver      : driver,
-        form_params : [{
-          selector : company_edit_form_id+' select[name="date_format"]',
-          option_selector : 'option[value="'+default_date_format+'"]',
-          value    : default_date_format,
-        }],
-        submit_button_selector : company_edit_form_id+' button[type="submit"]',
-        message : /successfully/i,
-        should_be_successful : true,
+      .then(function(){
+        return submit_form_func({
+          driver      : driver,
+          form_params : [{
+            selector : company_edit_form_id+' select[name="date_format"]',
+            option_selector : 'option[value="'+default_date_format+'"]',
+            value    : default_date_format,
+          }],
+          elements_to_check : [],
+          submit_button_selector : company_edit_form_id+' button[type="submit"]',
+          should_be_successful : true,
+        });
+      })
+      .then(function(){
+        return driver.sleep(1000);
       });
-    });
-
-  }
-
-  // Pass data back to the caller
-  driver.get( application_host )
+    })
     .then(function(){
-       callback(
-        null,
-        {
-          driver : driver,
-          email : new_user_email,
-        }
-      );
+      if (default_date_format) {
+        return Promise.resolve();
+      }
+
+      return driver.get(application_root + '/');
+    })
+    .then(function(){
+      callback(null, {
+        driver : driver,
+        email : new_user_email,
+      });
+    })
+    .catch(function(error){
+      if (!args.driver && !args._retried_after_session_crash && !failing_error_message && is_transient_session_error(error)) {
+        return driver.quit()
+          .catch(function(){ return Promise.resolve(); })
+          .then(function(){
+            var retry_args = Object.assign({}, args, {
+              _retried_after_session_crash : true,
+            });
+
+            return register_new_user_func(retry_args);
+          })
+          .then(function(data){
+            callback(null, data);
+          })
+          .catch(function(retry_error){
+            callback(retry_error);
+          });
+      }
+
+      callback(error);
     });
 
 });

@@ -62,9 +62,10 @@ describe('Check filtering on "users" page', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return driver.sleep(1000);
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_department_form_id+' input[name="name__new"]',
@@ -76,9 +77,10 @@ describe('Check filtering on "users" page', function(){
           }],
           submit_button_selector : new_department_form_id+' button[type="submit"]',
           message : /Changes to departments were saved/,
-        })
-        .then(function(){ done() });
-      });
+        });
+      })
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it("Create new non-admin user", function(done){

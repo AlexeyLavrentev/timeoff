@@ -163,10 +163,17 @@ describe('Check Time zones', function(){
   });
 
   it('Reject newly added leave', function(done){
+    const requestSelector = 'tr[vpp="pending_for__'+user_email+'"]';
+
     driver
-      .findElement(By.css('tr[vpp="pending_for__'+user_email+'"] input[value="Reject"]'))
+      .findElement(By.css(requestSelector+' input[value="Reject"]'))
       .then(el => el.click())
-      .then(() => done());
+      .then(() => driver.wait(() => (
+        driver.findElements(By.css(requestSelector))
+          .then(elements => elements.length === 0)
+      ), 5000))
+      .then(() => done())
+      .catch(done);
   });
 
   it("Open page for editing company details", function(done){

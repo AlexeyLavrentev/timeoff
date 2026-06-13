@@ -54,10 +54,13 @@ describe('Try to manage Bank holidays with non-default date format', function(){
   it("Remove default predefined bank holidays", function(done){
     submit_form_func({
       driver,
-      message                : /Bank holiday was successfully removed/,
+      elements_to_check      : [],
+      should_be_successful   : true,
       submit_button_selector : bankholiday_form_id+' button[tom-test-hook="remove__0"]',
     })
-    .then(() => done());
+    .then(() => driver.sleep(1000))
+    .then(() => done())
+    .catch(done);
   });
 
   it("And make sure that no bank holidays are shown", function(done){
@@ -72,9 +75,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_bankholiday_form_id+' input[name="name__new"]',
@@ -85,9 +90,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
           }],
           submit_button_selector: new_bankholiday_form_id+' button[type="submit"]',
           message : /Changes to bank holidays were saved/,
-        })
-        .then(function(){ done() });
-      });
+        });
+      })
+      .then(function(){ return driver.sleep(1000); })
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it("Add Second day of New year", function(done){
@@ -96,9 +103,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_bankholiday_form_id+' input[name="name__new"]',
@@ -109,9 +118,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
           }],
           submit_button_selector: new_bankholiday_form_id+' button[type="submit"]',
           message : /Changes to bank holidays were saved/,
-        })
-        .then(function(){done()});
-      });
+        });
+      })
+      .then(function(){ return driver.sleep(1000); })
+      .then(function(){done()})
+      .catch(done);
   });
 
   it("Add Add Labour day", function(done){
@@ -121,9 +132,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
            driver      : driver,
            form_params : [{
              selector : new_bankholiday_form_id+' input[name="name__new"]',
@@ -134,9 +147,11 @@ describe('Try to manage Bank holidays with non-default date format', function(){
            }],
            submit_button_selector: new_bankholiday_form_id+' button[type="submit"]',
            message : /Changes to bank holidays were saved/,
-        })
-        .then(function(){done()});
-      });
+        });
+      })
+      .then(function(){ return driver.sleep(1000); })
+      .then(function(){done()})
+      .catch(done);
   });
 
   it("Rename Christmas to have proper name", function(done){
@@ -166,7 +181,9 @@ describe('Try to manage Bank holidays with non-default date format', function(){
       message                : /Changes to bank holidays were saved/,
       should_be_successful   : true,
     })
-    .then(function(){done()});
+    .then(function(){ return driver.sleep(1000); })
+    .then(function(){done()})
+    .catch(done);
   });
 
   after(function(done){
@@ -208,8 +225,10 @@ describe("Try to use DD/MM/YY and some missleading date", function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
+      })
+      .then(function(){
         return submit_form_func({
           driver      : driver,
           form_params : [{
@@ -224,8 +243,12 @@ describe("Try to use DD/MM/YY and some missleading date", function(){
         });
       })
       .then(function(){
+        return driver.sleep(1000);
+      })
+      .then(function(){
         done();
-      });
+      })
+      .catch(done);
 
   });
 

@@ -3,7 +3,6 @@
 
 const
   test                   = require('selenium-webdriver/testing'),
-  until                  = require('selenium-webdriver').until,
   register_new_user_func = require('../../lib/register_new_user'),
   open_page_func         = require('../../lib/open_page'),
   submit_form_func       = require('../../lib/submit_form'),
@@ -49,6 +48,50 @@ describe('Coloring of half days', function(){
 
   this.timeout( config.get_execution_timeout() );
 
+  function count_approve_buttons() {
+    return driver
+      .findElements(By.css('tr[vpp] .btn-success'))
+      .then(btns => btns.length);
+  }
+
+  function approve_next_pending_request() {
+    let approve_buttons_before;
+
+    return count_approve_buttons()
+      .then(count => {
+        approve_buttons_before = count;
+        expect(count, 'pending approve buttons before approving').to.be.greaterThan(0);
+        return driver.findElement(By.css('tr[vpp] .btn-success'));
+      })
+      .then(el => el.click())
+      .then(() => driver.wait(() => (
+        count_approve_buttons()
+          .then(count => count < approve_buttons_before)
+      ), 5000));
+  }
+
+  function open_book_leave_modal(attempts_left) {
+    attempts_left = attempts_left === undefined ? 3 : attempts_left;
+
+    return driver
+      .findElement(By.css('#book_time_off_btn'))
+      .then(el => el.click())
+      .catch(err => {
+        if (attempts_left <= 0) {
+          throw err;
+        }
+
+        return driver
+          .sleep(250)
+          .then(() => open_book_leave_modal(attempts_left - 1));
+      })
+      .then(() => driver.wait(() => (
+        driver
+          .findElements(By.css('#book_leave_modal.in'))
+          .then(els => els.length > 0)
+      ), 5000));
+  }
+
   it("Performing registration process", function(done){
     register_new_user_func({
       application_host : application_host,
@@ -57,7 +100,8 @@ describe('Coloring of half days', function(){
       driver = data.driver;
       user_email = data.email;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Obtain information user", function(done){
@@ -68,13 +112,15 @@ describe('Coloring of half days', function(){
     .then(data => {
       user_id = data.user.id;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Ensure user starts at the very beginning of current year", done =>{
     userStartsAtTheBeginingOfYear({driver, email:user_email, year:2018})
       .then(() => open_page_func({ url:application_host,driver}))
       .then(() => done())
+      .catch(done);
   });
 
   it('Changes default color for Sick days to be "color 3"', done => {
@@ -100,7 +146,8 @@ describe('Coloring of half days', function(){
       leave_type_sick_id = ids[1];
 
       done();
-    });
+    })
+    .catch(done);
   });
 
   it('Go Calendar page', done => {
@@ -108,14 +155,12 @@ describe('Coloring of half days', function(){
       url    : application_host,
       driver : driver,
     })
-    .then(() => done());
+    .then(() => done())
+    .catch(done);
   });
 
   it("Add absence: 2018-02-01 (afternoon) - 2018-02-02 (morning) Sick", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-      .then(() => driver.sleep(1000))
+    open_book_leave_modal()
       .then(() => submit_form_func({
         driver      : driver,
         form_params : [{
@@ -136,14 +181,12 @@ describe('Coloring of half days', function(){
         }],
         message : /New leave request was added/,
       }))
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Add absence: 2018-02-02 (afternoon) - 2018-02-02 (afternnon) : Holiday", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-      .then(() => driver.sleep(1000))
+    open_book_leave_modal()
       .then(() => submit_form_func({
         driver      : driver,
         form_params : [{
@@ -165,14 +208,12 @@ describe('Coloring of half days', function(){
         message : /New leave request was added/,
         submit_button_selector : '#book_leave_modal button[type="submit"]'
       }))
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Add absence: 2018-02-08 (morning) - 2018-02-08 (morning) : Holiday (0.5 days)", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-      .then(() => driver.sleep(1000))
+    open_book_leave_modal()
       .then(() => submit_form_func({
         driver      : driver,
         form_params : [{
@@ -194,14 +235,12 @@ describe('Coloring of half days', function(){
         message : /New leave request was added/,
         submit_button_selector : '#book_leave_modal button[type="submit"]'
       }))
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Add absence: 2018-02-13 (afternoon) - 2018-02-14 (morning) : Sick", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-      .then(() => driver.sleep(1000))
+    open_book_leave_modal()
       .then(() => submit_form_func({
         driver      : driver,
         form_params : [{
@@ -223,14 +262,12 @@ describe('Coloring of half days', function(){
         message : /New leave request was added/,
         submit_button_selector : '#book_leave_modal button[type="submit"]'
       }))
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Add absence: 2018-02-14 (afternoon) - 2018-02-15 (morning) : Holiday", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-      .then(() => driver.sleep(1000))
+    open_book_leave_modal()
       .then(() => submit_form_func({
         driver      : driver,
         form_params : [{
@@ -252,7 +289,8 @@ describe('Coloring of half days', function(){
         message : /New leave request was added/,
         submit_button_selector : '#book_leave_modal button[type="submit"]'
       }))
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Open requests page", function(done){
@@ -260,31 +298,15 @@ describe('Coloring of half days', function(){
       url    : application_host + 'requests/',
       driver : driver,
     })
-    .then(() => done());
+    .then(() => done())
+    .catch(done);
   });
 
   it("Ensure that all absences are approved", function(done){
-    driver.findElement(By.css('tr[vpp] .btn-success'))
-      .then(el => el.click())
-      .then(() => driver.wait(until.elementLocated(By.css('h1')), 1000))
-
-      .then(() => driver.findElement(By.css('tr[vpp] .btn-success')))
-      .then(el => el.click())
-      .then(() => driver.wait(until.elementLocated(By.css('h1')), 1000))
-
-      .then(() => driver.findElement(By.css('tr[vpp] .btn-success')))
-      .then(el => el.click())
-      .then(() => driver.wait(until.elementLocated(By.css('h1')), 1000))
-
-      .then(() => driver.findElement(By.css('tr[vpp] .btn-success')))
-      .then(el => el.click())
-      .then(() => driver.wait(until.elementLocated(By.css('h1')), 1000))
-
-      .then(() => driver.findElement(By.css('tr[vpp] .btn-success')))
-      .then(el => el.click())
-      .then(() => driver.wait(until.elementLocated(By.css('h1')), 1000))
-
-      .then(() => done());
+    Bluebird
+      .each([1, 2, 3, 4, 5], approve_next_pending_request)
+      .then(() => done())
+      .catch(done);
   });
 
   it('Go to callendar page and ensure that all half days cells have correct color classes', done =>{
@@ -383,7 +405,8 @@ describe('Coloring of half days', function(){
       return Bluebird.resolve();
     })
 
-    .then(() => done());
+    .then(() => done())
+    .catch(done);
   });
 
   it("Go to Team view page and ensure that all half a day cells have correct color classes", done => {
@@ -482,7 +505,8 @@ describe('Coloring of half days', function(){
       return Bluebird.resolve();
     })
 
-    .then(() => done());
+    .then(() => done())
+    .catch(done);
   });
 
   it("On Team view page ensure that days deducted from allowance are stated correctly", done => {
@@ -496,7 +520,8 @@ describe('Coloring of half days', function(){
       expect(txt, 'Ensure that system shows 2 days as deducted')
         .to.be.eql('2');
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Go to report page and for 2018-02 ensure that report contains correct summaries", done => {
@@ -516,7 +541,8 @@ describe('Coloring of half days', function(){
       expect(stat, 'Ensure that report shows correct deducted days')
         .to.be.deep.equal(['2','2','2']);
       done();
-    });
+    })
+    .catch(done);
 
   });
 
