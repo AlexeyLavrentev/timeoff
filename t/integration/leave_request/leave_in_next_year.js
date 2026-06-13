@@ -61,9 +61,10 @@ describe(`Leave in the next year (${nextYear}) when no allowance in the current 
       .then(() => {
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return driver.sleep(1000);
+      })
+      .then(() => {
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : 'input#from',
@@ -73,9 +74,10 @@ describe(`Leave in the next year (${nextYear}) when no allowance in the current 
             value : `${nextYear}-01-12`,
           }],
           message : /New leave request was added/,
-        })
-        .then(() => done());
-      });
+        });
+      })
+      .then(() => done())
+      .catch(done);
   });
 
   after(done => {

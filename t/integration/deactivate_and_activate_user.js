@@ -42,7 +42,8 @@ describe('Deactivate and activate user', function(){
       email_admin = data.email;
       driver = data.driver;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Create EMPLOYEE", function(done){
@@ -53,7 +54,8 @@ describe('Deactivate and activate user', function(){
     .then(function(data){
       email_employee = data.new_user_email;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Obtain information about employee", function(done){
@@ -64,7 +66,8 @@ describe('Deactivate and activate user', function(){
     .then(function(data){
       employee_id = data.user.id;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it('Check that the deactivated badge is not displayed', function(done){
@@ -76,6 +79,7 @@ describe('Deactivate and activate user', function(){
         done();
       }
     })
+    .catch(done);
   });
 
   it('Mark EMPLOYEE as inactive by specifying end date to be in past', function(done){
@@ -95,7 +99,8 @@ describe('Deactivate and activate user', function(){
         should_be_successful : true,
       })
       .then(function(){ done() });
-    });
+    })
+    .catch(done);
   });
 
   it('Check that the deactivated badge is displayed', function(done){
@@ -106,7 +111,8 @@ describe('Deactivate and activate user', function(){
     .then(val => {
       expect(val).to.be.eql('Deactivated', 'It is not the deactivated badge');
       done();
-    });
+    })
+    .catch(done);
   });
 
   it("Logout from ADMIN", function(done){
@@ -114,7 +120,8 @@ describe('Deactivate and activate user', function(){
       application_host : application_host,
       driver           : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it('Create another company for EMPLOYEE email', function(done){
@@ -123,7 +130,8 @@ describe('Deactivate and activate user', function(){
       user_email       : email_employee,
       driver           : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Logout from new company created by EMPLOYEE", function(done){
@@ -131,7 +139,8 @@ describe('Deactivate and activate user', function(){
       application_host : application_host,
       driver           : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Login back as ADMIN", function(done){
@@ -140,7 +149,8 @@ describe('Deactivate and activate user', function(){
       user_email       : email_admin,
       driver           : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Try to activate EMPLOYEE back. Open details page", function(done){
@@ -148,7 +158,8 @@ describe('Deactivate and activate user', function(){
       url    : application_host + 'users/edit/'+employee_id+'/',
       driver : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it('... use end_date in future', function(done){
@@ -161,7 +172,8 @@ describe('Deactivate and activate user', function(){
       submit_button_selector : 'button#save_changes_btn',
       message : /There is an active account with similar email somewhere within system/,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("... use empty end_date", function(done){
@@ -174,7 +186,8 @@ describe('Deactivate and activate user', function(){
       submit_button_selector : 'button#save_changes_btn',
       message : /There is an active account with similar email somewhere within system/,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it('Although setting end_date to some value in past still works', function(done){
@@ -187,11 +200,12 @@ describe('Deactivate and activate user', function(){
       submit_button_selector : 'button#save_changes_btn',
       message : /Details for .+ were updated/,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
 
   after(function(done){
-    driver.quit().then(function(){ done(); });
+    driver.quit().then(function(){ done(); }).catch(done);
   });
 });

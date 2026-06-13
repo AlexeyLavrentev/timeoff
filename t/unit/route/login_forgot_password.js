@@ -216,6 +216,8 @@ describe('Forgot password route', function() {
   });
 
   it('redirects SSO users to SSO login instead of sending password reset email', async function() {
+    const originalFeatureFlag = process.env.FEATURE_SSO_AUTHENTICATION;
+    process.env.FEATURE_SSO_AUTHENTICATION = 'true';
     const user = {
       getCompany() {
         return Promise.resolve({
@@ -251,7 +253,16 @@ describe('Forgot password route', function() {
       },
     });
 
-    const result = await invokeRouteHandlers(postForgotPasswordHandlers, req);
+    let result;
+    try {
+      result = await invokeRouteHandlers(postForgotPasswordHandlers, req);
+    } finally {
+      if (typeof originalFeatureFlag === 'undefined') {
+        delete process.env.FEATURE_SSO_AUTHENTICATION;
+      } else {
+        process.env.FEATURE_SSO_AUTHENTICATION = originalFeatureFlag;
+      }
+    }
 
     expect(result.type).to.equal('redirect');
     expect(result.location).to.equal('/login/sso/');

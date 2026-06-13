@@ -105,7 +105,7 @@ describe('Login page SSO UX', function(){
           value    : TEST_SAML_CERT,
         }],
         submit_button_selector : '#submit_registration',
-        message : /updated successfully/i,
+        message : /SSO configuration was updated|updated successfully/i,
       });
     })
     .then(function(){

@@ -4,133 +4,99 @@
 var By        = require('selenium-webdriver').By,
     expect    = require('chai').expect,
     until     = require('selenium-webdriver').until,
-    _         = require('underscore'),
     Promise   = require("bluebird"),
-    build_driver = require('./build_driver'),
-    driver;
+    build_driver = require('./build_driver');
 
 
-var login_with_user_func = Promise.promisify(function(args, callback){
+function login_with_user_func(args) {
 
   var application_host = args.application_host,
       user_email       = args.user_email,
-      result_callback  = callback,
       password         = args.password || '123456',
-      should_fail      = args.should_fail || false;
+      should_fail      = args.should_fail || false,
+      driver           = args.driver || build_driver();
 
-  // Create new instance of driver
-  driver = args.driver || build_driver();
-
-  // Make sure we are in desktop version
-  driver.manage().window().setSize(1024, 768);
-
-  // Open front page
-  driver.get( application_host );
-
-  driver.wait(until.elementLocated(By.css('h1')), 1000);
-
-  // Check that there is a login button
-  driver.findElement( By.css('a[href="/login/"]') )
-    .then(function(el){
+  return driver.manage().window().setSize(1024, 768)
+    .then(function() {
+      return driver.get(application_host + 'login/');
+    })
+    .then(function() {
+      return driver.wait(until.elementLocated(By.css('#local_login_form')), 5000);
+    })
+    .then(function() {
+      return driver.findElement(By.css('h1'));
+    })
+    .then(function(el) {
       return el.getText();
     })
-    .then(function(text){
+    .then(function(text) {
       expect(text).to.be.equal('Login');
-    });
-
-  // Click on Login button
-  driver.findElement( By.css('a[href="/login/"]') )
-    .then(function(el){
-      return el.click();
-    });
-
-  driver.wait(until.elementLocated(By.css('h1')), 1000);
-
-  // Check that it is actually login page
-  driver.findElement( By.css('h1') )
-    .then(function(el){
-      return el.getText();
     })
-    .then(function(text){
-      expect(text).to.be.equal('Login');
-    });
-
-  // Fill login form
-  Promise.all([
-    _.map(
-      [
+    .then(function() {
+      return Promise.each([
         {
-          selector : 'input[name="username"]',
+          selector : '#local_login_form input[name="username"]',
           value    : user_email,
         },
         {
-          selector : 'input[name="password"]',
+          selector : '#local_login_form input[name="password"]',
           value    : password,
         },
-      ],
-      function( test_case ){
-        driver
-          .findElement(By.css( test_case.selector ))
-          .then(function(el){
-            el.sendKeys( test_case.value );
+      ], function(test_case) {
+        return driver
+          .findElement(By.css(test_case.selector))
+          .then(function(el) {
+            return el.clear()
+              .then(function() {
+                return el.sendKeys(test_case.value);
+              });
           });
-      })
-  ]);
-
-  // Submit login button
-  driver.findElement( By.css('#submit_login') )
-    .then(function(el){
-      el.click();
-    });
-
-  if (should_fail) {
-
-    driver
-      .findElement(
-        By.css('div.alert-danger')
-      )
-      .then(function(el){
-        return el.getText();
-      })
-      .then(function(text){
-        expect(text).to.match(/Incorrect credentials/);
       });
+    })
+    .then(function() {
+      return driver.findElement(By.css('#local_login_form #submit_login'));
+    })
+    .then(function(el) {
+      return el.click();
+    })
+    .then(function() {
+      if (should_fail) {
+        return driver
+          .wait(until.elementLocated(By.css('div.alert-danger')), 1000)
+          .then(function(el) {
+            return el.getText();
+          })
+          .then(function(text) {
+            expect(text).to.match(/Incorrect credentials/);
+          });
+      }
 
-  } else {
-    driver.wait(until.elementLocated(By.css('div.alert-success')), 1000);
-
-    // Make sure login was successful, check that we landed on user account page
-    driver.getTitle()
-      .then(function(title){
+      return driver
+        .wait(until.elementLocated(By.css('div.alert-success')), 1000)
+        .then(function() {
+          return driver.getTitle();
+        })
+        .then(function(title) {
           expect(title).to.match(/Calendar/);
-      });
-
-    driver
-      .findElement(
-        By.css('div.alert-success')
-      )
-      .then(function(el){
-        return el.getText();
-      })
-      .then(function(text){
-        expect(text).to.match(/Welcome back/);
-      });
-  }
-
-
-  // Go back to the front page and pass data to the caller
-  driver.get( application_host )
-    .then(function(){
+        })
+        .then(function() {
+          return driver.findElement(By.css('div.alert-success'));
+        })
+        .then(function(el) {
+          return el.getText();
+        })
+        .then(function(text) {
+          expect(text).to.match(/Welcome back/);
+        });
+    })
+    .then(function() {
       // "export" current driver
-      result_callback(
-        null,
-        {
-          driver : driver,
-        }
-      );
+      return {
+        driver : driver,
+      };
     });
-});
+}
 
 module.exports = function(args){
-  return args.driver.call(function(){return login_with_user_func(args)});
+  return login_with_user_func(args);
 }

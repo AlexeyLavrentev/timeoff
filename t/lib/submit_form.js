@@ -3,53 +3,197 @@
 var webdriver  = require('selenium-webdriver'),
 By             = require('selenium-webdriver').By,
 Key            = require('selenium-webdriver').Key,
-expect         = require('chai').expect,
-_              = require('underscore'),
-Promise        = require("bluebird"),
-until          = require('selenium-webdriver').until;
+  expect         = require('chai').expect,
+  _              = require('underscore'),
+  Promise        = require("bluebird");
 
 var DEFAULT_WAIT_TIMEOUT = 5000;
 
-function fill_form_field(driver, test_case) {
+function is_stale_element_error(err) {
+  return err && (
+    err.name === 'StaleElementReferenceError' ||
+    /stale element reference/.test(err.message || '')
+  );
+}
+
+function find_visible_element(driver, selector) {
+  return driver.wait(function(){
+    return driver.findElements(By.css(selector))
+      .then(function(els){
+        var findFlow = Promise.resolve(-1);
+
+        els.forEach(function(el){
+          findFlow = findFlow.then(function(foundIndex){
+            if (foundIndex !== -1) {
+              return foundIndex;
+            }
+
+            return el.isDisplayed()
+              .then(function(visible){
+                return visible ? els.indexOf(el) : -1;
+              })
+              .catch(function(){
+                return -1;
+              });
+          });
+        });
+
+        return findFlow.then(function(foundIndex){
+          return foundIndex === -1 ? false : foundIndex + 1;
+        });
+      })
+      .catch(function(){
+        return false;
+      });
+  }, DEFAULT_WAIT_TIMEOUT)
+    .then(function(foundIndex){
+      return driver.findElements(By.css(selector))
+        .then(function(els){
+          return els[foundIndex - 1];
+        });
+    })
+    .catch(function(){
+      return driver.findElement(By.css(selector));
+    });
+}
+
+function is_element_not_interactable_error(err) {
+  return err && (
+    err.name === 'ElementNotVisibleError' ||
+    err.name === 'ElementNotInteractableError' ||
+    /element not interactable/.test(err.message || '')
+  );
+}
+
+function click_element(driver, el) {
+  return driver.executeScript(
+    'arguments[0].scrollIntoView({block: "center", inline: "nearest"}); arguments[0].click();',
+    el
+  );
+}
+
+function set_element_value(driver, el, value, change_step) {
+  return driver.executeScript(
+    'if (arguments[2]) { arguments[0].step = "0.1"; }'
+    + 'arguments[0].focus();'
+    + 'arguments[0].value = "";'
+    + 'var inputEvent = document.createEvent("HTMLEvents");'
+    + 'inputEvent.initEvent("input", true, false);'
+    + 'arguments[0].dispatchEvent(inputEvent);'
+    + 'arguments[0].value = arguments[1];'
+    + 'var changeEvent = document.createEvent("HTMLEvents");'
+    + 'changeEvent.initEvent("change", true, false);'
+    + 'arguments[0].dispatchEvent(inputEvent);'
+    + 'arguments[0].dispatchEvent(changeEvent);'
+    + 'arguments[0].blur();',
+    el,
+    value,
+    !!change_step
+  );
+}
+
+function type_element_value(driver, el, value, change_step) {
+  if (typeof el.clear !== 'function' || typeof el.sendKeys !== 'function') {
+    return set_element_value(driver, el, value, change_step);
+  }
+
+  var flow = Promise.resolve();
+
+  if (change_step) {
+    flow = flow.then(function(){
+      return driver.executeScript("return arguments[0].step = '0.1'", el);
+    });
+  }
+
+  return flow
+    .then(function(){
+      return el.clear();
+    })
+    .then(function(){
+      return el.sendKeys(value);
+    })
+    .then(function(){
+      return el.sendKeys(Key.TAB);
+    });
+}
+
+function fill_form_field(driver, test_case, attempt) {
+  attempt = attempt || 0;
+
   if (Object.keys(test_case).length === 0 ){
     return Promise.resolve(1);
   }
 
-  return driver.findElement(By.css(test_case.selector))
+  return find_visible_element(driver, test_case.selector)
     .then(function(el){
       if ( test_case.hasOwnProperty('option_selector') ) {
-        el.click();
+        if (test_case.hasOwnProperty('value')) {
+          return driver.executeScript(
+            'arguments[0].value = arguments[1];'
+            + 'var event = document.createEvent("HTMLEvents");'
+            + 'event.initEvent("change", true, false);'
+            + 'arguments[0].dispatchEvent(event);',
+            el,
+            test_case.value
+          );
+        }
+
         return el.findElement(By.css( test_case.option_selector ))
-          .then(function(optionEl){ return optionEl.click(); });
+          .then(function(optionEl){
+            return optionEl.getAttribute('value');
+          })
+          .then(function(value){
+            return driver.executeScript(
+              'arguments[0].value = arguments[1];'
+              + 'var event = document.createEvent("HTMLEvents");'
+              + 'event.initEvent("change", true, false);'
+              + 'arguments[0].dispatchEvent(event);',
+              el,
+              value
+            );
+          });
       } else if ( test_case.hasOwnProperty('tick')) {
-        return el.click();
+        return el.isSelected()
+          .then(function(selected){
+            if (test_case.value === 'on' && selected) {
+              return null;
+            }
+
+            if (test_case.value === 'off' && !selected) {
+              return null;
+            }
+
+            return click_element(driver, el);
+          });
       } else if (test_case.file) {
         return el.sendKeys(test_case.value);
       } else if (test_case.hasOwnProperty('dropdown_option')) {
-        return el.click()
+        return click_element(driver, el)
           .then(function(){ return driver.findElement(By.css(test_case.dropdown_option)); })
-          .then(function(dd){ return dd.click(); });
+          .then(function(dd){ return click_element(driver, dd); });
       } else {
         // Prevent the browser validations to allow backend validations to occur
-        if (test_case.change_step) {
-          driver.executeScript("return arguments[0].step = '0.1'", el);
-        }
-
-        return el.clear().then(function(){
-          el.sendKeys(test_case.value);
-          // Tabs to trigger the calendars overlays
-          // to close so the modal submit button can be clicked
-          return el.sendKeys(Key.TAB);
-        });
+        return type_element_value(driver, el, test_case.value, test_case.change_step);
       }
+    })
+    .catch(function(err){
+      if ((is_stale_element_error(err) || is_element_not_interactable_error(err)) && attempt < 2) {
+        return driver.sleep(100)
+          .then(function(){
+            return fill_form_field(driver, test_case, attempt + 1);
+          });
+      }
+
+      throw err;
     });
 }
 
 function read_alert_texts(driver) {
-  return driver.findElements(By.css('div.alert'))
-    .then(function(els){
-      return Promise.all(_.map(els, function(el){ return el.getText(); }));
-    });
+  return driver.executeScript(
+    'return Array.prototype.map.call(document.querySelectorAll("div.alert"), function(el) {'
+    + '  return el.textContent;'
+    + '});'
+  );
 }
 
 function wait_for_matching_alert(driver, message, multi_line_message) {
@@ -102,11 +246,17 @@ function wait_for_expected_elements(driver, elements_to_check) {
   }, DEFAULT_WAIT_TIMEOUT);
 }
 
+function clear_existing_alerts(driver) {
+  return driver.executeScript(
+    'var alerts = document.querySelectorAll("div.alert");'
+    + 'Array.prototype.forEach.call(alerts, function(alert) {'
+    + '  alert.parentNode.removeChild(alert);'
+    + '});'
+  );
+}
 
-var submit_form_func = Promise.promisify( function(args, callback){
-
+function submit_form_func(args) {
   var driver          = args.driver,
-      result_callback = callback,
       // Regex to check the message that is shown after form is submitted
       message         = args.message || /.*/,
       // Array of object that have at least two keys: selector - css selector
@@ -131,11 +281,11 @@ var submit_form_func = Promise.promisify( function(args, callback){
       submit_button_selector = args.submit_button_selector ||'button[type="submit"]';
 
 
-    Promise.resolve()
+    return Promise.resolve()
       .then(function(){
-        return Promise.all(_.map(form_params, function(test_case){
+        return Promise.each(form_params, function(test_case){
           return fill_form_field(driver, test_case);
-        }));
+        });
       })
       .then(function(){
         if (confirm_dialog) {
@@ -143,27 +293,37 @@ var submit_form_func = Promise.promisify( function(args, callback){
         }
       })
       .then(function(){
-        return driver.findElement(By.css(submit_button_selector));
-      })
-      .then(function(el){
-        return el.click();
+        return clear_existing_alerts(driver);
       })
       .then(function(){
-        return driver.wait(until.elementLocated(By.css('body')), DEFAULT_WAIT_TIMEOUT);
+        return find_visible_element(driver, submit_button_selector);
+      })
+      .then(function(el){
+        return click_element(driver, el);
       })
       .then(function(){
         if (!should_be_successful) {
-          return wait_for_matching_alert(driver, message, multi_line_message);
+          return wait_for_matching_alert(driver, message, multi_line_message)
+            .catch(function(){
+              return read_alert_texts(driver)
+                .then(function(alertTexts){
+                  throw new Error(
+                    'Timed out waiting for flash message after failed submit. '
+                    + 'Expected: ' + message + '. '
+                    + 'Current alerts: ' + JSON.stringify(alertTexts)
+                  );
+                });
+            });
         }
 
         return wait_for_expected_elements(driver, elements_to_check)
           .then(function(){
+            if (String(message) === '/.*/') {
+              return null;
+            }
+
             return wait_for_matching_alert(driver, message, multi_line_message)
               .catch(function(){
-                if (String(message) === '/.*/') {
-                  return null;
-                }
-
                 return read_alert_texts(driver)
                   .then(function(alertTexts){
                     throw new Error(
@@ -186,19 +346,11 @@ var submit_form_func = Promise.promisify( function(args, callback){
           ).to.be.equal(true);
         }
 
-        result_callback(
-          null,
-          {
-            driver : driver,
-          }
-        );
-      })
-      .catch(function(error){
-        result_callback(error);
+        return {
+          driver : driver,
+        };
       });
-});
-
-
-module.exports = function(args){
-  return args.driver.call(function(){return submit_form_func(args)});
 }
+
+
+module.exports = submit_form_func;

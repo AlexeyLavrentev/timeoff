@@ -180,8 +180,11 @@ describe('Leave request cancelation', function(){
         return cancel_btn.click();
       })
       .then(function(){
-        // Wait until page properly is reloaded
-        return driver.wait(until.elementLocated(By.css('h1')), 1000);
+        return driver.wait(function(){
+          return driver
+            .findElements(By.css( 'tr.leave-request-row' ))
+            .then(function(elements){ return elements.length === 0; });
+        }, 5000);
       })
       .then(function(){ done() });
   });
@@ -193,6 +196,7 @@ describe('Leave request cancelation', function(){
         expect( elements.length ).to.be.eq(0);
         done();
       })
+      .catch(done);
  });
 
   it(" Logout from user B account", function(done){

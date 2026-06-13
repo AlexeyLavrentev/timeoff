@@ -275,7 +275,7 @@ describe('Settings authentication route', function() {
     expect(result.statusCode).to.equal(422);
     expect(company.saveCallCount).to.equal(0);
     expect(validateCalled).to.equal(false);
-    expect(result.req.session.flash.errors[0]).to.contain('settings.messages.authUpdateFailed');
-    expect(result.req.session.flash.errors[0]).to.contain('settings.messages.authMutuallyExclusive');
+    expect(result.res.locals.flash.errors[0]).to.contain('settings.messages.authUpdateFailed');
+    expect(result.res.locals.flash.errors[0]).to.contain('settings.messages.authMutuallyExclusive');
   });
 });

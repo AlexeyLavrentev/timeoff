@@ -38,6 +38,7 @@ function getRouteHandlers(router, path, method) {
 function createReq(overrides) {
   const req = Object.assign({
     body: {},
+    path: '/register',
     session: {},
     user: null,
     app: {
