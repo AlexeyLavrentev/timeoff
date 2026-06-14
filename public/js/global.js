@@ -320,17 +320,18 @@ $(document).ready(function() {
 
           const dropDown = $('#header-notification-dropdown ul.dropdown-menu');
           const badge = $('#header-notification-dropdown .notification-badge');
-          const timeBalanceBadge = $('#time-balance-nav-badge');
+          const featureBadges = $('.notification-feature-badge');
 
-          const timeBalanceNotification = (data || []).filter(function(notification) {
-            return notification.type === 'pending_time_balance_request';
-          })[0];
+          featureBadges.addClass('hidden').text('');
+          (data || []).forEach(function(notification) {
+            if (!notification.badgeId) {
+              return;
+            }
 
-          if (timeBalanceNotification) {
-            timeBalanceBadge.removeClass('hidden').text(timeBalanceNotification.numberOfRequests);
-          } else {
-            timeBalanceBadge.addClass('hidden').text('');
-          }
+            $('#' + notification.badgeId)
+              .removeClass('hidden')
+              .text(notification.numberOfRequests);
+          });
 
           if (!data || !data.length) {
             badge.addClass('hidden');

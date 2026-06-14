@@ -22,7 +22,7 @@
             <li><a href="/calendar/teamview/">{{t "nav.teamView"}}</a></li>
           {{/ unless }}
           {{#each primary_premium_nav_items}}
-            <li><a href="{{this.path}}">{{t this.labelKey}} {{#if this.badgeId}}<span id="{{this.badgeId}}" class="label label-info hidden"></span>{{/if}}</a></li>
+            <li><a href="{{this.path}}">{{t this.labelKey}} {{#if this.badgeId}}<span id="{{this.badgeId}}" class="label label-info hidden notification-feature-badge"></span>{{/if}}</a></li>
           {{/each}}
           {{# if logged_user.admin }}
             <li class="hidden-xs"><a href="/users/">{{t "nav.employees"}}</a></li>

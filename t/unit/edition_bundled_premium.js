@@ -56,6 +56,7 @@ describe('Bundled premium edition module', function() {
       .to.deep.equal(['time-balance', 'vacation-plans']);
     expect(registry.notificationProviders.map(function(provider) { return provider.type; }))
       .to.deep.equal(['pending_time_balance_request', 'pending_vacation_plan']);
+    expect(registry.notificationProviders[0].badgeId).to.equal('time-balance-nav-badge');
     expect(registry.viewPaths.length).to.equal(1);
     expect(registry.viewPaths[0]).to.equal(
       path.join(__dirname, '..', '..', 'lib', 'edition', 'bundled_premium', 'views')
