@@ -10,19 +10,26 @@ Set the module name or path with one of these values:
 
 ```env
 TIMEOFF_PREMIUM_MODULE=@your-company/timeoff-premium
+TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 ```
 
 or in `config/app.json`:
 
 ```json
 {
-  "premium_module": "@your-company/timeoff-premium"
+  "premium_module": "@your-company/timeoff-premium",
+  "premium_module_required": true
 }
 ```
 
 If the value is empty, the app runs as the community edition. If the configured
 module is not installed, the app logs a warning and continues without premium
 extensions.
+
+For commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` or
+`premium_module_required=true`. In that mode, startup fails when the configured
+premium module is missing. This makes misconfigured paid deployments fail closed
+instead of silently running as community edition.
 
 ## Module Shape
 
