@@ -26,6 +26,17 @@ If the value is empty, the app runs as the community edition. If the configured
 module is not installed, the app logs a warning and continues without premium
 extensions.
 
+During the current extraction stage, the repository still includes a bundled
+premium module for existing `time_balance` and `vacation_planning` code:
+
+```env
+TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium
+```
+
+Use it together with a license that enables the corresponding features. A future
+public community build can omit this file, while a commercial image should point
+`TIMEOFF_PREMIUM_MODULE` to a private package instead.
+
 For commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` or
 `premium_module_required=true`. In that mode, startup fails when the configured
 premium module is missing. This makes misconfigured paid deployments fail closed
@@ -161,16 +172,18 @@ licenses, signatures, signing secrets, API tokens, or customer-private data.
 
 Use this path when extracting a premium feature out of the open-source tree:
 
-1. Move the route implementation, views, models, jobs, and feature-specific
+1. Move registration into `lib/edition/bundled_premium.js` or a private module
+   that follows the same contract.
+2. Move the route implementation, views, models, jobs, and feature-specific
    helpers into the private module.
-2. Keep stable public URLs by registering the moved routes with
+3. Keep stable public URLs by registering the moved routes with
    `registry.registerRoute`.
-3. Register any menu entries through `registerNavigationItem`.
-4. Register notification counters through `registerNotificationProvider`.
-5. Register background jobs through `registerScheduler`.
-6. Keep the feature flag in `lib/features.js`; the private module should still
+4. Register any menu entries through `registerNavigationItem`.
+5. Register notification counters through `registerNotificationProvider`.
+6. Register background jobs through `registerScheduler`.
+7. Keep the feature flag in `lib/features.js`; the private module should still
    rely on the same feature name for license checks.
-7. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+8. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.
