@@ -202,4 +202,28 @@ describe('Edition registry', function() {
 
     expect(registry.getDiagnostics()[0].name).to.equal('license');
   });
+
+  it('registers unique view paths and applies them to express app', function() {
+    var registry = new EditionRegistry();
+    var appViews;
+
+    registry.registerViewPath('/premium/views');
+    registry.registerViewPath('/premium/views');
+
+    expect(function() {
+      registry.registerViewPath({});
+    }).to.throw(/view path requires/);
+
+    var applied = registry.applyViewPaths({
+      set: function(key, value) {
+        if (key === 'views') {
+          appViews = value;
+        }
+      },
+    }, ['/core/views', '/premium/views']);
+
+    expect(registry.getViewPaths()).to.deep.equal(['/premium/views']);
+    expect(applied).to.deep.equal(['/core/views', '/premium/views']);
+    expect(appViews).to.deep.equal(['/core/views', '/premium/views']);
+  });
 });

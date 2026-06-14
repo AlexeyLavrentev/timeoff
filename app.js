@@ -16,6 +16,7 @@ const i18nextMiddleware = require('i18next-express-middleware');
 const { initI18next } = require('./lib/i18n');
 
 var app = express();
+var baseViewPath = path.join(__dirname, 'views');
 
 const parseTrustProxy = (value) => {
   if (typeof value === 'boolean') {
@@ -55,6 +56,7 @@ var handlebars = require('express-handlebars')
 
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
+app.set('views', [baseViewPath]);
 app.set('trust proxy', parseTrustProxy(config.get('trust_proxy')));
 
 // Add single reference to the model into application object
@@ -241,10 +243,13 @@ app.use(
   require('./lib/route/requests')
 );
 
-edition.registerRoutes(app, {
+var editionContext = {
   app: app,
   passport: passport,
-});
+};
+
+edition.applyViewPaths(app, [baseViewPath], editionContext);
+edition.registerRoutes(app, editionContext);
 
 app.use(
   '/audit/',
