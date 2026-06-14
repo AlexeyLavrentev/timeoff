@@ -100,6 +100,117 @@ describe('Feature licensing', function() {
     expect(features.isEnabled('time_balance')).to.equal(true);
   });
 
+  it('keeps signed TIMEOFF_LICENSE payloads with future expiry enabled', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: '2999-12-31T23:59:59.000Z',
+    };
+    const secret = 'test-license-secret';
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      signature: features.signLicensePayload(payload, secret),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(true);
+    expect(features.getLicenseStatus()).to.deep.equal({
+      valid: true,
+      reason: 'valid',
+      source: 'env',
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: '2999-12-31T23:59:59.000Z',
+    });
+  });
+
+  it('rejects signed TIMEOFF_LICENSE payloads with past expiry', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: '2000-01-01T00:00:00.000Z',
+    };
+    const secret = 'test-license-secret';
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      signature: features.signLicensePayload(payload, secret),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.getLicenseStatus().reason).to.equal('expired');
+  });
+
+  it('rejects signed TIMEOFF_LICENSE payloads with malformed expiry', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: 'not-a-date',
+    };
+    const secret = 'test-license-secret';
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      signature: features.signLicensePayload(payload, secret),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.getLicenseStatus().reason).to.equal('invalid_expiry');
+  });
+
+  it('does not expose raw license or signature in license status', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+    const secret = 'test-license-secret';
+    const signature = features.signLicensePayload(payload, secret);
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_SECRET = secret;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({payload, signature});
+
+    const status = features.getLicenseStatus();
+
+    expect(status.customer).to.equal('Example Ltd');
+    expect(status.features).to.deep.equal(['time_balance']);
+    expect(status.signature).to.equal(undefined);
+    expect(status.secret).to.equal(undefined);
+    expect(status.raw).to.equal(undefined);
+    expect(JSON.stringify(status)).to.not.contain(signature);
+    expect(JSON.stringify(status)).to.not.contain(secret);
+  });
+
+  it('rejects expired unsigned TIMEOFF_LICENSE payloads in development environments', function() {
+    process.env.NODE_ENV = 'test';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: '2000-01-01T00:00:00.000Z',
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.getLicenseStatus().reason).to.equal('expired');
+  });
+
+  it('keeps unsigned TIMEOFF_LICENSE payloads enabled in development environments', function() {
+    process.env.NODE_ENV = 'test';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: '2999-12-31T23:59:59.000Z',
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(true);
+    expect(features.getLicenseStatus().reason).to.equal('valid');
+  });
+
   it('rejects TIMEOFF_LICENSE payloads with mismatched signatures', function() {
     const signedPayload = {
       customer: 'Example Ltd',

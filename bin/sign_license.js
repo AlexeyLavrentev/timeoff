@@ -11,7 +11,7 @@ const parseList = value => String(value || '')
   .filter(Boolean);
 
 const printUsageAndExit = () => {
-  console.error('Usage: node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --secret <secret>');
+  process.stderr.write('Usage: node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --secret <secret> [--expires 2027-12-31] [--base64]\n');
   process.exit(1);
 };
 
