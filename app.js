@@ -133,6 +133,9 @@ app.use(function(req,res,next){
   res.locals.default_language = config.get('default_language') || 'en';
   res.locals.branding = branding.get();
   res.locals.features = features.getEnabledMap();
+  res.locals.primary_premium_nav_items = edition.getNavigationItems({location: 'primary'});
+  res.locals.settings_department_premium_nav_items = edition.getNavigationItems({location: 'settings_departments'});
+  res.locals.settings_company_premium_nav_items = edition.getNavigationItems({location: 'settings_company'});
   res.locals.disable_notifications = process.env.DISABLE_NOTIFICATIONS_POLLING === 'true';
   res.locals.req = req;
   // For book leave request modal
@@ -238,17 +241,10 @@ app.use(
   require('./lib/route/requests')
 );
 
-app.use(
-  '/time-balance/',
-  features.requireFeature('time_balance'),
-  require('./lib/route/time_balance')
-);
-
-app.use(
-  '/vacation-plans/',
-  features.requireFeature('vacation_planning'),
-  require('./lib/route/vacation_plans')
-);
+edition.registerRoutes(app, {
+  app: app,
+  passport: passport,
+});
 
 app.use(
   '/audit/',
@@ -259,11 +255,6 @@ app.use(
   '/reports/',
   require('./lib/route/reports')
 );
-
-edition.registerRoutes(app, {
-  app: app,
-  passport: passport,
-});
 
 // catch 404
 app.use(function(req, res, next) {
