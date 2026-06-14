@@ -3,6 +3,7 @@
 var expect = require('chai').expect;
 var path = require('path');
 var bundledPremium = require('../../lib/edition/bundled_premium');
+var features = require('../../lib/features');
 
 describe('Bundled premium edition module', function() {
   function createRegistry() {
@@ -47,6 +48,8 @@ describe('Bundled premium edition module', function() {
     var result = bundledPremium.register({registry: registry});
 
     expect(result.name).to.equal('bundled-premium');
+    expect(features.catalog.time_balance).to.deep.equal({defaultEnabled: false});
+    expect(features.catalog.vacation_planning).to.deep.equal({defaultEnabled: false});
     expect(registry.routes.map(function(route) { return route.name; }))
       .to.deep.equal(['time-balance', 'vacation-plans']);
     expect(registry.navigationItems.map(function(item) { return item.name; }))
