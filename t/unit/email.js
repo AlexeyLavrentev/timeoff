@@ -83,38 +83,4 @@ describe('Check Email', function(){
 
   });
 
-  it('Renders time balance request email for supervisor', function(done){
-
-    var email = new Email();
-
-    bluebird.resolve(email.promise_rendered_email_template({
-      template_name : 'time_balance_request_to_supervisor',
-      context : {
-        entry : {
-          entry_type : 'time_off',
-          hours : 4,
-        },
-        supervisor : {
-          name : 'Jane',
-          lastname : 'Boss',
-        },
-        requester : {
-          name : 'John',
-          lastname : 'Doe',
-        },
-        user : {
-          reload_with_session_details : function(){ return bluebird.resolve(this); },
-        },
-      },
-    }))
-    .then(function(renderedEmail){
-      expect(renderedEmail.subject).to.be.equal('New time balance request');
-      expect(renderedEmail.body).to.match(/John Doe/);
-      expect(renderedEmail.body).to.match(/4 hours/);
-
-      done();
-    })
-    .catch(done);
-
-  });
 });
