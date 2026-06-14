@@ -35,6 +35,7 @@
     "appleTouchIconUrl": "/apple-touch-icon.png",
     "manifestUrl": "/manifest.webmanifest"
   },
+  "premium_module": "",
   "locale_code_for_sorting": "en",
   "default_language": "en",
   "supported_languages": ["en", "ru"],
