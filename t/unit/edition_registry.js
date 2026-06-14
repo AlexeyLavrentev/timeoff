@@ -226,4 +226,17 @@ describe('Edition registry', function() {
     expect(applied).to.deep.equal(['/core/views', '/premium/views']);
     expect(appViews).to.deep.equal(['/core/views', '/premium/views']);
   });
+
+  it('registers unique email template paths', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerEmailTemplatePath('/premium/email');
+    registry.registerEmailTemplatePath('/premium/email');
+
+    expect(function() {
+      registry.registerEmailTemplatePath([]);
+    }).to.throw(/email template path requires/);
+
+    expect(registry.getEmailTemplatePaths()).to.deep.equal(['/premium/email']);
+  });
 });

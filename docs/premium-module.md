@@ -153,6 +153,18 @@ View paths are added to Express with the core `views` directory first, then
 premium directories. This lets private modules keep Handlebars templates beside
 their route code while still reusing core layouts and partials.
 
+### registerEmailTemplatePath
+
+```js
+const path = require('path');
+
+registry.registerEmailTemplatePath(path.join(__dirname, 'views', 'email'));
+```
+
+Email template paths let private modules keep feature-specific email templates
+outside the core `views/email` directory. The core wrapper template and shared
+partials remain available from the community app.
+
 ### registerScheduler
 
 ```js
@@ -194,12 +206,13 @@ Use this path when extracting a premium feature out of the open-source tree:
 3. Keep stable public URLs by registering the moved routes with
    `registry.registerRoute`.
 4. Register module-owned Handlebars templates through `registerViewPath`.
-5. Register any menu entries through `registerNavigationItem`.
-6. Register notification counters through `registerNotificationProvider`.
-7. Register background jobs through `registerScheduler`.
-8. Keep the feature flag in `lib/features.js`; the private module should still
+5. Register feature email templates through `registerEmailTemplatePath`.
+6. Register any menu entries through `registerNavigationItem`.
+7. Register notification counters through `registerNotificationProvider`.
+8. Register background jobs through `registerScheduler`.
+9. Keep the feature flag in `lib/features.js`; the private module should still
    rely on the same feature name for license checks.
-9. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+10. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.

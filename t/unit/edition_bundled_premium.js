@@ -10,8 +10,12 @@ describe('Bundled premium edition module', function() {
       navigationItems: [],
       notificationProviders: [],
       viewPaths: [],
+      emailTemplatePaths: [],
       registerViewPath: function(viewPath) {
         this.viewPaths.push(viewPath);
+      },
+      registerEmailTemplatePath: function(emailTemplatePath) {
+        this.emailTemplatePaths.push(emailTemplatePath);
       },
       registerRoute: function(route) {
         this.routes.push(route);
@@ -37,5 +41,6 @@ describe('Bundled premium edition module', function() {
     expect(registry.notificationProviders.map(function(provider) { return provider.type; }))
       .to.deep.equal(['pending_time_balance_request', 'pending_vacation_plan']);
     expect(registry.viewPaths.length).to.equal(1);
+    expect(registry.emailTemplatePaths.length).to.equal(1);
   });
 });

@@ -10,6 +10,7 @@ var moment       = require('moment');
 var config       = require('./lib/config');
 var branding     = require('./lib/branding');
 var edition      = require('./lib/edition');
+var emailTemplatePaths = require('./lib/email_template_paths');
 var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
 const i18nextMiddleware = require('i18next-express-middleware');
@@ -249,6 +250,7 @@ var editionContext = {
 };
 
 edition.applyViewPaths(app, [baseViewPath], editionContext);
+emailTemplatePaths.set(emailTemplatePaths.get().concat(edition.getEmailTemplatePaths(editionContext)));
 edition.registerRoutes(app, editionContext);
 
 app.use(
