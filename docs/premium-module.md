@@ -184,6 +184,18 @@ Partial paths are added to Handlebars with the core partial directory first,
 then premium directories. Use this for feature-specific partials that are only
 referenced by premium views.
 
+### registerLocalePath
+
+```js
+const path = require('path');
+
+registry.registerLocalePath(path.join(__dirname, 'locales'));
+```
+
+Locale paths are merged into i18next after core translations load. Use
+`<locale-path>/<language>/translation.json`, for example
+`locales/en/translation.json`.
+
 ### registerEmailTemplatePath
 
 ```js
@@ -272,13 +284,14 @@ Use this path when extracting a premium feature out of the open-source tree:
 5. Register feature partials through `registerPartialTemplatePath`.
 6. Register feature email templates through `registerEmailTemplatePath`.
 7. Register feature names through `features.registerFeature`.
-8. Register Sequelize definitions through `registerDbModelPath`.
-9. Register model associations through `registerDbAssociation`.
-10. Register any menu entries through `registerNavigationItem`.
-11. Register notification counters through `registerNotificationProvider`.
-12. Register background jobs through `registerScheduler`.
-13. Keep using the same feature name for license checks.
-14. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+8. Register feature translations through `registerLocalePath`.
+9. Register Sequelize definitions through `registerDbModelPath`.
+10. Register model associations through `registerDbAssociation`.
+11. Register any menu entries through `registerNavigationItem`.
+12. Register notification counters through `registerNotificationProvider`.
+13. Register background jobs through `registerScheduler`.
+14. Keep using the same feature name for license checks.
+15. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.

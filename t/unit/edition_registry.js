@@ -268,6 +268,19 @@ describe('Edition registry', function() {
     expect(registry.getDbModelPaths()).to.deep.equal(['/premium/db']);
   });
 
+  it('registers unique locale paths', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerLocalePath('/premium/locales');
+    registry.registerLocalePath('/premium/locales');
+
+    expect(function() {
+      registry.registerLocalePath(false);
+    }).to.throw(/locale path requires/);
+
+    expect(registry.getLocalePaths()).to.deep.equal(['/premium/locales']);
+  });
+
   it('registers and applies DB associations', function() {
     var registry = new EditionRegistry();
     var associated = [];
