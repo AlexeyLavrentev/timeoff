@@ -98,6 +98,20 @@ templates before registering routes that render them.
 
 ## Registry API
 
+### registerFeature
+
+Premium modules should register their feature names before registering routes,
+navigation, providers, or DB models that depend on them:
+
+```js
+const features = require('../../lib/features');
+
+features.registerFeature('my_premium_feature');
+```
+
+Core keeps only generic feature flag and licensing logic. Feature-specific names
+belong to the module that owns the feature.
+
 ### registerRoute
 
 ```js
@@ -257,14 +271,14 @@ Use this path when extracting a premium feature out of the open-source tree:
 4. Register module-owned Handlebars templates through `registerViewPath`.
 5. Register feature partials through `registerPartialTemplatePath`.
 6. Register feature email templates through `registerEmailTemplatePath`.
-7. Register Sequelize definitions through `registerDbModelPath`.
-8. Register model associations through `registerDbAssociation`.
-9. Register any menu entries through `registerNavigationItem`.
-10. Register notification counters through `registerNotificationProvider`.
-11. Register background jobs through `registerScheduler`.
-12. Keep the feature flag in `lib/features.js`; the private module should still
-   rely on the same feature name for license checks.
-13. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+7. Register feature names through `features.registerFeature`.
+8. Register Sequelize definitions through `registerDbModelPath`.
+9. Register model associations through `registerDbAssociation`.
+10. Register any menu entries through `registerNavigationItem`.
+11. Register notification counters through `registerNotificationProvider`.
+12. Register background jobs through `registerScheduler`.
+13. Keep using the same feature name for license checks.
+14. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.

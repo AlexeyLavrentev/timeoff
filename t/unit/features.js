@@ -35,6 +35,8 @@ describe('Feature licensing', function() {
     config.set('allow_unlicensed_feature_overrides', undefined);
     config.set('allow_unsigned_licenses', undefined);
     config.set('license_secret', undefined);
+    features.registerFeature('time_balance');
+    features.registerFeature('vacation_planning');
   });
 
   afterEach(function() {
