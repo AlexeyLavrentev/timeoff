@@ -90,6 +90,43 @@ registry.registerRoute({
 });
 ```
 
+### registerNavigationItem
+
+```js
+registry.registerNavigationItem({
+  feature: 'time_balance',
+  name: 'time-balance',
+  path: '/time-balance/',
+  labelKey: 'nav.timeBalance',
+  location: 'primary',
+  icon: 'fa-clock-o',
+  order: 10,
+});
+```
+
+Navigation items are filtered through `features.isEnabled(feature)` before they
+are exposed to templates.
+
+### registerNotificationProvider
+
+```js
+registry.registerNotificationProvider({
+  feature: 'vacation_planning',
+  type: 'pending_vacation_plan',
+  translationKey: 'pendingVacationPlan',
+  link: '/vacation-plans/',
+  fetch({model, actingUser}) {
+    return require('./model/vacation_plan').promisePendingPlansFor({
+      model,
+      actingUser,
+    });
+  },
+});
+```
+
+Disabled providers are not returned by the registry, so their implementation can
+stay in a private module and will not be loaded for community deployments.
+
 ### registerScheduler
 
 ```js
@@ -102,3 +139,40 @@ registry.registerScheduler({
   },
 });
 ```
+
+### registerDiagnostic
+
+```js
+registry.registerDiagnostic({
+  name: 'premium-module',
+  collect() {
+    return {
+      loaded: true,
+      moduleName: '@your-company/timeoff-premium',
+    };
+  },
+});
+```
+
+Diagnostics must return safe operational metadata only. Do not return raw
+licenses, signatures, signing secrets, API tokens, or customer-private data.
+
+## Moving a Feature Into a Private Module
+
+Use this path when extracting a premium feature out of the open-source tree:
+
+1. Move the route implementation, views, models, jobs, and feature-specific
+   helpers into the private module.
+2. Keep stable public URLs by registering the moved routes with
+   `registry.registerRoute`.
+3. Register any menu entries through `registerNavigationItem`.
+4. Register notification counters through `registerNotificationProvider`.
+5. Register background jobs through `registerScheduler`.
+6. Keep the feature flag in `lib/features.js`; the private module should still
+   rely on the same feature name for license checks.
+7. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+   private module fails startup.
+
+The community build should continue to run when the private module is absent.
+It should hide premium UI, reject premium direct URLs through feature guards, and
+avoid loading private implementation files.

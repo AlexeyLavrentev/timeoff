@@ -2,6 +2,14 @@
 
 This fork keeps the original leave-management surface available by default and exposes newer modules through feature flags.
 
+## Protection boundary
+
+This is an open-source, self-hosted codebase. Feature flags and signed licenses
+raise the operational and contractual boundary for official builds, but they are
+not unbreakable DRM. Anyone with full source access can patch checks in their
+own fork. For stronger protection, keep premium implementation code in a private
+module loaded through the edition registry described in `docs/premium-module.md`.
+
 ## Branding
 
 Default branding lives in `config/app.json`:
@@ -91,7 +99,8 @@ Signed license envelope:
 {
   "payload": {
     "customer": "Example Ltd",
-    "features": ["sso_authentication", "integration_api"]
+    "features": ["sso_authentication", "integration_api"],
+    "expires": "2027-12-31T23:59:59.000Z"
   },
   "signature": "hex-encoded-hmac-sha256"
 }
@@ -102,9 +111,34 @@ The signature is HMAC-SHA256 over canonical JSON of `payload`. The signing secre
 Generate a signed license:
 
 ```sh
-node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --secret "$TIMEOFF_LICENSE_SECRET"
+node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --expires 2027-12-31T23:59:59.000Z --secret "$TIMEOFF_LICENSE_SECRET"
 ```
 
 Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
 
+Expired licenses and licenses with malformed `expires` values do not enable
+premium features. Runtime diagnostics should use `features.getLicenseStatus()`,
+which intentionally omits the raw license, signature, and signing secret.
+
 The rest of the app depends only on `features.isEnabled(name)`, so route and template checks do not need to know where a feature came from.
+
+## Commercial Docker example
+
+For a self-hosted commercial deployment, use a signed license and a private
+premium module. The exact module name depends on your private package or image:
+
+```env
+NODE_ENV=production
+SESSION_SECRET=replace-with-long-random-value
+CRYPTO_SECRET=replace-with-another-long-random-value
+
+TIMEOFF_LICENSE_SECRET=replace-with-license-verification-secret
+TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE
+
+TIMEOFF_PREMIUM_MODULE=@your-company/timeoff-premium
+TIMEOFF_PREMIUM_MODULE_REQUIRED=true
+```
+
+Development-only overrides such as `TIMEOFF_FEATURES=all` or
+`ALLOW_UNLICENSED_FEATURE_OVERRIDES=true` should not be used as the normal
+commercial path.
