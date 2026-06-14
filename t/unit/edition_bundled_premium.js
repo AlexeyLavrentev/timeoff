@@ -13,6 +13,7 @@ describe('Bundled premium edition module', function() {
       viewPaths: [],
       emailTemplatePaths: [],
       partialTemplatePaths: [],
+      dbModelPaths: [],
       registerViewPath: function(viewPath) {
         this.viewPaths.push(viewPath);
       },
@@ -21,6 +22,9 @@ describe('Bundled premium edition module', function() {
       },
       registerPartialTemplatePath: function(partialTemplatePath) {
         this.partialTemplatePaths.push(partialTemplatePath);
+      },
+      registerDbModelPath: function(dbModelPath) {
+        this.dbModelPaths.push(dbModelPath);
       },
       registerRoute: function(route) {
         this.routes.push(route);
@@ -51,5 +55,6 @@ describe('Bundled premium edition module', function() {
     );
     expect(registry.emailTemplatePaths.length).to.equal(1);
     expect(registry.partialTemplatePaths.length).to.equal(1);
+    expect(registry.dbModelPaths.length).to.equal(1);
   });
 });

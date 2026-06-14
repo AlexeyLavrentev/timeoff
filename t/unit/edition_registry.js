@@ -252,4 +252,17 @@ describe('Edition registry', function() {
 
     expect(registry.getPartialTemplatePaths()).to.deep.equal(['/premium/partials']);
   });
+
+  it('registers unique DB model paths', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerDbModelPath('/premium/db');
+    registry.registerDbModelPath('/premium/db');
+
+    expect(function() {
+      registry.registerDbModelPath(1);
+    }).to.throw(/DB model path requires/);
+
+    expect(registry.getDbModelPaths()).to.deep.equal(['/premium/db']);
+  });
 });
