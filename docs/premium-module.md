@@ -26,6 +26,11 @@ If the value is empty, the app runs as the community edition. If the configured
 module is not installed, the app logs a warning and continues without premium
 extensions.
 
+In community mode, bundled premium routes, DB models, templates, partials, email
+templates, cache helpers, and DB associations are not loaded. Keep this boundary
+covered by `t/unit/edition_community_boundary.js` when adding new premium
+surfaces.
+
 During the current extraction stage, the repository still includes a bundled
 premium module for existing `time_balance` and `vacation_planning` code:
 
