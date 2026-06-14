@@ -157,6 +157,7 @@ describe('Edition registry', function() {
     registry.registerNotificationProvider({
       feature : 'time_balance',
       type    : 'pending_time_balance_request',
+      badgeId : 'time-balance-nav-badge',
       fetch   : fetch,
     });
 
@@ -169,6 +170,7 @@ describe('Edition registry', function() {
     providers[0].type = 'mutated';
 
     expect(providers.length).to.equal(1);
+    expect(providers[0].badgeId).to.equal('time-balance-nav-badge');
     expect(registry.getNotificationProviders()[0].type).to.equal('pending_time_balance_request');
   });
 
