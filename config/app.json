@@ -38,6 +38,7 @@
   "licensed_features": [],
   "features": {},
   "premium_module": "",
+  "premium_module_required": false,
   "locale_code_for_sorting": "en",
   "default_language": "en",
   "supported_languages": ["en", "ru"],
