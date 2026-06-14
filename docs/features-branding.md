@@ -143,7 +143,7 @@ For this fork before the premium code is physically moved to a private package,
 the built-in extraction bundle can be enabled explicitly:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium
+TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium.js
 ```
 
 This is a transition path only. It proves the module boundary and keeps current

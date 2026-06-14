@@ -30,7 +30,7 @@ During the current extraction stage, the repository still includes a bundled
 premium module for existing `time_balance` and `vacation_planning` code:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium
+TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium.js
 ```
 
 Use it together with a license that enables the corresponding features. A future
