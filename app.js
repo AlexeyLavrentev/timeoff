@@ -9,6 +9,7 @@ var bodyParser   = require('body-parser');
 var moment       = require('moment');
 var config       = require('./lib/config');
 var branding     = require('./lib/branding');
+var edition      = require('./lib/edition');
 var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
 const i18nextMiddleware = require('i18next-express-middleware');
@@ -258,6 +259,11 @@ app.use(
   '/reports/',
   require('./lib/route/reports')
 );
+
+edition.registerRoutes(app, {
+  app: app,
+  passport: passport,
+});
 
 // catch 404
 app.use(function(req, res, next) {

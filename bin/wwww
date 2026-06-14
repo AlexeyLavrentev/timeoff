@@ -2,6 +2,7 @@
 
 var debug = require('debug')('vacation-tracker');
 var app   = require('../app');
+var edition = require('../lib/edition');
 var leaveReminderScheduler = require('../lib/scheduler/leave_start_reminders');
 
 app.set('port', process.env.PORT || 3000);
@@ -10,6 +11,10 @@ app.set('host', process.env.HOST || undefined);
 app.get('db_model').connect()
   .then(function () {
     leaveReminderScheduler.startLeaveReminderScheduler({
+      models : app.get('db_model'),
+    });
+    edition.startSchedulers({
+      app    : app,
       models : app.get('db_model'),
     });
 
