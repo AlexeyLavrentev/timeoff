@@ -14,6 +14,7 @@ describe('Bundled premium edition module', function() {
       emailTemplatePaths: [],
       partialTemplatePaths: [],
       dbModelPaths: [],
+      dbAssociations: [],
       registerViewPath: function(viewPath) {
         this.viewPaths.push(viewPath);
       },
@@ -25,6 +26,9 @@ describe('Bundled premium edition module', function() {
       },
       registerDbModelPath: function(dbModelPath) {
         this.dbModelPaths.push(dbModelPath);
+      },
+      registerDbAssociation: function(dbAssociation) {
+        this.dbAssociations.push(dbAssociation);
       },
       registerRoute: function(route) {
         this.routes.push(route);
@@ -56,5 +60,7 @@ describe('Bundled premium edition module', function() {
     expect(registry.emailTemplatePaths.length).to.equal(1);
     expect(registry.partialTemplatePaths.length).to.equal(1);
     expect(registry.dbModelPaths.length).to.equal(1);
+    expect(registry.dbAssociations.map(function(dbAssociation) { return dbAssociation.name; }))
+      .to.deep.equal(['time-balance-company-user', 'vacation-plans-company-user']);
   });
 });

@@ -265,4 +265,30 @@ describe('Edition registry', function() {
 
     expect(registry.getDbModelPaths()).to.deep.equal(['/premium/db']);
   });
+
+  it('registers and applies DB associations', function() {
+    var registry = new EditionRegistry();
+    var associated = [];
+
+    expect(function() {
+      registry.registerDbAssociation({name: 'broken'});
+    }).to.throw(/DB association requires/);
+
+    registry.registerDbAssociation({
+      name: 'premium-association',
+      associate: function(models) {
+        associated.push(models.Company.name);
+      },
+    });
+
+    var associations = registry.getDbAssociations();
+    associations[0].name = 'mutated';
+
+    registry.applyDbAssociations({
+      Company: {name: 'Company'},
+    });
+
+    expect(registry.getDbAssociations()[0].name).to.equal('premium-association');
+    expect(associated).to.deep.equal(['Company']);
+  });
 });
