@@ -19,6 +19,9 @@ const { initI18next } = require('./lib/i18n');
 
 var app = express();
 var baseViewPath = path.join(__dirname, 'views');
+var editionContext = {
+  app: app,
+};
 
 const parseTrustProxy = (value) => {
   if (typeof value === 'boolean') {
@@ -61,6 +64,8 @@ app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
 app.set('views', [baseViewPath]);
 app.set('trust proxy', parseTrustProxy(config.get('trust_proxy')));
+
+edition.initialize(editionContext);
 
 // Add single reference to the model into application object
 // and reuse it whenever an access to DB is needed
@@ -246,10 +251,7 @@ app.use(
   require('./lib/route/requests')
 );
 
-var editionContext = {
-  app: app,
-  passport: passport,
-};
+editionContext.passport = passport;
 
 edition.applyViewPaths(app, [baseViewPath], editionContext);
 emailTemplatePaths.set(emailTemplatePaths.get().concat(edition.getEmailTemplatePaths(editionContext)));
