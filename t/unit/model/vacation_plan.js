@@ -1,7 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect,
-  vacationPlan = require('../../../lib/model/vacation_plan');
+  vacationPlan = require('../../../lib/edition/bundled_premium/models/vacation_plan');
 
 describe('Vacation planning', function(){
   const buildPlan = function({id, userId, departmentId, start, end, status, groups}) {
