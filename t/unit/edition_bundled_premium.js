@@ -9,6 +9,10 @@ describe('Bundled premium edition module', function() {
       routes: [],
       navigationItems: [],
       notificationProviders: [],
+      viewPaths: [],
+      registerViewPath: function(viewPath) {
+        this.viewPaths.push(viewPath);
+      },
       registerRoute: function(route) {
         this.routes.push(route);
       },
@@ -32,5 +36,6 @@ describe('Bundled premium edition module', function() {
       .to.deep.equal(['time-balance', 'vacation-plans']);
     expect(registry.notificationProviders.map(function(provider) { return provider.type; }))
       .to.deep.equal(['pending_time_balance_request', 'pending_vacation_plan']);
+    expect(registry.viewPaths.length).to.equal(1);
   });
 });
