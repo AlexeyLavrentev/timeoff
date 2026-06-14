@@ -1,7 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect,
-  timeBalance = require('../../../lib/model/time_balance');
+  timeBalance = require('../../../lib/edition/bundled_premium/models/time_balance');
 
 describe('Time balance approval policy', function(){
   const entryFor = function(userId, bossId) {
