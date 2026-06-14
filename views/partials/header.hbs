@@ -21,12 +21,9 @@
           {{# unless keep_team_view_hidden }}
             <li><a href="/calendar/teamview/">{{t "nav.teamView"}}</a></li>
           {{/ unless }}
-          {{#feature_enabled "time_balance"}}
-            <li><a href="/time-balance/">{{t "nav.timeBalance"}} <span id="time-balance-nav-badge" class="label label-info hidden"></span></a></li>
-          {{/feature_enabled}}
-          {{#feature_enabled "vacation_planning"}}
-            <li><a href="/vacation-plans/">{{t "nav.vacationPlans"}}</a></li>
-          {{/feature_enabled}}
+          {{#each primary_premium_nav_items}}
+            <li><a href="{{this.path}}">{{t this.labelKey}} {{#if this.badgeId}}<span id="{{this.badgeId}}" class="label label-info hidden"></span>{{/if}}</a></li>
+          {{/each}}
           {{# if logged_user.admin }}
             <li class="hidden-xs"><a href="/users/">{{t "nav.employees"}}</a></li>
           {{/if}}
@@ -77,16 +74,13 @@
               <li><a href="/settings/general/"><span class="fa fa-cog nav-menu-icon" aria-hidden="true"></span>{{t "nav.general"}}</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="/settings/departments/"><span class="fa fa-sitemap nav-menu-icon" aria-hidden="true"></span>{{t "nav.departments"}}</a></li>
-              {{#feature_enabled "employee_groups"}}
-                <li><a href="/settings/groups/"><span class="fa fa-users nav-menu-icon" aria-hidden="true"></span>{{t "nav.groups"}}</a></li>
-              {{/feature_enabled}}
+              {{#each settings_department_premium_nav_items}}
+                <li><a href="{{this.path}}"><span class="fa {{this.icon}} nav-menu-icon" aria-hidden="true"></span>{{t this.labelKey}}</a></li>
+              {{/each}}
               <li><a href="/settings/bankholidays/"><span class="fa fa-calendar-o nav-menu-icon" aria-hidden="true"></span>{{t "nav.bankHolidays"}}</a></li>
-              {{#feature_enabled "sso_authentication"}}
-                <li><a href="/settings/company/authentication/"><span class="fa fa-lock nav-menu-icon" aria-hidden="true"></span>{{t "nav.authConfig"}}</a></li>
-              {{/feature_enabled}}
-              {{#feature_enabled "integration_api"}}
-                <li><a href="/settings/company/integration-api/"><span class="fa fa-plug nav-menu-icon" aria-hidden="true"></span>{{t "nav.apiConfig"}}</a></li>
-              {{/feature_enabled}}
+              {{#each settings_company_premium_nav_items}}
+                <li><a href="{{this.path}}"><span class="fa {{this.icon}} nav-menu-icon" aria-hidden="true"></span>{{t this.labelKey}}</a></li>
+              {{/each}}
               <li><a href="/users/import/"><span class="fa fa-upload nav-menu-icon" aria-hidden="true"></span>{{t "nav.importEmployees"}}</a></li>
               <li role="separator" class="divider"></li>
               <li><a href="/audit/email/"><span class="fa fa-envelope-o nav-menu-icon" aria-hidden="true"></span>{{t "nav.emailsAudit"}}</a></li>
