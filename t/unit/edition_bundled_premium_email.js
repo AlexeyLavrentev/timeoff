@@ -1,7 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect;
-var premiumEmail = require('../../lib/edition/bundled_premium_email');
+var premiumEmail = require('../../lib/edition/bundled_premium/email_transport');
 
 describe('Bundled premium email helpers', function() {
   function createRecipient(email) {
