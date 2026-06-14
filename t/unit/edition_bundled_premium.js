@@ -1,6 +1,7 @@
 'use strict';
 
 var expect = require('chai').expect;
+var path = require('path');
 var bundledPremium = require('../../lib/edition/bundled_premium');
 
 describe('Bundled premium edition module', function() {
@@ -41,6 +42,9 @@ describe('Bundled premium edition module', function() {
     expect(registry.notificationProviders.map(function(provider) { return provider.type; }))
       .to.deep.equal(['pending_time_balance_request', 'pending_vacation_plan']);
     expect(registry.viewPaths.length).to.equal(1);
+    expect(registry.viewPaths[0]).to.equal(
+      path.join(__dirname, '..', '..', 'lib', 'edition', 'bundled_premium', 'views')
+    );
     expect(registry.emailTemplatePaths.length).to.equal(1);
   });
 });
