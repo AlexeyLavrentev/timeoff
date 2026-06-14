@@ -239,4 +239,17 @@ describe('Edition registry', function() {
 
     expect(registry.getEmailTemplatePaths()).to.deep.equal(['/premium/email']);
   });
+
+  it('registers unique partial template paths', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerPartialTemplatePath('/premium/partials');
+    registry.registerPartialTemplatePath('/premium/partials');
+
+    expect(function() {
+      registry.registerPartialTemplatePath(null);
+    }).to.throw(/partial template path requires/);
+
+    expect(registry.getPartialTemplatePaths()).to.deep.equal(['/premium/partials']);
+  });
 });

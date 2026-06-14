@@ -12,11 +12,15 @@ describe('Bundled premium edition module', function() {
       notificationProviders: [],
       viewPaths: [],
       emailTemplatePaths: [],
+      partialTemplatePaths: [],
       registerViewPath: function(viewPath) {
         this.viewPaths.push(viewPath);
       },
       registerEmailTemplatePath: function(emailTemplatePath) {
         this.emailTemplatePaths.push(emailTemplatePath);
+      },
+      registerPartialTemplatePath: function(partialTemplatePath) {
+        this.partialTemplatePaths.push(partialTemplatePath);
       },
       registerRoute: function(route) {
         this.routes.push(route);
@@ -46,5 +50,6 @@ describe('Bundled premium edition module', function() {
       path.join(__dirname, '..', '..', 'lib', 'edition', 'bundled_premium', 'views')
     );
     expect(registry.emailTemplatePaths.length).to.equal(1);
+    expect(registry.partialTemplatePaths.length).to.equal(1);
   });
 });

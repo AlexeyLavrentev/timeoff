@@ -153,6 +153,18 @@ View paths are added to Express with the core `views` directory first, then
 premium directories. This lets private modules keep Handlebars templates beside
 their route code while still reusing core layouts and partials.
 
+### registerPartialTemplatePath
+
+```js
+const path = require('path');
+
+registry.registerPartialTemplatePath(path.join(__dirname, 'views', 'partials'));
+```
+
+Partial paths are added to Handlebars with the core partial directory first,
+then premium directories. Use this for feature-specific partials that are only
+referenced by premium views.
+
 ### registerEmailTemplatePath
 
 ```js
@@ -206,13 +218,14 @@ Use this path when extracting a premium feature out of the open-source tree:
 3. Keep stable public URLs by registering the moved routes with
    `registry.registerRoute`.
 4. Register module-owned Handlebars templates through `registerViewPath`.
-5. Register feature email templates through `registerEmailTemplatePath`.
-6. Register any menu entries through `registerNavigationItem`.
-7. Register notification counters through `registerNotificationProvider`.
-8. Register background jobs through `registerScheduler`.
-9. Keep the feature flag in `lib/features.js`; the private module should still
+5. Register feature partials through `registerPartialTemplatePath`.
+6. Register feature email templates through `registerEmailTemplatePath`.
+7. Register any menu entries through `registerNavigationItem`.
+8. Register notification counters through `registerNotificationProvider`.
+9. Register background jobs through `registerScheduler`.
+10. Keep the feature flag in `lib/features.js`; the private module should still
    rely on the same feature name for license checks.
-10. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+11. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.
