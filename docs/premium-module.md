@@ -190,6 +190,38 @@ registry.registerScheduler({
 });
 ```
 
+### registerDbModelPath
+
+```js
+const path = require('path');
+
+registry.registerDbModelPath(path.join(__dirname, 'db'));
+```
+
+DB model paths are loaded by the Sequelize model loader after core model
+definitions. Use this for feature-specific table definitions.
+
+### registerDbAssociation
+
+```js
+registry.registerDbAssociation({
+  name: 'my-premium-associations',
+  associate(models) {
+    if (!models.MyPremiumModel) {
+      return;
+    }
+
+    models.Company.hasMany(models.MyPremiumModel, {
+      as: 'my_premium_models',
+      foreignKey: 'companyId',
+    });
+  },
+});
+```
+
+DB associations run after core and premium DB models are loaded. Keep callbacks
+defensive so the community app can still boot when a private model is absent.
+
 ### registerDiagnostic
 
 ```js
@@ -220,12 +252,14 @@ Use this path when extracting a premium feature out of the open-source tree:
 4. Register module-owned Handlebars templates through `registerViewPath`.
 5. Register feature partials through `registerPartialTemplatePath`.
 6. Register feature email templates through `registerEmailTemplatePath`.
-7. Register any menu entries through `registerNavigationItem`.
-8. Register notification counters through `registerNotificationProvider`.
-9. Register background jobs through `registerScheduler`.
-10. Keep the feature flag in `lib/features.js`; the private module should still
+7. Register Sequelize definitions through `registerDbModelPath`.
+8. Register model associations through `registerDbAssociation`.
+9. Register any menu entries through `registerNavigationItem`.
+10. Register notification counters through `registerNotificationProvider`.
+11. Register background jobs through `registerScheduler`.
+12. Keep the feature flag in `lib/features.js`; the private module should still
    rely on the same feature name for license checks.
-11. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+13. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.
