@@ -2,16 +2,83 @@
 
 var expect = require('chai').expect;
 var childProcess = require('child_process');
+var fs = require('fs');
 var path = require('path');
 
 describe('Edition community boundary', function() {
+  var repoRoot = path.join(__dirname, '..', '..');
+  var premiumIdentifiers = [
+    'timeBalance',
+    'vacationPlans',
+    'time_balance',
+    'vacation_planning',
+    'time-balance',
+    'vacation-plans',
+    'TimeBalanceEntry',
+    'VacationPlan',
+    'pendingTimeBalanceRequest',
+    'pendingVacationPlan',
+  ];
+  var scannedPaths = [
+    'app.js',
+    'lib',
+    'views',
+    path.join('public', 'js'),
+    path.join('public', 'css'),
+    'scss',
+    path.join('public', 'locales'),
+    'migrations',
+  ];
+
   function runNode(script, env) {
     return childProcess.execFileSync(process.execPath, ['-e', script], {
-      cwd: path.join(__dirname, '..', '..'),
+      cwd: repoRoot,
       env: Object.assign({}, process.env, env || {}),
       encoding: 'utf8',
     }).trim();
   }
+
+  function shouldSkip(filePath) {
+    return filePath.indexOf(path.join('lib', 'edition', 'bundled_premium')) !== -1;
+  }
+
+  function scanFile(filePath, matches) {
+    var contents = fs.readFileSync(filePath, 'utf8');
+    premiumIdentifiers.forEach(function(identifier) {
+      if (contents.indexOf(identifier) !== -1) {
+        matches.push(path.relative(repoRoot, filePath) + ': ' + identifier);
+      }
+    });
+  }
+
+  function scanPath(filePath, matches) {
+    if (shouldSkip(filePath) || !fs.existsSync(filePath)) {
+      return;
+    }
+
+    var stats = fs.statSync(filePath);
+
+    if (stats.isDirectory()) {
+      fs.readdirSync(filePath).forEach(function(childName) {
+        scanPath(path.join(filePath, childName), matches);
+      });
+      return;
+    }
+
+    if (stats.isFile()) {
+      scanFile(filePath, matches);
+    }
+  }
+
+  it('keeps premium identifiers out of community source surfaces', function() {
+    var matches = [];
+
+    scannedPaths.forEach(function(scannedPath) {
+      scanPath(path.join(repoRoot, scannedPath), matches);
+    });
+
+    expect(matches).to.deep.equal([]);
+  });
 
   it('does not load bundled premium DB models in community mode', function() {
     var output = runNode([
