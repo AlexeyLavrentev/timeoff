@@ -7,6 +7,7 @@ var path = require('path');
 
 var emailTemplatePaths = require('../../lib/email_template_paths');
 var Email = require('../../lib/email');
+var i18n = require('../../lib/i18n');
 
 describe('Email template paths', function() {
   var tempDir;
@@ -40,6 +41,22 @@ describe('Email template paths', function() {
   });
 
   it('renders bundled premium time balance email from premium directory', async function() {
+    var bundledPremiumTranslations = JSON.parse(fs.readFileSync(
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'lib',
+        'edition',
+        'bundled_premium',
+        'locales',
+        'en',
+        'translation.json'
+      ),
+      'utf8'
+    ));
+
+    i18n.i18next.addResourceBundle('en', 'translation', bundledPremiumTranslations, true, true);
     emailTemplatePaths.set([
       path.join(__dirname, '..', '..', 'lib', 'edition', 'bundled_premium', 'email'),
     ]);
