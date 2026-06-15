@@ -1,4 +1,6 @@
-Migrations are going to be handled with sequelize-cli.
+Migrations are applied by the app through Umzug. Core migrations live in the
+top-level migrations directory. Edition or premium modules can add their own
+migration directories through registry.registerMigrationPath.
 
 To automatically apply any outstanding migrations run following command:
 
@@ -30,4 +32,19 @@ A: Run command like this:
 Q: How to run pending migrations?
 A:
 
-  ./node_modules/.bin/sequelize db:migrate --config=config/db.json --models-path=lib/model/db/
+  npm run db-update
+
+Q: How to add premium-only migrations?
+A:
+
+  Put the files in the premium module, for example:
+
+    lib/edition/bundled_premium/migrations/
+
+  Then register that directory from the module:
+
+    registry.registerMigrationPath(path.join(__dirname, 'migrations'));
+
+  Keep file names stable when moving existing migrations. Applied migration file
+  names are stored in SequelizeMeta, so a moved migration with the same file name
+  will not run twice.

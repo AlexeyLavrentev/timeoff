@@ -27,9 +27,9 @@ module is not installed, the app logs a warning and continues without premium
 extensions.
 
 In community mode, bundled premium routes, DB models, templates, partials, email
-templates, cache helpers, and DB associations are not loaded. Keep this boundary
-covered by `t/unit/edition_community_boundary.js` when adding new premium
-surfaces.
+templates, cache helpers, DB migrations, and DB associations are not loaded.
+Keep this boundary covered by `t/unit/edition_community_boundary.js` when
+adding new premium surfaces.
 
 During the current extraction stage, the repository still includes a bundled
 premium module for existing `time_balance` and `vacation_planning` code:
@@ -232,6 +232,23 @@ registry.registerDbModelPath(path.join(__dirname, 'db'));
 DB model paths are loaded by the Sequelize model loader after core model
 definitions. Use this for feature-specific table definitions.
 
+### registerMigrationPath
+
+```js
+const path = require('path');
+
+registry.registerMigrationPath(path.join(__dirname, 'migrations'));
+```
+
+Migration paths are applied by `npm run db-update` after the core `migrations`
+directory. Use this for feature-specific schema changes that should exist only
+when the premium module is configured.
+
+Keep migration file names stable when moving an existing migration into a
+private module. The app stores applied migration file names in `SequelizeMeta`,
+so a moved migration with the same file name will not run twice on an existing
+customer database.
+
 ### registerDbAssociation
 
 ```js
@@ -286,12 +303,13 @@ Use this path when extracting a premium feature out of the open-source tree:
 7. Register feature names through `features.registerFeature`.
 8. Register feature translations through `registerLocalePath`.
 9. Register Sequelize definitions through `registerDbModelPath`.
-10. Register model associations through `registerDbAssociation`.
-11. Register any menu entries through `registerNavigationItem`.
-12. Register notification counters through `registerNotificationProvider`.
-13. Register background jobs through `registerScheduler`.
-14. Keep using the same feature name for license checks.
-15. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
+10. Register schema migrations through `registerMigrationPath`.
+11. Register model associations through `registerDbAssociation`.
+12. Register any menu entries through `registerNavigationItem`.
+13. Register notification counters through `registerNotificationProvider`.
+14. Register background jobs through `registerScheduler`.
+15. Keep using the same feature name for license checks.
+16. In commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` so a missing
    private module fails startup.
 
 The community build should continue to run when the private module is absent.
