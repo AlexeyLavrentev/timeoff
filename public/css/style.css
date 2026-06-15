@@ -452,12 +452,12 @@ textarea.form-control {
   min-width: 980px;
 }
 
-.time-balance-table {
+.request-balance-table {
   min-width: 1040px;
 }
 
 .vacation-plan-table > thead > tr > th,
-.time-balance-table > thead > tr > th {
+.request-balance-table > thead > tr > th {
   white-space: nowrap;
 }
 
