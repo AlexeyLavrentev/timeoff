@@ -18,11 +18,12 @@ describe('Edition community boundary', function() {
       "delete process.env.TIMEOFF_PREMIUM_MODULE;",
       "const app=require('./app');",
       "const db=app.get('db_model');",
-      "console.log(Boolean(db.TimeBalanceEntry) + ',' + Boolean(db.VacationPlan));",
+      "const i18next=require('./lib/i18n').i18next;",
+      "console.log(Boolean(db.TimeBalanceEntry) + ',' + Boolean(db.VacationPlan) + ',' + i18next.t('nav.timeBalance'));",
       "process.exit(0);",
     ].join(''));
 
-    expect(output).to.equal('false,false');
+    expect(output).to.equal('false,false,nav.timeBalance');
   });
 
   it('loads bundled premium DB models when premium module is configured', function() {
@@ -30,7 +31,8 @@ describe('Edition community boundary', function() {
       "const app=require('./app');",
       "const db=app.get('db_model');",
       "const edition=require('./lib/edition');",
-      "console.log(Boolean(db.TimeBalanceEntry) + ',' + Boolean(db.VacationPlan) + ',' + edition.getInfo().routes.length);",
+      "const i18next=require('./lib/i18n').i18next;",
+      "console.log(Boolean(db.TimeBalanceEntry) + ',' + Boolean(db.VacationPlan) + ',' + edition.getInfo().routes.length + ',' + i18next.t('nav.timeBalance'));",
       "process.exit(0);",
     ].join(''), {
       TIMEOFF_PREMIUM_MODULE: './lib/edition/bundled_premium',
@@ -38,6 +40,6 @@ describe('Edition community boundary', function() {
       FEATURE_VACATION_PLANNING: 'true',
     });
 
-    expect(output).to.equal('true,true,2');
+    expect(output).to.equal('true,true,2,Time balance');
   });
 });
