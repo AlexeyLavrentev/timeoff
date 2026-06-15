@@ -37,6 +37,7 @@
   },
   "licensed_features": [],
   "license_public_key": "",
+  "allow_config_licensed_features": false,
   "features": {},
   "premium_module": "",
   "premium_module_required": false,
