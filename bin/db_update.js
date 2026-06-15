@@ -3,6 +3,7 @@
 var path = require('path');
 var Umzug = require('umzug');
 var db = require('../lib/model/db');
+var edition = require('../lib/edition');
 
 function normalizeTableName(table) {
   if (typeof table === 'string') {
@@ -52,29 +53,52 @@ function bootstrapEmptyDatabase(sequelize) {
   });
 }
 
+function createUmzug(sequelize, migrationsPath) {
+  return new Umzug({
+    storage: 'sequelize',
+    storageOptions: {
+      sequelize: sequelize,
+    },
+    migrations: {
+      path: migrationsPath,
+      params: [sequelize.getQueryInterface(), db.Sequelize],
+      pattern: /\.js$/,
+    },
+  });
+}
+
+function runMigrations(sequelize, migrationsPath) {
+  return createUmzug(sequelize, migrationsPath)
+    .up()
+    .then(function(migrations) {
+      return migrations.map(function(migration) {
+        return migration.file || migration;
+      });
+    });
+}
+
 db.connect()
   .then(function() {
     var sequelize = db.sequelize;
-    var umzug = new Umzug({
-      storage: 'sequelize',
-      storageOptions: {
-        sequelize: sequelize,
-      },
-      migrations: {
-        path: path.join(__dirname, '..', 'migrations'),
-        params: [sequelize.getQueryInterface(), db.Sequelize],
-        pattern: /\.js$/,
-      },
-    });
+    var migrationPaths = [path.join(__dirname, '..', 'migrations')]
+      .concat(edition.getMigrationPaths())
+      .filter(function(migrationsPath, index, allPaths) {
+        return allPaths.indexOf(migrationsPath) === index;
+      });
 
     return bootstrapEmptyDatabase(sequelize)
       .then(function() {
-        return umzug.up();
+        return migrationPaths.reduce(function(sequence, migrationsPath) {
+          return sequence.then(function(appliedMigrations) {
+            return runMigrations(sequelize, migrationsPath)
+              .then(function(migrations) {
+                return appliedMigrations.concat(migrations);
+              });
+          });
+        }, Promise.resolve([]));
       })
       .then(function(migrations) {
-        console.log('Applied migrations:', migrations.map(function(migration) {
-          return migration.file || migration;
-        }).join(', ') || 'none');
+        console.log('Applied migrations:', migrations.join(', ') || 'none');
       })
       .finally(function() {
         return sequelize.close();

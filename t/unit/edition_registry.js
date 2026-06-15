@@ -2,6 +2,7 @@
 
 var expect = require('chai').expect;
 var EditionRegistry = require('../../lib/edition/registry');
+var features = require('../../lib/features');
 
 describe('Edition registry', function() {
   var originalFeatureTimeBalance;
@@ -9,6 +10,7 @@ describe('Edition registry', function() {
   beforeEach(function() {
     originalFeatureTimeBalance = process.env.FEATURE_TIME_BALANCE;
     delete process.env.FEATURE_TIME_BALANCE;
+    features.registerFeature('time_balance');
   });
 
   afterEach(function() {
@@ -279,6 +281,19 @@ describe('Edition registry', function() {
     }).to.throw(/locale path requires/);
 
     expect(registry.getLocalePaths()).to.deep.equal(['/premium/locales']);
+  });
+
+  it('registers unique migration paths', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerMigrationPath('/premium/migrations');
+    registry.registerMigrationPath('/premium/migrations');
+
+    expect(function() {
+      registry.registerMigrationPath({});
+    }).to.throw(/migration path requires/);
+
+    expect(registry.getMigrationPaths()).to.deep.equal(['/premium/migrations']);
   });
 
   it('registers and applies DB associations', function() {

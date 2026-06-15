@@ -16,6 +16,7 @@ describe('Bundled premium edition module', function() {
       partialTemplatePaths: [],
       dbModelPaths: [],
       localePaths: [],
+      migrationPaths: [],
       dbAssociations: [],
       registerViewPath: function(viewPath) {
         this.viewPaths.push(viewPath);
@@ -31,6 +32,9 @@ describe('Bundled premium edition module', function() {
       },
       registerLocalePath: function(localePath) {
         this.localePaths.push(localePath);
+      },
+      registerMigrationPath: function(migrationPath) {
+        this.migrationPaths.push(migrationPath);
       },
       registerDbAssociation: function(dbAssociation) {
         this.dbAssociations.push(dbAssociation);
@@ -69,6 +73,10 @@ describe('Bundled premium edition module', function() {
     expect(registry.partialTemplatePaths.length).to.equal(1);
     expect(registry.dbModelPaths.length).to.equal(1);
     expect(registry.localePaths.length).to.equal(1);
+    expect(registry.migrationPaths.length).to.equal(1);
+    expect(registry.migrationPaths[0]).to.equal(
+      path.join(__dirname, '..', '..', 'lib', 'edition', 'bundled_premium', 'migrations')
+    );
     expect(registry.dbAssociations.map(function(dbAssociation) { return dbAssociation.name; }))
       .to.deep.equal(['time-balance-company-user', 'vacation-plans-company-user']);
   });
