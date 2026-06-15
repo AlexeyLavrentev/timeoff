@@ -39,7 +39,7 @@ A:
 
   Put the files in the premium module, for example:
 
-    lib/edition/bundled_premium/migrations/
+    migrations/
 
   Then register that directory from the module:
 

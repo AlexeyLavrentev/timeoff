@@ -31,16 +31,15 @@ templates, cache helpers, DB migrations, and DB associations are not loaded.
 Keep this boundary covered by `t/unit/edition_community_boundary.js` when
 adding new premium surfaces.
 
-During the current extraction stage, the repository still includes a bundled
-premium module for existing `time_balance` and `vacation_planning` code:
+During local development, point the app at the private premium repository:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium
+TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium
 ```
 
-Use it together with a license that enables the corresponding features. A future
-public community build can omit this file, while a commercial image should point
-`TIMEOFF_PREMIUM_MODULE` to a private package instead.
+Use it together with a license that enables the corresponding features.
+Commercial images should point `TIMEOFF_PREMIUM_MODULE` to the private package
+name or the installed package path.
 
 For commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` or
 `premium_module_required=true`. In that mode, startup fails when the configured
@@ -87,6 +86,11 @@ Route registration receives:
 
 - `app` - Express app instance.
 - `passport` - configured Passport instance.
+- `coreRoot` - absolute path to the community app root.
+- `coreRequire(modulePath)` - requires a module from the community `lib`
+  directory, for example `coreRequire('features')`.
+- `coreRequirePackage(packageName)` - requires a runtime package from the
+  community app, for example `coreRequirePackage('express')`.
 
 Scheduler startup receives:
 
@@ -291,8 +295,7 @@ licenses, signatures, signing secrets, API tokens, or customer-private data.
 
 Use this path when extracting a premium feature out of the open-source tree:
 
-1. Move registration into `lib/edition/bundled_premium.js` or a private module
-   that follows the same contract.
+1. Move registration into a private module that follows the same contract.
 2. Move the route implementation, views, models, jobs, and feature-specific
    helpers into the private module.
 3. Keep stable public URLs by registering the moved routes with

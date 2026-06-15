@@ -38,10 +38,6 @@ describe('Edition community boundary', function() {
     }).trim();
   }
 
-  function shouldSkip(filePath) {
-    return filePath.indexOf(path.join('lib', 'edition', 'bundled_premium')) !== -1;
-  }
-
   function scanFile(filePath, matches) {
     var contents = fs.readFileSync(filePath, 'utf8');
     premiumIdentifiers.forEach(function(identifier) {
@@ -52,7 +48,7 @@ describe('Edition community boundary', function() {
   }
 
   function scanPath(filePath, matches) {
-    if (shouldSkip(filePath) || !fs.existsSync(filePath)) {
+    if (!fs.existsSync(filePath)) {
       return;
     }
 
@@ -93,20 +89,4 @@ describe('Edition community boundary', function() {
     expect(output).to.equal('false,false,nav.timeBalance');
   });
 
-  it('loads bundled premium DB models when premium module is configured', function() {
-    var output = runNode([
-      "const app=require('./app');",
-      "const db=app.get('db_model');",
-      "const edition=require('./lib/edition');",
-      "const i18next=require('./lib/i18n').i18next;",
-      "console.log(Boolean(db.TimeBalanceEntry) + ',' + Boolean(db.VacationPlan) + ',' + edition.getInfo().routes.length + ',' + i18next.t('nav.timeBalance'));",
-      "process.exit(0);",
-    ].join(''), {
-      TIMEOFF_PREMIUM_MODULE: './lib/edition/bundled_premium',
-      FEATURE_TIME_BALANCE: 'true',
-      FEATURE_VACATION_PLANNING: 'true',
-    });
-
-    expect(output).to.equal('true,true,2,Time balance');
-  });
 });

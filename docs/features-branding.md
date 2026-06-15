@@ -182,16 +182,14 @@ TIMEOFF_PREMIUM_MODULE=@your-company/timeoff-premium
 TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 ```
 
-For this fork before the premium code is physically moved to a private package,
-the built-in extraction bundle can be enabled explicitly:
+For local development with the private premium repository:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=./lib/edition/bundled_premium
+TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium
 ```
 
-This is a transition path only. It proves the module boundary and keeps current
-premium features working, but it does not hide implementation code while that
-code remains in the same open-source repository.
+For commercial delivery, prefer the private package name or the path where the
+private package is installed in the image.
 
 Development-only overrides such as `TIMEOFF_FEATURES=all` or
 `ALLOW_UNLICENSED_FEATURE_OVERRIDES=true` should not be used as the normal
