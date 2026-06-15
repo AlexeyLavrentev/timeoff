@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const expect = require('chai').expect;
 
 const config = require('../../lib/config');
@@ -12,6 +13,7 @@ describe('Feature licensing', function() {
     'TIMEOFF_FEATURES',
     'TIMEOFF_LICENSE',
     'TIMEOFF_LICENSE_SECRET',
+    'TIMEOFF_LICENSE_PUBLIC_KEY',
     'FEATURE_TIME_BALANCE',
     'ALLOW_UNLICENSED_FEATURE_OVERRIDES',
     'ALLOW_UNSIGNED_LICENSES',
@@ -22,6 +24,7 @@ describe('Feature licensing', function() {
     allowUnlicensedFeatureOverrides: config.get('allow_unlicensed_feature_overrides'),
     allowUnsignedLicenses: config.get('allow_unsigned_licenses'),
     licenseSecret: config.get('license_secret'),
+    licensePublicKey: config.get('license_public_key'),
   };
 
   beforeEach(function() {
@@ -35,6 +38,7 @@ describe('Feature licensing', function() {
     config.set('allow_unlicensed_feature_overrides', undefined);
     config.set('allow_unsigned_licenses', undefined);
     config.set('license_secret', undefined);
+    config.set('license_public_key', undefined);
     features.registerFeature('time_balance');
     features.registerFeature('vacation_planning');
   });
@@ -53,6 +57,7 @@ describe('Feature licensing', function() {
     config.set('allow_unlicensed_feature_overrides', originalConfig.allowUnlicensedFeatureOverrides);
     config.set('allow_unsigned_licenses', originalConfig.allowUnsignedLicenses);
     config.set('license_secret', originalConfig.licenseSecret);
+    config.set('license_public_key', originalConfig.licensePublicKey);
   });
 
   it('allows TIMEOFF_FEATURES outside production-like environments', function() {
@@ -100,6 +105,53 @@ describe('Feature licensing', function() {
     });
 
     expect(features.isEnabled('time_balance')).to.equal(true);
+  });
+
+  it('keeps RSA signed TIMEOFF_LICENSE payloads enabled in production-like environments', function() {
+    const keyPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+    const privateKey = keyPair.privateKey.export({type: 'pkcs1', format: 'pem'});
+    const publicKey = keyPair.publicKey.export({type: 'pkcs1', format: 'pem'});
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_PUBLIC_KEY = publicKey;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      algorithm: 'RSA-SHA256',
+      signature: features.signLicensePayloadWithPrivateKey(payload, privateKey),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(true);
+    expect(features.getLicenseStatus()).to.deep.equal({
+      valid: true,
+      reason: 'valid',
+      source: 'env',
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+      expires: null,
+    });
+  });
+
+  it('rejects RSA signed TIMEOFF_LICENSE payloads without a public key', function() {
+    const keyPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+    const privateKey = keyPair.privateKey.export({type: 'pkcs1', format: 'pem'});
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      algorithm: 'RSA-SHA256',
+      signature: features.signLicensePayloadWithPrivateKey(payload, privateKey),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.getLicenseStatus().reason).to.equal('missing_signature_or_public_key');
   });
 
   it('keeps signed TIMEOFF_LICENSE payloads with future expiry enabled', function() {
@@ -233,6 +285,48 @@ describe('Feature licensing', function() {
 
     expect(features.isEnabled('time_balance')).to.equal(false);
     expect(features.isEnabled('vacation_planning')).to.equal(false);
+  });
+
+  it('rejects RSA TIMEOFF_LICENSE payloads with mismatched signatures', function() {
+    const keyPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+    const privateKey = keyPair.privateKey.export({type: 'pkcs1', format: 'pem'});
+    const publicKey = keyPair.publicKey.export({type: 'pkcs1', format: 'pem'});
+    const signedPayload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+    const tamperedPayload = {
+      customer: 'Example Ltd',
+      features: ['time_balance', 'vacation_planning'],
+    };
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_PUBLIC_KEY = publicKey;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload: tamperedPayload,
+      algorithm: 'RSA-SHA256',
+      signature: features.signLicensePayloadWithPrivateKey(signedPayload, privateKey),
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.isEnabled('vacation_planning')).to.equal(false);
+  });
+
+  it('rejects TIMEOFF_LICENSE payloads with unsupported signature algorithms', function() {
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      algorithm: 'MD5',
+      signature: 'not-used',
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+    expect(features.getLicenseStatus().reason).to.equal('unsupported_signature_algorithm');
   });
 
   it('lets explicit false overrides disable licensed features', function() {

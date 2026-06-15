@@ -36,6 +36,7 @@
     "manifestUrl": "/manifest.webmanifest"
   },
   "licensed_features": [],
+  "license_public_key": "",
   "features": {},
   "premium_module": "",
   "premium_module_required": false,

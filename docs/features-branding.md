@@ -93,7 +93,7 @@ Explicit `false` overrides always work as a kill switch, even for licensed featu
 
 In production-like environments (`production` and `staging`), `TIMEOFF_LICENSE` must be signed unless `ALLOW_UNSIGNED_LICENSES=true` or `allow_unsigned_licenses` is set explicitly.
 
-Signed license envelope:
+Recommended RSA signed license envelope:
 
 ```json
 {
@@ -102,19 +102,56 @@ Signed license envelope:
     "features": ["sso_authentication", "integration_api"],
     "expires": "2027-12-31T23:59:59.000Z"
   },
+  "algorithm": "RSA-SHA256",
+  "signature": "base64-encoded-signature"
+}
+```
+
+Generate a private/public key pair outside customer deployments:
+
+```sh
+openssl genrsa -out license_private.pem 3072
+openssl rsa -in license_private.pem -pubout -out license_public.pem
+```
+
+Keep `license_private.pem` only on your signing machine. Put the public key into
+commercial deployments with `TIMEOFF_LICENSE_PUBLIC_KEY` or `license_public_key`.
+When storing a PEM key in an environment variable, encode line breaks as `\n`.
+
+Generate an RSA signed license:
+
+```sh
+node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --expires 2027-12-31T23:59:59.000Z --private-key-file license_private.pem
+```
+
+Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
+
+Legacy HMAC signed envelope is still supported:
+
+```json
+{
+  "payload": {
+    "customer": "Example Ltd",
+    "features": ["sso_authentication", "integration_api"],
+    "expires": "2027-12-31T23:59:59.000Z"
+  },
+  "algorithm": "HMAC-SHA256",
   "signature": "hex-encoded-hmac-sha256"
 }
 ```
 
 The signature is HMAC-SHA256 over canonical JSON of `payload`. The signing secret is read from `TIMEOFF_LICENSE_SECRET` or `license_secret`.
 
-Generate a signed license:
+Generate a legacy HMAC signed license:
 
 ```sh
 node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --expires 2027-12-31T23:59:59.000Z --secret "$TIMEOFF_LICENSE_SECRET"
 ```
 
-Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
+Prefer RSA for self-hosted commercial deployments, because the customer
+environment only needs the public verification key. HMAC requires the same
+secret to sign and verify licenses, so it is mostly useful for internal
+deployments or compatibility with older licenses.
 
 Expired licenses and licenses with malformed `expires` values do not enable
 premium features. Runtime diagnostics should use `features.getLicenseStatus()`,
@@ -132,8 +169,8 @@ NODE_ENV=production
 SESSION_SECRET=replace-with-long-random-value
 CRYPTO_SECRET=replace-with-another-long-random-value
 
-TIMEOFF_LICENSE_SECRET=replace-with-license-verification-secret
 TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE
+TIMEOFF_LICENSE_PUBLIC_KEY=PASTE_PUBLIC_KEY_WITH_ESCAPED_NEWLINES_HERE
 
 TIMEOFF_PREMIUM_MODULE=@your-company/timeoff-premium
 TIMEOFF_PREMIUM_MODULE_REQUIRED=true

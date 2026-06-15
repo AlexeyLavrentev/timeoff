@@ -35,6 +35,9 @@
     "appleTouchIconUrl": "/apple-touch-icon.png",
     "manifestUrl": "/manifest.webmanifest"
   },
+  "licensed_features": [],
+  "license_public_key": "",
+  "features": {},
   "premium_module": "",
   "premium_module_required": false,
   "locale_code_for_sorting": "en",
