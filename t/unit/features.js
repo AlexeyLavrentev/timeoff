@@ -17,6 +17,7 @@ describe('Feature licensing', function() {
     'FEATURE_TIME_BALANCE',
     'ALLOW_UNLICENSED_FEATURE_OVERRIDES',
     'ALLOW_UNSIGNED_LICENSES',
+    'ALLOW_CONFIG_LICENSED_FEATURES',
   ];
   const originalConfig = {
     licensedFeatures: config.get('licensed_features'),
@@ -25,6 +26,7 @@ describe('Feature licensing', function() {
     allowUnsignedLicenses: config.get('allow_unsigned_licenses'),
     licenseSecret: config.get('license_secret'),
     licensePublicKey: config.get('license_public_key'),
+    allowConfigLicensedFeatures: config.get('allow_config_licensed_features'),
   };
 
   beforeEach(function() {
@@ -39,6 +41,7 @@ describe('Feature licensing', function() {
     config.set('allow_unsigned_licenses', undefined);
     config.set('license_secret', undefined);
     config.set('license_public_key', undefined);
+    config.set('allow_config_licensed_features', undefined);
     features.registerFeature('time_balance');
     features.registerFeature('vacation_planning');
   });
@@ -58,6 +61,7 @@ describe('Feature licensing', function() {
     config.set('allow_unsigned_licenses', originalConfig.allowUnsignedLicenses);
     config.set('license_secret', originalConfig.licenseSecret);
     config.set('license_public_key', originalConfig.licensePublicKey);
+    config.set('allow_config_licensed_features', originalConfig.allowConfigLicensedFeatures);
   });
 
   it('allows TIMEOFF_FEATURES outside production-like environments', function() {
@@ -74,8 +78,16 @@ describe('Feature licensing', function() {
     expect(features.isEnabled('time_balance')).to.equal(false);
   });
 
-  it('keeps licensed features enabled in production-like environments', function() {
+  it('ignores config licensed features in production-like environments by default', function() {
     process.env.NODE_ENV = 'production';
+    config.set('licensed_features', ['time_balance']);
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('keeps config licensed features enabled when explicitly allowed', function() {
+    process.env.NODE_ENV = 'production';
+    process.env.ALLOW_CONFIG_LICENSED_FEATURES = 'true';
     config.set('licensed_features', ['time_balance']);
 
     expect(features.isEnabled('time_balance')).to.equal(true);

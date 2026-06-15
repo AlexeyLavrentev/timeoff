@@ -80,6 +80,12 @@ Explicit `false` overrides always work as a kill switch, even for licensed featu
 }
 ```
 
+`licensed_features` is a local allowlist for development, tests, or trusted
+internal deployments. Production-like environments ignore it by default. Set
+`ALLOW_CONFIG_LICENSED_FEATURES=true` or `allow_config_licensed_features=true`
+only for deployments where the operator is trusted to grant features without a
+signed license.
+
 ## License Payload
 
 `TIMEOFF_LICENSE` may contain JSON or base64-encoded JSON. In development and test environments, an unsigned payload is accepted:
