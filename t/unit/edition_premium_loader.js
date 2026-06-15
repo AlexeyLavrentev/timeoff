@@ -115,6 +115,26 @@ describe('Premium edition loader', function() {
     expect(registry.calls[0].scheduler.name).to.equal('premium-job');
   });
 
+  it('passes core helpers to premium modules', function() {
+    var modulePath = writeModule('context-module.js', [
+      "'use strict';",
+      "module.exports = {",
+      "  register: function({registry, context}) {",
+      "    const features = context.coreRequire('features');",
+      "    const path = context.coreRequirePackage('path');",
+      "    registry.registerRoute({name: String(Boolean(context.coreRoot && features.isEnabled && path.join)), path: '/premium/', router: function() {}});",
+      "  }",
+      "};",
+    ].join('\n'));
+    var registry = createRegistry();
+
+    process.env.TIMEOFF_PREMIUM_MODULE = modulePath;
+
+    premiumLoader.load({registry: registry});
+
+    expect(registry.calls[0].route.name).to.equal('true');
+  });
+
   it('does not throw when optional premium module is missing', function() {
     var warnings = [];
 
