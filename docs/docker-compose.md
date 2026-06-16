@@ -85,6 +85,31 @@ docker compose restart app
 docker compose up --build -d
 ```
 
+## Commercial запуск с private premium module
+
+Для commercial-сборки используйте override `docker-compose.commercial.yml`.
+Он копирует private premium module в image через Docker BuildKit named context
+и включает `TIMEOFF_PREMIUM_MODULE=/opt/timeoff-premium`.
+
+Пример:
+
+```bash
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE \
+TIMEOFF_LICENSE_PUBLIC_KEY=PASTE_PUBLIC_KEY_WITH_ESCAPED_NEWLINES_HERE \
+docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build -d
+```
+
+Для локальной разработки premium-функций можно использовать volume override:
+
+```bash
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.premium-dev.yml up --build
+```
+
+Подробная схема community/commercial image описана в
+`docs/community-commercial-builds.md`.
+
 ### 2. Примените миграции
 
 ```bash
