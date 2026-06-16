@@ -29,6 +29,7 @@ jobs:
       - name: Run focused tests
         run: |
           ./node_modules/.bin/mocha \
+            t/unit/diagnostics.js \
             t/unit/edition_premium_loader.js \
             t/unit/edition_community_boundary.js \
             t/unit/edition_registry.js \

@@ -1,0 +1,110 @@
+{{> header }}
+
+<h1>{{t "diagnostics.title"}}</h1>
+<p class="lead">{{t "diagnostics.subtitle"}}</p>
+
+{{> show_flash_messages }}
+
+<div class="row main-row_header">
+  <p class="col-md-12">{{t "diagnostics.licenseSection"}}</p>
+</div>
+
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <table class="table table-striped">
+      <tbody>
+        <tr>
+          <th>{{t "diagnostics.fields.valid"}}</th>
+          <td>{{#if diagnostics.license.valid}}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.reason"}}</th>
+          <td><code>{{diagnostics.license.reason}}</code></td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.customer"}}</th>
+          <td>{{diagnostics.license.customer}}</td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.features"}}</th>
+          <td>
+            {{#each diagnostics.license.features}}
+              <code>{{this}}</code>
+            {{else}}
+              {{t "diagnostics.empty"}}
+            {{/each}}
+          </td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.expires"}}</th>
+          <td>{{diagnostics.license.expires}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row main-row_header">
+  <p class="col-md-12">{{t "diagnostics.premiumSection"}}</p>
+</div>
+
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <table class="table table-striped">
+      <tbody>
+        <tr>
+          <th>{{t "diagnostics.fields.loaded"}}</th>
+          <td>{{#if diagnostics.edition.premium.loaded}}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.required"}}</th>
+          <td>{{#if diagnostics.edition.premium.required}}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.moduleName"}}</th>
+          <td><code>{{diagnostics.edition.premium.moduleName}}</code></td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.routes"}}</th>
+          <td>{{diagnostics.edition.counts.routes}}</td>
+        </tr>
+        <tr>
+          <th>{{t "diagnostics.fields.migrations"}}</th>
+          <td>{{diagnostics.edition.counts.migrationPaths}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row main-row_header">
+  <p class="col-md-12">{{t "diagnostics.featuresSection"}}</p>
+</div>
+
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <table class="table table-striped">
+      <tbody>
+        {{#each enabledFeatureRows}}
+          <tr>
+            <th><code>{{name}}</code></th>
+            <td>{{#if enabled}}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row main-row_header">
+  <p class="col-md-12">{{t "diagnostics.snapshotSection"}}</p>
+</div>
+
+<div class="row">
+  <div class="col-md-10 col-md-offset-1">
+    <p>{{t "diagnostics.snapshotHelp"}}</p>
+    <pre><code>{{diagnosticsJson}}</code></pre>
+  </div>
+</div>
+
+{{> footer }}

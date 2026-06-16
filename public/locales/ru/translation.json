@@ -21,7 +21,8 @@
     "logout": "Выйти",
     "login": "Вход",
     "me": "Профиль",
-    "authConfig": "Аутентификация"
+    "authConfig": "Аутентификация",
+    "diagnostics": "Диагностика"
   },
   "language": {
     "label": "Язык",
@@ -58,6 +59,28 @@
     "no": "Нет",
     "close": "Закрыть",
     "github": "GitHub"
+  },
+  "diagnostics": {
+    "title": "Диагностика",
+    "subtitle": "Операционный статус для поддержки и коммерческих установок.",
+    "licenseSection": "Лицензия",
+    "premiumSection": "Премиум модуль",
+    "featuresSection": "Включённые функции",
+    "snapshotSection": "Безопасный снимок диагностики",
+    "snapshotHelp": "Этот JSON не содержит исходные лицензии, подписи, секреты, токены и ключи.",
+    "empty": "Нет",
+    "fields": {
+      "valid": "Валидна",
+      "reason": "Причина",
+      "customer": "Клиент",
+      "features": "Функции",
+      "expires": "Истекает",
+      "loaded": "Загружен",
+      "required": "Обязателен",
+      "moduleName": "Модуль",
+      "routes": "Маршруты",
+      "migrations": "Пути миграций"
+    }
   },
   "notifications": {
     "pendingRequest": "{{count}} заявка на отпуск",
