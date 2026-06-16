@@ -21,7 +21,8 @@
     "logout": "Logout",
     "login": "Login",
     "me": "Me",
-    "authConfig": "Authentication"
+    "authConfig": "Authentication",
+    "diagnostics": "Diagnostics"
   },
   "language": {
     "label": "Language",
@@ -58,6 +59,28 @@
     "no": "No",
     "close": "Close",
     "github": "GitHub"
+  },
+  "diagnostics": {
+    "title": "Diagnostics",
+    "subtitle": "Operational status for support and commercial deployments.",
+    "licenseSection": "License",
+    "premiumSection": "Premium module",
+    "featuresSection": "Enabled features",
+    "snapshotSection": "Safe diagnostic snapshot",
+    "snapshotHelp": "This JSON omits raw licenses, signatures, secrets, tokens, and keys.",
+    "empty": "None",
+    "fields": {
+      "valid": "Valid",
+      "reason": "Reason",
+      "customer": "Customer",
+      "features": "Features",
+      "expires": "Expires",
+      "loaded": "Loaded",
+      "required": "Required",
+      "moduleName": "Module",
+      "routes": "Routes",
+      "migrations": "Migration paths"
+    }
   },
   "notifications": {
     "pendingRequest": "{{count}} leave request to process",
