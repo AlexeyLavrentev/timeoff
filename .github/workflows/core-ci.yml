@@ -35,7 +35,8 @@ jobs:
             t/unit/edition_registry.js \
             t/unit/features.js \
             t/unit/email_template_paths.js \
-            t/unit/partial_template_paths.js
+            t/unit/partial_template_paths.js \
+            t/unit/view_engine_paths.js
 
       - name: Validate community compose
         run: docker compose config --quiet
