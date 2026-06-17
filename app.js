@@ -19,6 +19,7 @@ const { initI18next } = require('./lib/i18n');
 
 var app = express();
 var baseViewPath = path.join(__dirname, 'views');
+var baseLayoutsPath = path.join(baseViewPath, 'layouts');
 var editionContext = {
   app: app,
 };
@@ -52,6 +53,7 @@ var handlebars = require('express-handlebars')
   .create({
     defaultLayout : 'main',
     extname       : '.hbs',
+    layoutsDir    : baseLayoutsPath,
     partialsDir   : partialTemplatePaths.get(),
     helpers       : require('./lib/view/helpers')(),
     runtimeOptions: {
@@ -255,9 +257,11 @@ editionContext.passport = passport;
 
 edition.applyViewPaths(app, [baseViewPath], editionContext);
 emailTemplatePaths.set(emailTemplatePaths.get().concat(edition.getEmailTemplatePaths(editionContext)));
-handlebars.partialsDir = partialTemplatePaths.set(
+const activePartialTemplatePaths = partialTemplatePaths.set(
   partialTemplatePaths.get().concat(edition.getPartialTemplatePaths(editionContext))
 );
+handlebars.partialsDir = activePartialTemplatePaths;
+handlebars.config.partialsDir = activePartialTemplatePaths;
 edition.registerRoutes(app, editionContext);
 
 app.use(
