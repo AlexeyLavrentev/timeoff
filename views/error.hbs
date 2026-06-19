@@ -1,3 +1,24 @@
-<h1>{{message}}</h1>
-<h2>{{error.status}}</h2>
-<pre>{{error.stack}}</pre>
+{{> header }}
+
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+
+<main id="main-content" tabindex="-1">
+  <section class="system-state system-state-error" role="alert">
+    <span class="fa fa-exclamation-circle system-state-icon" aria-hidden="true"></span>
+    <p class="system-state-kicker">{{t "systemError.kicker"}}</p>
+    <h1>{{t "systemError.title"}}</h1>
+    {{#if error.status}}<p class="system-state-code">{{t "systemError.status" status=error.status}}</p>{{/if}}
+    <p class="lead">{{#if message}}{{message}}{{else}}{{t "errors.requestFailed"}}{{/if}}</p>
+    <div class="system-state-actions">
+      <a class="btn btn-info" href="/">{{t "systemError.backHome"}}</a>
+    </div>
+    {{#if error.stack}}
+    <details class="system-state-details">
+      <summary>{{t "systemError.technicalDetails"}}</summary>
+      <pre>{{error.stack}}</pre>
+    </details>
+    {{/if}}
+  </section>
+</main>
+
+{{> footer }}

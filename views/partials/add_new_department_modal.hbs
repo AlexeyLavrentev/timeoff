@@ -1,11 +1,11 @@
 
-<div class="modal fade" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade system-modal" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="{{container_id}}_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
     <form method="POST" action="{{form_action}}" id="add_new_department_form">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">{{t "departments.addNew"}}</h4>
+        <h4 class="modal-title" id="{{container_id}}_label">{{t "departments.addNew"}}</h4>
       </div>
 
       <div class="modal-body">
@@ -24,19 +24,23 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <input type="checkbox" id="department_include_public_holiday_new" name="include_public_holidays__new" checked="checked">&nbsp;
-          <label for="department_include_public_holiday_new" class="control-label">{{t "departments.includePublicHolidays"}}</label>
+        <div class="form-group checkbox">
+          <label for="department_include_public_holiday_new">
+            <input type="checkbox" id="department_include_public_holiday_new" name="include_public_holidays__new" checked="checked">
+            {{t "departments.includePublicHolidays"}}
+          </label>
         </div>
 
-        <div class="form-group">
-          <input type="checkbox" id="department_is_accrued_allowance_new" name="is_accrued_allowance__new">&nbsp;
-          <label for="department_is_accrued_allowance_new" class="control-label">{{t "departments.accruedAllowance"}}</label>
+        <div class="form-group checkbox">
+          <label for="department_is_accrued_allowance_new">
+            <input type="checkbox" id="department_is_accrued_allowance_new" name="is_accrued_allowance__new">
+            {{t "departments.accruedAllowance"}}
+          </label>
         </div>
 
         <div class="form-group">
           <label for="department_superwiser_new" class="control-label">{{t "departments.supervisor"}}</label>
-          <select class="form-control" id="department_allowance_new" name="boss_id__new">
+          <select class="form-control" id="department_superwiser_new" name="boss_id__new">
             {{#each company.users}}
               <option value="{{this.id}}">{{this.full_name}}</option>
             {{/each}}

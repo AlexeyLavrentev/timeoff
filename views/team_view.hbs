@@ -1,43 +1,50 @@
 
 {{> header }}
 
-<h1>{{t "teamView.title"}}</h1>
-
-<div class="row">
-  <div class="col-md-6 lead">{{t "teamView.teamLabel" name=(concatenate logged_user.name " " logged_user.lastname)}} <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="{{t 'teamView.exportTitle'}}"><span class="fa fa-rss"></span></a></div>
-  <div class="col-md-3 col-md-offset-3">
-    <div class="btn-group btn-group-sm pull-right" role="group">
-      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 0 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#unless grouped_mode}}disabled=disabled{{/unless}}>{{t "teamView.all"}}</a>
-      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 1 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#if grouped_mode}}disabled=disabled{{/if}}>{{t "teamView.byDepartment"}}</a>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
+<div class="page-heading team-page-heading">
+  <div>
+    <p class="page-eyebrow">{{t "nav.calendar"}}</p>
+    <h1>{{t "teamView.title"}}</h1>
+    <p class="lead">{{t "teamView.teamLabel" name=(concatenate logged_user.name " " logged_user.lastname)}}</p>
+  </div>
+  <div class="page-heading-actions">
+    <a class="btn btn-default" href="/calendar/feeds/" data-toggle="tooltip" data-placement="left" title="{{t 'teamView.exportTitle'}}">
+      <span class="fa fa-rss" aria-hidden="true"></span>
+      <span>{{t "teamView.exportTitle"}}</span>
+    </a>
+    <div class="btn-group btn-group-sm view-switcher" role="group" aria-label="{{t "teamView.title"}}">
+      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 0 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#unless grouped_mode}}disabled=disabled aria-current="page" aria-disabled="true"{{/unless}}>{{t "teamView.all"}}</a>
+      <a href="/calendar/teamview/?{{> team_view_url_parameters grouped_mode = 1 save_grouped_mode = 1 save_current_department = 1 }}" class="btn btn-default" {{#if grouped_mode}}disabled=disabled aria-current="page" aria-disabled="true"{{/if}}>{{t "teamView.byDepartment"}}</a>
     </div>
   </div>
 </div>
 
 {{> show_flash_messages }}
 
-<div class="row">&nbsp;</div>
-
-<div id="team-view-loading" class="team-view-loading hidden">
+<div id="team-view-loading" class="team-view-loading hidden" role="status" aria-live="polite" aria-atomic="true">
   <div class="team-view-loading-content">
-    <span class="fa fa-refresh fa-spin"></span>
+    <span class="fa fa-refresh fa-spin" aria-hidden="true"></span>
     <span class="team-view-loading-text">{{t "common.loading"}}</span>
   </div>
 </div>
 
-<nav>
+<section class="team-toolbar" aria-label="{{t "teamView.title"}}">
+<nav aria-label="{{t "teamView.monthsLabel"}}">
   <div class="row period-navigation">
     <div class="col-xs-2 period-navigation-side">
       <a class="btn btn-link btn-lg" href="/calendar/teamview/?{{> team_view_url_parameters base_date = prev_date }}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{as_date_formatted prev_date 'MMM' }}</a>
     </div>
 
     <div class="col-xs-8 calendar-section-caption">
-        <button id="team_view_month_select_btn" class="btn btn-link btn-lg" data-tom="/calendar/teamview/?{{> team_view_url_parameters base_date=0 }}" data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months">
+        <button id="team_view_month_select_btn" class="btn btn-link btn-lg" data-tom="/calendar/teamview/?{{> team_view_url_parameters base_date=0 }}" data-provide="datepicker" data-date-format="yyyy-mm" data-date-autoclose="1" data-date-min-view-mode="months" aria-haspopup="dialog">
           {{#if_equal months_count 1}}
             {{as_date_formatted base_date 'MMMM, YYYY' }}
           {{else}}
             {{as_date_formatted start_date 'MMM'}} - {{as_date_formatted end_date 'MMM, YYYY' }}
           {{/if_equal}}
-          <i class="fa fa-angle-down"></i>
+          <i class="fa fa-angle-down" aria-hidden="true"></i>
         </button>
     </div>
 
@@ -47,16 +54,14 @@
   </div>
 </nav>
 
-<div class="row">&nbsp;</div>
-
 <div class="row team-view-filters">
-  <div class="col-md-4">
+  <div class="col-md-12 team-view-filter-grid">
     <div class="form-group">
-      <label class="control-label">{{t "teamView.departmentLabel"}}</label>
+      <label class="control-label" for="team_view_department_filter">{{t "teamView.departmentLabel"}}</label>
       <div class="dropdown">
-        <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <button class="btn btn-default dropdown-toggle left-column-cell" id="team_view_department_filter" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {{#if current_department }}{{current_department.name}}{{else}}{{t "teamView.allDepartments"}}{{/if}}
-          <span class="caret"></span>
+          <span class="caret" aria-hidden="true"></span>
         </button>
         <ul class="dropdown-menu">
           <li><a href="?{{> team_view_url_parameters current_department = null save_current_department = 1 }}">{{t "teamView.allDepartments"}}</a></li>
@@ -69,11 +74,11 @@
     </div>
     {{#if logged_user.admin}}
       <div class="form-group">
-        <label class="control-label">{{t "teamView.groupLabel"}}</label>
+        <label class="control-label" for="team_view_group_filter">{{t "teamView.groupLabel"}}</label>
         <div class="dropdown">
-          <button class="btn btn-default dropdown-toggle left-column-cell" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          <button class="btn btn-default dropdown-toggle left-column-cell" id="team_view_group_filter" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{#if current_group }}{{current_group.name}}{{else}}{{t "teamView.allGroups"}}{{/if}}
-            <span class="caret"></span>
+            <span class="caret" aria-hidden="true"></span>
           </button>
           <ul class="dropdown-menu">
             <li><a href="?{{> team_view_url_parameters current_group = null save_current_group = 1 }}">{{t "teamView.allGroups"}}</a></li>
@@ -87,24 +92,22 @@
     {{/if}}
     <div class="form-group team-view-months">
       <label class="control-label">{{t "teamView.monthsLabel"}}</label>
-      <div class="btn-group btn-group-sm team-view-months-buttons" role="group">
-        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 1 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 1}}disabled=disabled{{/if_equal}}>1</a>
-        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 3 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 3}}disabled=disabled{{/if_equal}}>3</a>
-        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 6 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 6}}disabled=disabled{{/if_equal}}>6</a>
-        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 12 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 12}}disabled=disabled{{/if_equal}}>12</a>
+      <div class="btn-group btn-group-sm team-view-months-buttons" role="group" aria-label="{{t "teamView.monthsLabel"}}">
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 1 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 1}}disabled=disabled aria-current="page" aria-disabled="true"{{/if_equal}}>1</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 3 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 3}}disabled=disabled aria-current="page" aria-disabled="true"{{/if_equal}}>3</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 6 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 6}}disabled=disabled aria-current="page" aria-disabled="true"{{/if_equal}}>6</a>
+        <a href="/calendar/teamview/?{{> team_view_url_parameters months_count = 12 save_months = 1 }}" class="btn btn-default" {{#if_equal months_count 12}}disabled=disabled aria-current="page" aria-disabled="true"{{/if_equal}}>12</a>
       </div>
     </div>
   </div>
 </div>
+</section>
 
-<div class="row">&nbsp;</div>
-
+<div class="team-tables">
 {{#each months}}
   {{#if ../show_month_title}}
-  <div class="row clearfix">
-    <div class="col-md-12 team-view-table-container">
+  <div class="team-view-month-heading">
       <h3>{{as_date_formatted this.start_date 'MMMM, YYYY'}}</h3>
-    </div>
   </div>
   {{/if}}
 
@@ -112,7 +115,9 @@
     {{> team_view_table department=this logged_user=../../logged_user deducted_period=../../deducted_period}}
   {{/each}}
 {{/each}}
+</div>
 
-<div class="row clearfix">&nbsp;</div>
+<div class="content-spacer content-spacer-lg" aria-hidden="true"></div>
+</main>
 
 {{> footer }}

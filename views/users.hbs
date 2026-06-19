@@ -1,6 +1,8 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
 <h1>{{t "users.title"}}</h1>
 
 {{> show_flash_messages }}
@@ -11,7 +13,7 @@
     <div class="btn-group pull-right">
       <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {{t "users.addEmployee"}}
-        <span class="caret"></span>
+        <span class="caret" aria-hidden="true"></span>
         <span class="sr-only">{{t "common.toggleDropdown"}}</span>
       </button>
       <ul class="dropdown-menu">
@@ -30,12 +32,12 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
-      ><i class="fa fa-download"></i> {{t "users.downloadCsv"}}</button>
+      ><i class="fa fa-download" aria-hidden="true"></i> {{t "users.downloadCsv"}}</button>
     </form>
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer" aria-hidden="true"></div>
 
 <div class="col-md-3 list-group all-departments">
   <a href="/users/" class="list-group-item{{#unless department_id }} selected-item{{/unless}}">{{t "users.allDepartments"}}</a>
@@ -52,8 +54,9 @@
 </div>
 
 <div class="col-md-6">
-  <div class="data-table-scroll">
+  <div class="data-table-scroll" role="region" aria-label="{{t "users.companyStaff" company=company.name}}" tabindex="0">
   <table class="table table-hover">
+    <caption class="sr-only">{{t "users.companyStaff" company=company.name}}</caption>
     <thead>
       <tr>
         <th>{{t "users.name"}}</th>
@@ -78,6 +81,8 @@
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer" aria-hidden="true"></div>
+
+</main>
 
 {{> footer }}

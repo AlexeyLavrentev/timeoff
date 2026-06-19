@@ -1,6 +1,7 @@
 {
   "nav": {
     "toggle": "Toggle navigation",
+    "skipToMainContent": "Skip to main content",
     "calendar": "Calendar",
     "teamView": "Team View",
     "employees": "Employees",
@@ -414,7 +415,10 @@
     "exportHint": "To export particular feed into default calendar application just click on corresponding link.",
     "copyHint": "Otherwise copy the link location and pass it to external application.",
     "myCalendarFeed": "My calendar feed",
-    "teamViewFeed": "Team view feed"
+    "teamViewFeed": "Team view feed",
+    "openFeed": "Open calendar feed",
+    "regenerate": "Regenerate link",
+    "regenerateHelp": "Regenerating invalidates the previous feed link."
   },
   "leave": {
     "newAbsence": "New absence",
@@ -935,6 +939,13 @@
     "dateAndTime": "Date and time",
     "toEmail": "To Email",
     "noEmails": "No emails recorded yet"
+  },
+  "systemError": {
+    "kicker": "Something went wrong",
+    "title": "We could not complete this request",
+    "status": "Error {{status}}",
+    "backHome": "Back to the application",
+    "technicalDetails": "Technical details"
   },
   "reportsPage": {
     "title": "Reports",

@@ -1,11 +1,11 @@
 
-<div class="modal fade" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade book-leave-modal" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="{{container_id}}_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-    <form method="POST" action="{{leave_modal_form_action}}">
+    <form method="POST" action="{{leave_modal_form_action}}" class="book-leave-form">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="exampleModalLabel">{{t "leave.newAbsence"}}</h4>
+        <h4 class="modal-title" id="{{container_id}}_label">{{t "leave.newAbsence"}}</h4>
       </div>
       <div class="modal-body">
 
@@ -20,7 +20,7 @@
           </div>
           {{/if_equal}}
 
-          <div class="form-group">
+          <div class="form-group book-leave-type-field">
             <label for="leave_type" class="control-label">{{t "leave.type"}}</label>
             <select class="form-control" id="leave_type" name="leave_type" required>
             {{# is_force_to_explicitly_select_type_when_requesting_new_leave}}
@@ -32,47 +32,47 @@
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="from" class="control-label">{{t "common.from"}}</label>
-            <div class="row">
-              <div class="col-md-5">
-                <select class="form-control" name="from_date_part">
+          <fieldset class="book-leave-date-field">
+            <legend id="{{container_id}}_from_label">{{t "common.from"}}</legend>
+            <div class="book-leave-date-controls">
+              <div class="book-leave-day-part">
+                <select class="form-control" name="from_date_part" aria-labelledby="{{container_id}}_from_label">
                   <option value="1" selected="selected">{{t "leave.allDay"}}</option>
                   <option value="2">{{t "leave.morning"}}</option>
                   <option value="3">{{t "leave.afternoon"}}</option>
                 </select>
               </div>
-              <div class="col-md-7">
+              <div class="book-leave-date-input">
                 <div class="input-group">
-                  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                  <input type="text" class="form-control book-leave-from-input" id="from" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{# with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1" value="{{as_date booking_start}}" name="from_date">
+                  <span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                  <input type="text" class="form-control book-leave-from-input" id="from" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{# with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1" value="{{as_date booking_start}}" name="from_date" aria-labelledby="{{container_id}}_from_label" required>
                 </div>
               </div>
             </div>
-          </div>
+          </fieldset>
 
-          <div class="form-group">
-            <label for="to" class="control-label">{{t "common.to"}}</label>
-            <div class="row">
-              <div class="col-md-5">
-                <select class="form-control" name="to_date_part">
+          <fieldset class="book-leave-date-field">
+            <legend id="{{container_id}}_to_label">{{t "common.to"}}</legend>
+            <div class="book-leave-date-controls">
+              <div class="book-leave-day-part">
+                <select class="form-control" name="to_date_part" aria-labelledby="{{container_id}}_to_label">
                   <option value="1" selected="selected">{{t "leave.allDay"}}</option>
                   <option value="2">{{t "leave.morning"}}</option>
                   <option value="3">{{t "leave.afternoon"}}</option>
                 </select>
               </div>
-              <div class="col-md-7">
+              <div class="book-leave-date-input">
                 <div class="input-group">
-                  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                  <input type="text" class="form-control book-leave-to-input" id="to" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1" value="{{as_date booking_end}}" name="to_date">
+                  <span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                  <input type="text" class="form-control book-leave-to-input" id="to" data-provide="datepicker" data-date-autoclose="1" data-date-format="{{#with logged_user.company }}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1" value="{{as_date booking_end}}" name="to_date" aria-labelledby="{{container_id}}_to_label" required>
                 </div>
               </div>
             </div>
-          </div>
+          </fieldset>
 
           <div class="form-group">
-            <label for="leave_type" class="control-label">{{t "leave.commentOptional"}}</label>
-            <textarea class="form-control" id="leave_reason" name="reason"></textarea>
+            <label for="leave_reason" class="control-label">{{t "leave.commentOptional"}}</label>
+            <textarea class="form-control" id="leave_reason" name="reason" rows="3"></textarea>
           </div>
 
       </div>
@@ -89,4 +89,3 @@
     </div>
   </div>
 </div>
-
