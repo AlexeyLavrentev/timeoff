@@ -1,13 +1,13 @@
 
-<div class="modal fade" id="add_secondary_supervisers_modal" tabindex="-1" role="dialog" aria-labelledby="add_secondary_supervisers_modal_la">
+<div class="modal fade system-modal" id="add_secondary_supervisers_modal" tabindex="-1" role="dialog" aria-labelledby="add_secondary_supervisers_modal_label">
   <div class="modal-dialog" role="document">
     <form action="/settings/departments/edit/{{ department.id }}/" method="post">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="modal_confirmation_reject_la">{{t "departments.addSupervisorsPrefix"}} <strong></strong> {{t "departments.addSupervisorsSuffix"}}</h4>
+        <h4 class="modal-title" id="add_secondary_supervisers_modal_label">{{t "departments.addSupervisorsPrefix"}} <strong></strong> {{t "departments.addSupervisorsSuffix"}}</h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" aria-live="polite">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-link" data-dismiss="modal">{{t "common.cancel"}}</button>

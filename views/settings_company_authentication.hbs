@@ -1,6 +1,8 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
 <h1>{{t "authConfig.title"}}</h1>
 <p class="lead">{{t "authConfig.subtitle"}}</p>
 
@@ -257,4 +259,5 @@ subsidiary.example.com">{{sso.config.email_domains}}</textarea>
   </div>
 </div>
 
+</main>
 {{> footer }}

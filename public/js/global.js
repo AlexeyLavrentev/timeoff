@@ -402,6 +402,28 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
+  var currentPath = window.location.pathname;
+
+  $('.primary-navigation > li > a[href]').each(function(){
+    var linkPath = this.pathname;
+    var isTeamView = linkPath === '/calendar/teamview/';
+    var isCurrent = isTeamView
+      ? currentPath.indexOf('/calendar/teamview/') === 0
+      : (linkPath === '/calendar/' ? currentPath === '/calendar/' : currentPath.indexOf(linkPath) === 0);
+
+    if (isCurrent) {
+      $(this).attr('aria-current', 'page').parent().addClass('active');
+    }
+  });
+
+  $('.navbar-collapse a:not(.dropdown-toggle)').on('click', function(){
+    if ($('.navbar-toggle').is(':visible')) {
+      $('.navbar-collapse').collapse('hide');
+    }
+  });
+});
+
+$(document).ready(function(){
   var themeStorageKey = 'timeoff-theme';
   var $themeMenu = $('#theme-menu');
 

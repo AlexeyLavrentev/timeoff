@@ -1,13 +1,17 @@
-
 {{> header }}
 
-<h1>{{t "notFound.title"}}</h1>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
 
-<div class="row">
-  <div class="col-md-10 lead">{{t "notFound.message"}}</div>
-</div>
-
-<div class="row large-bottom-space"></div>
-
+<main id="main-content" tabindex="-1">
+  <section class="system-state">
+    <span class="fa fa-compass system-state-icon" aria-hidden="true"></span>
+    <p class="system-state-kicker">404</p>
+    <h1>{{t "notFound.title"}}</h1>
+    <p class="lead">{{t "notFound.message"}}</p>
+    <div class="system-state-actions">
+      <a class="btn btn-info" href="/">{{t "systemError.backHome"}}</a>
+    </div>
+  </section>
+</main>
 
 {{> footer }}

@@ -1,11 +1,15 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+
+<main id="main-content" tabindex="-1">
+
 <h1>{{t "bankHolidays.title"}}</h1>
 
 <div class="row">
   <div class="col-md-12">
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs admin-tabs">
       <li role="presentation" {{#unless selectedWorkCalendar}}class="active"{{/unless}}>
         <a href="?year={{yearCurrent}}&week_type={{weekType}}">{{t "bankHolidays.commonCalendar"}}</a>
       </li>
@@ -15,42 +19,42 @@
       </li>
       {{/each}}
       {{#feature_enabled "work_calendars"}}
-        <li role="presentation"><a href="#" data-toggle="modal" data-target="#add_work_calendar_modal"><span class="fa fa-plus"></span> {{t "bankHolidays.addCalendar"}}</a></li>
+        <li role="presentation"><a href="#" data-toggle="modal" data-target="#add_work_calendar_modal"><span class="fa fa-plus" aria-hidden="true"></span> {{t "bankHolidays.addCalendar"}}</a></li>
       {{/feature_enabled}}
     </ul>
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer-sm"></div>
 
-<div class="row">
-  <div class="col-md-6 lead">
+<div class="row admin-page-header">
+  <div class="col-sm-7 lead">
     {{#if selectedWorkCalendar}}
       {{t "bankHolidays.localDaysForYear" calendar=selectedWorkCalendar.name year=yearCurrent}}
     {{else}}
       {{t "bankHolidays.publicHolidaysForYear" company=company.name year=yearCurrent}}
     {{/if}}
   </div>
-  <div class="col-md-3 col-md-offset-3">
-    <div class="btn-group pull-right">
+  <div class="col-sm-5 admin-page-actions">
+    {{#if selectedWorkCalendar}}
+    <form method="POST" action="/settings/bankholidays/calendars/delete/{{selectedWorkCalendar.id}}/">
+      <button type="submit" class="btn btn-link text-danger"><span class="fa fa-trash" aria-hidden="true"></span> {{t "bankHolidays.removeCalendar"}}</button>
+    </form>
+    {{/if}}
+    <div class="btn-group">
       <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span aria-hidden="true" class="fa fa-plus"></span> {{t "common.addNew"}}
-        <span class="caret"></span>
+        <span class="caret" aria-hidden="true"></span>
         <span class="sr-only">{{t "common.toggleDropdown"}}</span>
       </button>
       <ul class="dropdown-menu">
         <li><a href="#" id="add_new_department" data-toggle="modal" data-target="#add_new_bank_holiday_modal">{{t "bankHolidays.addNew"}}</a></li>
       </ul>
     </div>
-    {{#if selectedWorkCalendar}}
-    <form method="POST" action="/settings/bankholidays/calendars/delete/{{selectedWorkCalendar.id}}/" class="pull-right">
-      <button type="submit" class="btn btn-link text-danger"><span class="fa fa-trash"></span> {{t "bankHolidays.removeCalendar"}}</button>
-    </form>
-    {{/if}}
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer-sm"></div>
 
 {{> show_flash_messages }}
 
@@ -66,7 +70,7 @@
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer-sm"></div>
 
 <div class="row clearfix">
   <div class="col-md-8">
@@ -105,18 +109,20 @@
 
   <div class="col-md-4">
 
-    <div class="row">
+    <div class="row bank-holiday-list-header">
       <div class="col-md-4"><label class="control-label">{{t "common.date"}}</label></div>
       <div class="col-md-4"><label class="control-label">{{t "bankHolidays.holidayName"}}</label></div>
       <div class="col-md-2"><label class="control-label">{{t "bankHolidays.dayType"}}</label></div>
     </div>
 
-    <div class="row">&nbsp;</div>
+    <div class="content-spacer-sm"></div>
 
 
     {{#unless bankHolidays.length }}
     <div class="row">
-      <div class="col-md-12 tst-no-bank-holidays text-center">{{t "bankHolidays.noRecords"}}</div>
+      <div class="col-md-12">
+        <div class="empty-state tst-no-bank-holidays text-center">{{t "bankHolidays.noRecords"}}</div>
+      </div>
     </div>
     {{/unless}}
 
@@ -127,11 +133,11 @@
     <form id="update_bankholiday_form" method="post" action="/settings/bankholidays/?year={{yearCurrent}}">
     <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     {{#each bankHolidays}}
-    <div class="row">
+    <div class="row bank-holiday-row">
       <div class="col-md-4">
         <div class="input-append date">
         <input type="text" class="form-control" value="{{as_date date}}" name="date__{{id}}" tom-test-hook="date__{{@index}}" data-date-autoclose="1" data-provide="datepicker" data-date-format="{{#with ../logged_user.company}}{{this.get_default_date_format_for_date_picker}}{{/with}}" data-date-week-start="1">
-        <span class="add-on"><i class="icon-th"></i></span>
+        <span class="add-on"><i class="icon-th" aria-hidden="true"></i></span>
         </div>
       </div>
       <div class="col-md-4">
@@ -144,19 +150,17 @@
         </select>
       </div>
       <div class="col-md-2">
-        <button class="btn btn-default pull-right bankholiday-remove-btn" type="button" value="{{id}}" tom-test-hook="remove__{{@index}}"><span class="fa fa-remove"></span></button>
+        <button class="btn btn-default pull-right bankholiday-remove-btn" type="button" value="{{id}}" tom-test-hook="remove__{{@index}}" aria-label="{{t "common.remove"}}"><span class="fa fa-remove" aria-hidden="true"></span></button>
       </div>
     </div>
 
-    <div class="row">&nbsp;</div>
-
     {{/each}}
 
-    <div class="row">&nbsp;</div>
+    <div class="content-spacer-sm"></div>
 
-    <div class="row">
+    <div class="row admin-form-actions">
       <div class="col-md-12">
-        <div class="pull-right">
+        <div>
           {{!-- <button id="bankholiday-import-btn" class="btn btn-default" type="button">Import default holidays</button> --}}
           <button class="btn btn-default" type="button" data-toggle="modal" data-target="#add_new_bank_holiday_modal" id="add_new_bank_holiday_btn">{{t "common.addNew"}}</button>
           {{#if bankHolidays.length}}
@@ -171,7 +175,7 @@
 </div>
 
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer"></div>
 
 {{#feature_enabled "work_calendars"}}
 {{#unless selectedWorkCalendar}}
@@ -192,12 +196,13 @@
           </div>
           <button class="btn btn-default" type="submit">{{t "bankHolidays.previewImport"}}</button>
         </form>
-        <div class="row">&nbsp;</div>
+        <div class="content-spacer-sm"></div>
         {{#unless importPreview.length}}
-        <p class="text-muted">{{t "bankHolidays.importPreviewEmpty"}}</p>
+        <div class="empty-state">{{t "bankHolidays.importPreviewEmpty"}}</div>
         {{else}}
-        <div class="table-responsive">
+        <div class="table-responsive" role="region" aria-label="{{t "bankHolidays.importPreviewTitle" year=yearCurrent}}" tabindex="0">
           <table class="table table-condensed">
+            <caption class="sr-only">{{t "bankHolidays.importPreviewTitle" year=yearCurrent}}</caption>
             <thead>
               <tr>
                 <th>{{t "common.date"}}</th>
@@ -224,7 +229,7 @@
         <form method="POST" action="/settings/bankholidays/import/?year={{yearCurrent}}">
           <input type="hidden" name="week_type" value="{{weekType}}">
           <button class="btn btn-success single-click" type="submit" {{#unless importChangesCount}}disabled="disabled"{{/unless}}>
-            <span class="fa fa-download"></span> {{t "bankHolidays.applyImport"}}
+            <span class="fa fa-download" aria-hidden="true"></span> {{t "bankHolidays.applyImport"}}
           </button>
         </form>
       </div>
@@ -234,7 +239,7 @@
 {{/unless}}
 {{/feature_enabled}}
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer"></div>
 
 {{> add_new_bank_holiday_modal
   container_id='add_new_bank_holiday_modal'
@@ -270,5 +275,7 @@
   </div>
 </div>
 {{/feature_enabled}}
+
+</main>
 
 {{> footer }}

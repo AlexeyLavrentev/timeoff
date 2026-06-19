@@ -1,30 +1,37 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+
+<main id="main-content" tabindex="-1">
+
 <h1>{{t "groups.title"}}</h1>
 
 {{> show_flash_messages }}
 
-<div class="row">
-  <div class="col-md-4 lead">{{t "groups.allGroups"}}</div>
-  <div class="col-md-4 col-md-offset-4">
-    <button class="btn btn-info pull-right" data-toggle="modal" data-target="#add_new_group_modal" type="button" id="add_new_group_btn">{{t "groups.addNew"}}</button>
+<div class="row admin-page-header">
+  <div class="col-sm-7 lead">{{t "groups.allGroups"}}</div>
+  <div class="col-sm-5 admin-page-actions">
+    <button class="btn btn-info" data-toggle="modal" data-target="#add_new_group_modal" type="button" id="add_new_group_btn">{{t "groups.addNew"}}</button>
   </div>
 </div>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer-sm"></div>
 
 {{# unless groups.length }}
 <div class="row">
-    <div class="col-md-4">{{t "groups.noGroups"}}</div>
+    <div class="col-md-12">
+      <div class="empty-state">{{t "groups.noGroups"}}</div>
+    </div>
 </div>
 {{/unless}}
 
 <div class="row">
 
   <div class="col-md-12">
-    <div class="data-table-scroll">
+    <div class="data-table-scroll" role="region" aria-label="{{t "groups.allGroups"}}" tabindex="0">
     <table class="table table-hover">
+      <caption class="sr-only">{{t "groups.allGroups"}}</caption>
       <thead>
         <tr>
           <th>{{t "groups.name"}}</th>
@@ -37,7 +44,7 @@
         <tr>
           <td><a href="/settings/groups/edit/{{this.id}}/">{{this.name}}</a></td>
           <td>{{this.users.length}}</td>
-          <td><a href="/settings/groups/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right"><span class="fa fa-chevron-right"></span></a></td>
+          <td><a href="/settings/groups/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right" aria-label="{{this.name}}"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
         </tr>
         {{/each}}
       </tbody>
@@ -82,5 +89,7 @@
     </div>
   </div>
 </div>
+
+</main>
 
 {{> footer }}

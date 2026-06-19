@@ -1,31 +1,40 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+
+<main id="main-content" tabindex="-1">
+
 <h1>{{t "departments.detailsTitle" name=department.name}}</h1>
 
 <form method="post" action="/settings/departments/delete/{{ department.id }}/">
-  <div class="row">
-    <div class="col-md-3 lead">
+  <div class="row admin-page-header">
+    <div class="col-sm-7 lead">
       {{t "departments.detailsLead"}}
     </div>
-    <div class="col-md-1 col-md-offset-8">
-      <button id="remove_btn" type="submit" class="pull-right btn btn-danger single-click" data-toggle="tooltip" data-placement="top" title="{{t "departments.removeTooltip"}}"><i class="fa fa-trash"></i> {{t "common.delete"}}</button>
+    <div class="col-sm-5 admin-page-actions">
+      <button id="remove_btn" type="submit" class="btn btn-danger single-click" data-toggle="tooltip" data-placement="top" title="{{t "departments.removeTooltip"}}"><i class="fa fa-trash" aria-hidden="true"></i> {{t "common.delete"}}</button>
     </div>
   </div>
 </form>
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer-sm"></div>
 
 {{> show_flash_messages }}
 
-<div class="col-md-3 list-group">
-  <a href="/settings/departments/edit/{{department.id}}/" class="list-group-item selected-item">{{t "departments.generalDetails"}}</a>
-  <a href="/users/?department={{ department.id }}" class="list-group-item">{{t "departments.employeesFromDepartment"}}</a>
+<div class="row admin-detail-layout">
+  <div class="col-md-3">
+    <nav class="list-group" aria-label="{{t "departments.detailsTitle" name=department.name}}">
+      <a href="/settings/departments/edit/{{department.id}}/" class="list-group-item selected-item">{{t "departments.generalDetails"}}</a>
+      <a href="/users/?department={{ department.id }}" class="list-group-item">{{t "departments.employeesFromDepartment"}}</a>
+    </nav>
+  </div>
+
+  <div class="col-md-9">
+    {{> department_details/general }}
+  </div>
 </div>
 
-
-{{> department_details/general }}
-
-<div class="row">&nbsp;</div>
+</main>
 
 {{> footer }}
