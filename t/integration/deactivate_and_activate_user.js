@@ -4,7 +4,7 @@
 var test                 = require('selenium-webdriver/testing'),
   By                     = require('selenium-webdriver').By,
   expect                 = require('chai').expect,
-  moment                 = require('moment'),
+  moment                 = require('moment-timezone'),
   register_new_user_func = require('../lib/register_new_user'),
   login_user_func        = require('../lib/login_with_user'),
   open_page_func         = require('../lib/open_page'),
@@ -14,6 +14,10 @@ var test                 = require('selenium-webdriver/testing'),
   user_info_func         = require('../lib/user_info'),
   config                 = require('../lib/config'),
   application_host       = config.get_application_host();
+
+var company_today = function() {
+  return moment().tz('Europe/London');
+};
 
 /*
  * Scenario to check:
@@ -71,7 +75,7 @@ describe('Deactivate and activate user', function(){
   });
 
   it('Check that the deactivated badge is not displayed', function(done){
-    driver.findElements(By.className('badge alert-warning'))
+    driver.findElements(By.css('.label.label-warning.employee-status'))
     .then(els => {
       if (els.length > 0){
         throw new Error('The badge was found')
@@ -92,7 +96,7 @@ describe('Deactivate and activate user', function(){
         driver      : driver,
         form_params : [{
           selector : 'input#end_date_inp',
-          value    : moment().subtract(1, 'days').format('YYYY-MM-DD'),
+          value    : company_today().subtract(1, 'days').format('YYYY-MM-DD'),
         }],
         submit_button_selector : 'button#save_changes_btn',
         message : /Details for .+ were updated/,
@@ -104,7 +108,7 @@ describe('Deactivate and activate user', function(){
   });
 
   it('Check that the deactivated badge is displayed', function(done){
-    driver.findElements(By.className('badge alert-warning'))
+    driver.findElements(By.css('.label.label-warning.employee-status'))
     .then(els => {expect(els.length).to.be.eql(1, 'No badge visible');
     return els[0].getText();
     })
@@ -167,7 +171,7 @@ describe('Deactivate and activate user', function(){
       driver      : driver,
       form_params : [{
         selector : 'input#end_date_inp',
-        value    : moment().add(1, 'days').format('YYYY-MM-DD'),
+        value    : company_today().add(1, 'days').format('YYYY-MM-DD'),
       }],
       submit_button_selector : 'button#save_changes_btn',
       message : /There is an active account with similar email somewhere within system/,
@@ -195,7 +199,7 @@ describe('Deactivate and activate user', function(){
       driver      : driver,
       form_params : [{
         selector : 'input#end_date_inp',
-        value    : moment().subtract(3, 'days').format('YYYY-MM-DD'),
+        value    : company_today().subtract(3, 'days').format('YYYY-MM-DD'),
       }],
       submit_button_selector : 'button#save_changes_btn',
       message : /Details for .+ were updated/,
