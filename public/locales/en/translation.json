@@ -383,6 +383,7 @@
     "continueWithSso": "Continue with SSO",
     "ssoHint": "Use your work email to continue with your company SSO provider. A password is not required here.",
     "passwordLoginTitle": "Password login",
+    "passwordSubtitle": "Sign in with your work email and password.",
     "ssoTitle": "Single sign-on",
     "ssoSubtitle": "Use your company identity provider to sign in.",
     "ssoEmailSectionTitle": "Continue with your work email",
@@ -1080,6 +1081,7 @@
   "authConfig": {
     "title": "Authentication",
     "subtitle": "Configure LDAP or SSO for your company.",
+    "ldapSubtitle": "Configure LDAP authentication for your company.",
     "ldapSectionTitle": "LDAP Configuration",
     "ssoSectionTitle": "SSO Configuration",
     "enableSsoLabel": "Enable SSO",

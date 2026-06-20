@@ -8,10 +8,12 @@
     <div class="auth-product-mark" aria-hidden="true"><span class="fa fa-calendar-check-o"></span></div>
     <p class="auth-eyebrow">{{brand_name}}</p>
     <h1 id="auth-page-title">{{t "login.title"}}</h1>
-    <p class="auth-intro-copy">{{t "login.ssoSubtitle"}}</p>
+    <p class="auth-intro-copy">{{#if features.sso_authentication}}{{t "login.ssoSubtitle"}}{{else}}{{t "login.passwordSubtitle"}}{{/if}}</p>
     <div class="auth-methods" aria-hidden="true">
       <span><i class="fa fa-lock"></i>{{t "login.passwordLoginTitle"}}</span>
+      {{#if features.sso_authentication}}
       <span><i class="fa fa-building-o"></i>{{t "login.ssoTitle"}}</span>
+      {{/if}}
     </div>
   </div>
 </section>
@@ -52,6 +54,7 @@
   </div>
 </form>
 
+{{#if features.sso_authentication}}
 {{#if sso_login.has_sso_companies}}
 <div class="auth-divider"><span>{{t "login.ssoTitle"}}</span></div>
 
@@ -80,6 +83,7 @@
   <p class="help-block">{{t "login.ssoSubtitle"}}</p>
   <a href="/login/sso/" class="btn btn-default btn-block auth-sso-button" id="go_to_sso_login"><span class="fa fa-building-o" aria-hidden="true"></span>{{t "login.continueWithSso"}}</a>
 </div>
+{{/if}}
 {{/if}}
 </div>
 </section>

@@ -228,7 +228,6 @@ app.use(
 );
 
 app.use('/settings/groups', features.requireFeature('employee_groups'));
-app.use('/settings/company/authentication', features.requireFeature('sso_authentication'));
 app.use('/settings/company/integration-api', features.requireFeature('integration_api'));
 
 app.use(

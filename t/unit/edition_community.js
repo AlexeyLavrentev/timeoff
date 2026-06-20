@@ -29,6 +29,6 @@ describe('Community edition module', function() {
     expect(registry.routes).to.deep.equal([]);
     expect(registry.notificationProviders).to.deep.equal([]);
     expect(registry.navigationItems.map(function(item) { return item.name; }))
-      .to.deep.equal(['groups', 'auth-config', 'integration-api']);
+      .to.deep.equal(['auth-config']);
   });
 });

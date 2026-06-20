@@ -388,6 +388,7 @@
     "continueWithSso": "Войти через SSO",
     "ssoHint": "Введите рабочий email, чтобы перейти к корпоративному провайдеру SSO. Пароль для этого шага не нужен.",
     "passwordLoginTitle": "Вход по паролю",
+    "passwordSubtitle": "Войдите с помощью рабочего email и пароля.",
     "ssoTitle": "Единый вход",
     "ssoSubtitle": "Используйте корпоративного провайдера идентификации для входа.",
     "ssoEmailSectionTitle": "Продолжить по рабочему email",
@@ -1085,6 +1086,7 @@
   "authConfig": {
     "title": "Аутентификация",
     "subtitle": "Настройте LDAP или SSO для компании.",
+    "ldapSubtitle": "Настройте LDAP-аутентификацию для компании.",
     "ldapSectionTitle": "Настройка LDAP",
     "ssoSectionTitle": "Настройка SSO",
     "enableSsoLabel": "Включить SSO",
