@@ -36,6 +36,10 @@ FROM base AS runtime
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs --create-home appuser
 
+LABEL org.opencontainers.image.source="https://github.com/AlexeyLavrentev/timeoff" \
+      org.opencontainers.image.description="LeavePilot Community — open-source leave management system" \
+      org.opencontainers.image.licenses="MIT"
+
 COPY package.json package-lock.json ./
 COPY --from=deps /app/node_modules ./node_modules
 RUN npm prune --omit=dev \

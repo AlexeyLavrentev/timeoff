@@ -442,6 +442,17 @@ docker compose run --rm app npm run db-update
 
 Миграции пропускать нельзя: новая версия кода может ожидать уже изменённую схему БД.
 
+## Готовый Community Docker-образ
+
+Multi-platform образ публикуется в GitHub Container Registry:
+
+```text
+ghcr.io/alexeylavrentev/leavepilot-community
+```
+
+Для production фиксируйте полную версию образа. Инструкция и отдельный Compose
+файл: [docs/container-images.md](/docs/container-images.md).
+
 ## Частые вопросы
 
 ### Можно ли сначала работать на SQLite, а потом перейти на MySQL?
