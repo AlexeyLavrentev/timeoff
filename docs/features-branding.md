@@ -127,7 +127,7 @@ When storing a PEM key in an environment variable, encode line breaks as `\n`.
 Generate an RSA signed license:
 
 ```sh
-node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --expires 2027-12-31T23:59:59.000Z --private-key-file license_private.pem
+node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning --expires 2027-12-31T23:59:59.000Z --private-key-file license_private.pem
 ```
 
 Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
@@ -139,7 +139,7 @@ outside commercial startup validation:
 {
   "payload": {
     "customer": "Example Ltd",
-    "features": ["sso_authentication", "integration_api"],
+    "features": ["sso_authentication", "integration_api", "employee_groups", "work_calendars", "leave_start_reminders", "time_balance", "vacation_planning"],
     "expires": "2027-12-31T23:59:59.000Z"
   },
   "algorithm": "HMAC-SHA256",
@@ -152,7 +152,7 @@ The signature is HMAC-SHA256 over canonical JSON of `payload`. The signing secre
 Generate a legacy HMAC signed license:
 
 ```sh
-node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --expires 2027-12-31T23:59:59.000Z --secret "$TIMEOFF_LICENSE_SECRET"
+node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning --expires 2027-12-31T23:59:59.000Z --secret "$TIMEOFF_LICENSE_SECRET"
 ```
 
 Prefer RSA for self-hosted commercial deployments, because the customer
@@ -186,7 +186,7 @@ TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 For local development with the private premium repository:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium
+TIMEOFF_PREMIUM_MODULE=/Users/aleksey/projects/timeoff-premium
 ```
 
 For commercial delivery, prefer the private package name or the path where the

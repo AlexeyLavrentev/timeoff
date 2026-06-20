@@ -12,13 +12,13 @@ Use `docs/release-checklist.md` before publishing either build.
 Core application:
 
 ```text
-/Users/aleksey/timeoff
+/Users/aleksey/projects/timeoff
 ```
 
 Private premium module:
 
 ```text
-/Users/aleksey/timeoff-premium
+/Users/aleksey/projects/timeoff-premium
 ```
 
 The community repository must not contain premium implementation files. Premium
@@ -52,7 +52,7 @@ through a BuildKit named context.
 Build and run:
 
 ```sh
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE \
 TIMEOFF_LICENSE_PUBLIC_KEY=PASTE_PUBLIC_KEY_WITH_ESCAPED_NEWLINES_HERE \
 docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build
@@ -82,7 +82,7 @@ For local development, mount the premium repository instead of copying it into
 the image:
 
 ```sh
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.premium-dev.yml up --build
 ```
 
@@ -128,7 +128,7 @@ Generate a base64 license:
 ```sh
 node bin/sign_license.js \
   --customer "Example Ltd" \
-  --features time_balance,vacation_planning \
+  --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning \
   --expires 2027-12-31T23:59:59.000Z \
   --private-key-file license_private.pem \
   --base64
@@ -155,7 +155,7 @@ Core checks:
 Premium checks:
 
 ```sh
-cd /Users/aleksey/timeoff-premium
+cd /Users/aleksey/projects/timeoff-premium
 npm run check
 npm test
 ```
@@ -163,7 +163,7 @@ npm test
 External module smoke test:
 
 ```sh
-TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE=/Users/aleksey/projects/timeoff-premium \
 FEATURE_TIME_BALANCE=true \
 FEATURE_VACATION_PLANNING=true \
 node -e "const app=require('./app'); const db=app.get('db_model'); const edition=require('./lib/edition'); const i18next=require('./lib/i18n').i18next; console.log(Boolean(db.TimeBalanceEntry)+','+Boolean(db.VacationPlan)+','+edition.getInfo().routes.length+','+i18next.t('nav.timeBalance')); process.exit(0);"

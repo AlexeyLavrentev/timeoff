@@ -14,8 +14,8 @@ const parseList = value => String(value || '')
 const printUsageAndExit = () => {
   process.stderr.write([
     'Usage:',
-    '  node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --secret <secret> [--expires 2027-12-31] [--base64]',
-    '  node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api --private-key-file private.pem [--expires 2027-12-31] [--base64]',
+    '  node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning --secret <secret> [--expires 2027-12-31] [--base64]',
+    '  node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning --private-key-file private.pem [--expires 2027-12-31] [--base64]',
     '',
   ].join('\n'));
   process.exit(1);
