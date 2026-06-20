@@ -1,13 +1,11 @@
 
-<div class="col-md-9">
-
-  <form method="POST" action="/settings/schedule" id="company_schedule_form">
+  <form method="POST" action="/settings/schedule" id="company_schedule_form" class="admin-form-card employee-schedule-card">
   <input type="hidden" name="user_id" value="{{employee.id}}">
 
   {{> user_details/breadcrumb employee=employee }}
 
-  <div class="form-group">
-    <label for="" class="control-label">{{t "schedule.title"}}</label>
+  <fieldset class="employee-schedule-fieldset">
+    <legend class="employee-section-title">{{t "schedule.title"}}</legend>
 
     <p class="help-block">
       {{# with schedule }}
@@ -19,13 +17,12 @@
       {{/with}}
     </p>
 
-    <div class="input-group">
+    <div class="employee-schedule-widget">
       {{> schedule_widget }}
     </div>
 
-  </div>
-  <div class="form-group">
-    <div class="pull-right">
+  </fieldset>
+  <div class="admin-form-actions">
     {{# with schedule }}
     {{# if (is_user_specific) }}
       <button type="submit" name="revoke_user_specific_schedule" class="btn btn-default">{{t "schedule.moveToCompanyWide"}}</button>
@@ -34,8 +31,5 @@
       <button type="submit" name="save_user_specific_schedule" class="btn btn-success">{{t "schedule.overrideCompanyWide"}}</button>
     {{/if}}
     {{/with}}
-    </div>
   </div>
   </form>
-
-</div>

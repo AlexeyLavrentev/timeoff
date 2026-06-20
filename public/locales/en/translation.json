@@ -1,6 +1,7 @@
 {
   "nav": {
     "toggle": "Toggle navigation",
+    "skipToMainContent": "Skip to main content",
     "calendar": "Calendar",
     "teamView": "Team View",
     "employees": "Employees",
@@ -17,13 +18,12 @@
     "emailsAudit": "Emails audit",
     "reports": "Reports",
     "requests": "Requests",
-    "timeBalance": "Time balance",
-    "vacationPlans": "Vacation plan",
     "feeds": "Feeds",
     "logout": "Logout",
     "login": "Login",
     "me": "Me",
-    "authConfig": "Authentication"
+    "authConfig": "Authentication",
+    "diagnostics": "Diagnostics"
   },
   "language": {
     "label": "Language",
@@ -61,13 +61,31 @@
     "close": "Close",
     "github": "GitHub"
   },
+  "diagnostics": {
+    "title": "Diagnostics",
+    "subtitle": "Operational status for support and commercial deployments.",
+    "licenseSection": "License",
+    "premiumSection": "Premium module",
+    "featuresSection": "Enabled features",
+    "snapshotSection": "Safe diagnostic snapshot",
+    "snapshotHelp": "This JSON omits raw licenses, signatures, secrets, tokens, and keys.",
+    "empty": "None",
+    "fields": {
+      "valid": "Valid",
+      "reason": "Reason",
+      "customer": "Customer",
+      "features": "Features",
+      "expires": "Expires",
+      "loaded": "Loaded",
+      "required": "Required",
+      "moduleName": "Module",
+      "routes": "Routes",
+      "migrations": "Migration paths"
+    }
+  },
   "notifications": {
     "pendingRequest": "{{count}} leave request to process",
-    "pendingRequest_plural": "{{count}} leave requests to process",
-    "pendingTimeBalanceRequest": "{{count}} time balance request to process",
-    "pendingTimeBalanceRequest_plural": "{{count}} time balance requests to process",
-    "pendingVacationPlan": "{{count}} vacation plan to process",
-    "pendingVacationPlan_plural": "{{count}} vacation plans to process"
+    "pendingRequest_plural": "{{count}} leave requests to process"
   },
   "errors": {
     "requestFailed": "Request failed.",
@@ -86,7 +104,7 @@
     "departmentDetails": "Department details",
     "groups": "Groups",
     "groupDetails": "Group details",
-    "login": "Time Off Management"
+    "login": "Leave Management"
   },
   "userPopup": {
     "available": "Available",
@@ -365,6 +383,7 @@
     "continueWithSso": "Continue with SSO",
     "ssoHint": "Use your work email to continue with your company SSO provider. A password is not required here.",
     "passwordLoginTitle": "Password login",
+    "passwordSubtitle": "Sign in with your work email and password.",
     "ssoTitle": "Single sign-on",
     "ssoSubtitle": "Use your company identity provider to sign in.",
     "ssoEmailSectionTitle": "Continue with your work email",
@@ -397,7 +416,10 @@
     "exportHint": "To export particular feed into default calendar application just click on corresponding link.",
     "copyHint": "Otherwise copy the link location and pass it to external application.",
     "myCalendarFeed": "My calendar feed",
-    "teamViewFeed": "Team view feed"
+    "teamViewFeed": "Team view feed",
+    "openFeed": "Open calendar feed",
+    "regenerate": "Regenerate link",
+    "regenerateHelp": "Regenerating invalidates the previous feed link."
   },
   "leave": {
     "newAbsence": "New absence",
@@ -468,7 +490,7 @@
     "timezonePlaceholder": "Time zone"
   },
   "home": {
-    "title": "TimeOff management",
+    "title": "Leave Management",
     "subtitle": "Open source Staff Time off management for companies of all sizes.",
     "signUp": "Sign up now",
     "orFork": "or fork us on",
@@ -513,7 +535,7 @@
       "body": "Thank you for registering a new account on"
     },
     "forgotPassword": {
-      "subject": "Reset password for Leave Management",
+      "subject": "Reset password for {{brand}}",
       "body": "Somebody just requested a reset password link for your account at",
       "ldapNotice": "The company your account belongs to uses LDAP authentication so we cannot reset the password for you.",
       "ldapContact": "Please contact your system administrator in order to reset the password in Active directory server.",
@@ -522,19 +544,19 @@
       "manualLink": "Alternatively copy and paste the following link into your browser:"
     },
     "resetPassword": {
-      "subject": "Reset password for Leave Management",
+      "subject": "Reset password for {{brand}}",
       "body": "Your password for"
     },
     "addNewUser": {
-      "subject": "New Leave Management account for {{name}}",
+      "subject": "New {{brand}} account for {{name}}",
       "body": "{{admin}} just registered new account for you as an employee of {{company}}.",
       "passwordContact": "Please contact {{admin}} about your new password and login at",
       "alternative": "Alternatively follow the link below to set a new password",
       "action": "Set new password"
     },
     "confirmRegistration": {
-      "subject": "Confirm registration in Leave Management",
-      "body": "To complete your registration process in Leave Management please click on the following link:"
+      "subject": "Confirm registration in {{brand}}",
+      "body": "To complete your registration process in {{brand}} please click on the following link:"
     },
     "leaveRequest": {
       "subjectNew": "New leave request",
@@ -587,24 +609,6 @@
       "employeeAction": "Please make sure you submit the required leave application and complete all internal procedures for {{department}}.",
       "openCalendar": "Open your calendar:",
       "calendarLink": "My calendar"
-    },
-    "timeBalance": {
-      "subjectNew": "New time balance request",
-      "subjectAwaiting": "Time balance request is awaiting decision",
-      "subjectApproved": "Time balance request was accepted",
-      "subjectRejected": "Time balance request was denied",
-      "newRequest": "{{requester}} sent a new time balance request: {{type}}, {{hours}} hours.",
-      "sentTo": "Your time balance request was sent to {{approver}}: {{type}}, {{hours}} hours.",
-      "sentWithoutSupervisor": "Your time balance request was registered: {{hours}} hours. Your company administrator can process it.",
-      "followUp": "There will be another email upon decision.",
-      "approved": "{{approver}} approved your time balance request: {{type}}, {{hours}} hours.",
-      "rejected": "{{approver}} rejected your time balance request: {{type}}, {{hours}} hours.",
-      "pendingRequests": "Please visit",
-      "pendingRequestsLink": "Time balance requests",
-      "entryTypes": {
-        "time_off": "paid time off to compensate",
-        "worked_extra": "extra worked time"
-      }
     }
   },
   "teamView": {
@@ -937,6 +941,13 @@
     "toEmail": "To Email",
     "noEmails": "No emails recorded yet"
   },
+  "systemError": {
+    "kicker": "Something went wrong",
+    "title": "We could not complete this request",
+    "status": "Error {{status}}",
+    "backHome": "Back to the application",
+    "technicalDetails": "Technical details"
+  },
   "reportsPage": {
     "title": "Reports",
     "subtitle": "List of available reports",
@@ -1070,6 +1081,7 @@
   "authConfig": {
     "title": "Authentication",
     "subtitle": "Configure LDAP or SSO for your company.",
+    "ldapSubtitle": "Configure LDAP authentication for your company.",
     "ldapSectionTitle": "LDAP Configuration",
     "ssoSectionTitle": "SSO Configuration",
     "enableSsoLabel": "Enable SSO",
@@ -1101,121 +1113,9 @@
     "autoCreateUsersLabel": "Allow automatic user provisioning",
     "autoCreateUsersHelp": "When enabled, a successful SSO login can create a new employee automatically if no local account exists yet."
   },
-  "timeBalance": {
-    "title": "Time balance",
-    "subtitle": "Track paid time off that will be compensated later with extra work time.",
-    "newEntryTitle": "New time balance request",
-    "balancesTitle": "Approved balance",
-    "pendingTitle": "Requests to approve",
-    "myEntriesTitle": "My time balance history",
-    "employee": "Employee",
-    "department": "Department",
-    "hours": "Hours",
-    "balance": "Balance, hours",
-    "comment": "Comment",
-    "reason": "Reason",
-    "expiresAt": "Use before",
-    "reference": "Reference",
-    "approver": "Approver",
-    "status": "Status",
-    "create": "Create request",
-    "approve": "Approve",
-    "reject": "Reject",
-    "noPendingEntries": "No time balance requests to approve",
-    "noMyEntries": "No time balance records yet",
-    "entryType": {
-      "label": "Type",
-      "timeOff": "Paid time off to compensate",
-      "workedExtra": "Extra worked time"
-    },
-    "reasons": {
-      "legacy": "Legacy record",
-      "family_time_off": "Family circumstances",
-      "overtime_compensation": "Overtime compensation",
-      "weekend_compensation": "Work on weekend or public holiday",
-      "hr_adjustment": "HR adjustment"
-    },
-    "statuses": {
-      "new": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected",
-      "canceled": "Canceled"
-    },
+  "features": {
     "messages": {
-      "loadFailed": "Failed to load time balance.",
-      "entryTypeInvalid": "Unknown time balance type.",
-      "hoursInvalid": "Hours should be a number between 0.25 and 24.",
-      "reasonInvalid": "Unknown time balance reason.",
-      "reasonTypeMismatch": "Selected reason does not match the balance operation type.",
-      "hrAdjustmentForbidden": "Only an administrator can create an HR adjustment.",
-      "expirationInvalid": "Use-before date is invalid.",
-      "dateInvalid": "Date is invalid.",
-      "userInvalid": "Employee is invalid.",
-      "created": "Time balance request was created.",
-      "createFailed": "Failed to create time balance request.",
-      "actionInvalid": "Cannot process time balance request: wrong parameters.",
-      "actionForbidden": "You cannot process this time balance request.",
-      "approved": "Time balance request was approved.",
-      "rejected": "Time balance request was rejected.",
-      "approveFailed": "Failed to approve time balance request.",
-      "rejectFailed": "Failed to reject time balance request."
-    }
-  },
-  "vacationPlans": {
-    "title": "Annual vacation plan",
-    "subtitle": "Collect preferred vacation dates before creating formal leave requests.",
-    "newTitle": "Submit preferred dates",
-    "pendingTitle": "Plans to approve",
-    "teamTitle": "Team vacation plan",
-    "myTitle": "My planned vacations",
-    "employee": "Employee",
-    "department": "Department",
-    "status": "Status",
-    "conflicts": "Overlaps",
-    "conflictLevels": {
-      "none": "No overlaps",
-      "warning": "Overlap",
-      "critical": "Critical risk"
-    },
-    "departmentOverlaps": "{{count}} department overlap",
-    "departmentOverlaps_plural": "{{count}} department overlaps",
-    "criticalOverlaps": "Critical coverage",
-    "criticalLimitHint": "{{count}} overlap, limit is {{max}}",
-    "comment": "Comment",
-    "submit": "Submit plan",
-    "approve": "Approve",
-    "reject": "Reject",
-    "cancel": "Cancel",
-    "bookAbsence": "Create leave request",
-    "selectLeaveType": "Select leave type",
-    "leaveTypeNotSelected": "Select when creating request",
-    "noPending": "No vacation plans to approve.",
-    "noTeamPlans": "No planned vacations for the selected year.",
-    "noMyPlans": "You have not submitted vacation plans for the selected year.",
-    "statuses": {
-      "submitted": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected",
-      "canceled": "Canceled",
-      "booked": "Leave request created"
-    },
-    "messages": {
-      "loadFailed": "Failed to load vacation plans.",
-      "userInvalid": "Employee is invalid.",
-      "leaveTypeInvalid": "Leave type is invalid.",
-      "dateRangeInvalid": "End date should not be earlier than start date.",
-      "created": "Vacation plan was submitted.",
-      "createFailed": "Failed to submit vacation plan.",
-      "actionInvalid": "Cannot process vacation plan: wrong parameters.",
-      "actionForbidden": "You cannot process this vacation plan.",
-      "actionFailed": "Failed to process vacation plan.",
-      "approved": "Vacation plan was approved.",
-      "rejected": "Vacation plan was rejected.",
-      "canceled": "Vacation plan was canceled.",
-      "booked": "Leave request was created from the approved plan.",
-      "bookForbidden": "This vacation plan cannot be converted into a leave request.",
-      "leaveTypeRequired": "Select a leave type before creating the request.",
-      "bookFailed": "Failed to create a leave request from this vacation plan."
+      "disabled": "This feature is not enabled for this installation."
     }
   }
 }

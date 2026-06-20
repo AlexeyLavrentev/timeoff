@@ -44,6 +44,27 @@ describe('Auto approval leave type', function(){
 
   var driver, email_A, email_B, user_id_B;
 
+  function wait_for_alert_text(pattern) {
+    return driver.wait(function(){
+      return driver.findElements(By.css('div.alert'))
+        .then(function(elements){
+          return Promise.map(elements, function(el){ return el.getText(); });
+        })
+        .then(function(texts){
+          return texts.some(function(text){ return pattern.test(text); });
+        })
+        .catch(function(){ return false; });
+    }, 5000);
+  }
+
+  function wait_for_request_rows_count(count) {
+    return driver.wait(function(){
+      return driver.findElements(By.css('tr.leave-request-row .leave-request-row-status'))
+        .then(function(elements){ return elements.length === count; })
+        .catch(function(){ return false; });
+    }, 5000);
+  }
+
   it("Register new company", function(done){
     register_new_user_func({
       application_host : application_host,
@@ -93,9 +114,11 @@ describe('Auto approval leave type', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
               selector : leave_type_new_form_id+' input[name="name__new"]',
@@ -107,9 +130,10 @@ describe('Auto approval leave type', function(){
           }],
           submit_button_selector : leave_type_new_form_id+' button[type="submit"]',
           message : /Changes to leave types were saved/,
-        })
-        .then(function(){ done() });
-      });
+        });
+      })
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it("Logout from admin user", function(done){
@@ -265,26 +289,19 @@ describe('Auto approval leave type', function(){
       ))
       .then(function(el){ return el.click(); })
       .then(function(){
-        // Wait until page properly is reloaded
-        return driver.wait(until.elementLocated(By.css('h1')), 1000);
+        return wait_for_alert_text(/requested leave to be revoked/);
       })
       .then(function(){
-        return driver.findElement( By.css('.alert-success')  )
-          .then(function(el){
-            expect(el).to.be.ok;
-            return Promise.resolve(1);
-          })
+        return wait_for_request_rows_count(0);
       })
-      .then(function(){ done() });
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it("Ensure that it is gone without need to be approved", function(done){
-    driver
-      .findElements(By.css( 'tr.leave-request-row .leave-request-row-status' ))
-      .then(function(elements){
-        expect(elements.length).to.be.eq(0);
-        done();
-      });
+    wait_for_request_rows_count(0)
+      .then(function(){ done(); })
+      .catch(done);
   });
 
   it("Logout from user B", function(done){

@@ -4,7 +4,6 @@
 
 var test                 = require('selenium-webdriver/testing'),
   By                     = require('selenium-webdriver').By,
-  until                  = require('selenium-webdriver').until,
   Promise                = require("bluebird"),
   expect                 = require('chai').expect,
   moment                 = require('moment'),
@@ -39,6 +38,21 @@ describe('Leave request cancelation', function(){
   this.timeout( config.get_execution_timeout() );
 
   var driver, email_A, user_id_A;
+
+  function wait_for_alert_text(pattern) {
+    return driver.wait(function(){
+      return driver.findElements(By.css('div.alert'))
+        .then(function(els){
+          return Promise.map(els, function(el){ return el.getText(); });
+        })
+        .then(function(texts){
+          return texts.some(function(text){ return pattern.test(text); });
+        })
+        .catch(function(){
+          return false;
+        });
+    }, 5000);
+  }
 
   it("Register new company", function(done){
     register_new_user_func({
@@ -110,10 +124,10 @@ describe('Leave request cancelation', function(){
     ))
     .then(function(el){ return el.click(); })
     .then(function(){
-      // Wait until page properly is reloaded
-      return driver.wait(until.elementLocated(By.css('h1')), 1000);
+      return wait_for_alert_text(/was processed/);
     })
-    .then(function(){done()});
+    .then(function(){done()})
+    .catch(done);
   });
 
   it('Open user A details page (abcenses section)', function(done){
@@ -131,7 +145,7 @@ describe('Leave request cancelation', function(){
         return inp.getAttribute('value');
       })
       .then(function(text){
-        expect( text ).to.be.eq('15 out of 20');
+        expect( text, 'days_remaining_inp value' ).to.be.eq('15 out of 20 in allowance');
         done();
       })
   });
@@ -179,10 +193,10 @@ describe('Leave request cancelation', function(){
       ))
       .then(function(el){ return el.click(); })
       .then(function(){
-        // Wait until page properly is reloaded
-        return driver.wait(until.elementLocated(By.css('h1')), 1000);
+        return wait_for_alert_text(/requested leave to be revoked/);
       })
-      .then(function(){ done() });
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it('Open user A details page (abcenses section)', function(done){
@@ -200,7 +214,7 @@ describe('Leave request cancelation', function(){
         return inp.getAttribute('value');
       })
       .then(function(text){
-        expect( text ).to.be.eq('15 out of 20');
+        expect( text, 'days_remaining_inp value' ).to.be.eq('15 out of 20 in allowance');
         done();
       })
   });

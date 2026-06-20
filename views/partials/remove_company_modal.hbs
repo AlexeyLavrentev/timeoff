@@ -1,17 +1,17 @@
 
-<div class="modal fade" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade system-modal danger-modal" id="{{container_id}}" tabindex="-1" role="dialog" aria-labelledby="{{container_id}}_label" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
     <form method="POST" action="/settings//company/delete/" id="remove_company_form">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">{{t "generalSettings.removeCompanyTitle"}}</h4>
+        <h4 class="modal-title" id="{{container_id}}_label">{{t "generalSettings.removeCompanyTitle"}}</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label for="remove_company_name_confirmation" class="control-label">{{t "generalSettings.removeCompanyNameLabel"}}:</label>
           <input type="text" class="form-control" id="remove_company_name_confirmation" name="confirm_name" required>
-          <p><em>{{t "generalSettings.removeCompanyNameHelp"}}</em></p>
+          <p class="help-block">{{t "generalSettings.removeCompanyNameHelp"}}</p>
         </div>
       </div>
       <div class="modal-footer">

@@ -25,6 +25,28 @@ describe('Ensure that leaves with not full days are rendered properly', function
 
   var non_admin_user_email, new_user_email, driver;
 
+  function open_book_leave_modal(attempts_left) {
+    attempts_left = attempts_left === undefined ? 3 : attempts_left;
+
+    return driver
+      .findElement(By.css('#book_time_off_btn'))
+      .then(el => el.click())
+      .catch(err => {
+        if (attempts_left <= 0) {
+          throw err;
+        }
+
+        return driver
+          .sleep(250)
+          .then(() => open_book_leave_modal(attempts_left - 1));
+      })
+      .then(() => driver.wait(() => (
+        driver
+          .findElements(By.css('#book_leave_modal.in'))
+          .then(els => els.length > 0)
+      ), 5000));
+  }
+
   test.it('Create new company', done => {
     register_new_user_func({
       application_host : application_host,
@@ -73,13 +95,7 @@ describe('Ensure that leaves with not full days are rendered properly', function
   });
 
   it("Request new partial leave: morning to afternoon", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-
-      // This is very important line when working with Bootstrap modals!
-      .then(() => driver.sleep(1000))
-
+    open_book_leave_modal()
       // Create new leave request
       .then(() => submit_form_func({
           driver      : driver,
@@ -101,17 +117,12 @@ describe('Ensure that leaves with not full days are rendered properly', function
           message : /New leave request was added/,
         })
       )
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Request new partial leave: afternoon to morning", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-
-      // This is very important line when working with Bootstrap modals!
-      .then(() => driver.sleep(1000))
-
+    open_book_leave_modal()
       // Create new leave request
       .then(() => submit_form_func({
           driver      : driver,
@@ -133,18 +144,13 @@ describe('Ensure that leaves with not full days are rendered properly', function
           message : /New leave request was added/,
         })
       )
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
 
   it("Request just morning", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-
-      // This is very important line when working with Bootstrap modals!
-      .then(() => driver.sleep(1000))
-
+    open_book_leave_modal()
       // Create new leave request
       .then(() => submit_form_func({
           driver      : driver,
@@ -166,17 +172,12 @@ describe('Ensure that leaves with not full days are rendered properly', function
           message : /New leave request was added/,
         })
       )
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Request just multi days leave starting next afternoon", done => {
-    driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(el => el.click())
-
-      // This is very important line when working with Bootstrap modals!
-      .then(() => driver.sleep(1000))
-
+    open_book_leave_modal()
       // Create new leave request
       .then(() => submit_form_func({
           driver      : driver,
@@ -201,7 +202,8 @@ describe('Ensure that leaves with not full days are rendered properly', function
           message : /New leave request was added/,
         })
       )
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   it("Go to my requests page", done => {
@@ -222,13 +224,14 @@ describe('Ensure that leaves with not full days are rendered properly', function
       .then(dates_str => {
         expect(dates_str.sort(), 'Ensure that date ranges values are as expected')
           .to.be.deep.equal([
-            '2015-06-09 (afternoon) 2015-06-11',
-            '2015-06-09 (morning) 2015-06-09',
-            '2015-06-16 (morning) 2015-06-17 (afternoon)',
-            '2015-06-23 (afternoon) 2015-06-24 (morning)'
+            '2015-06-09 (Afternoon) 2015-06-11',
+            '2015-06-09 (Morning) 2015-06-09',
+            '2015-06-16 (Morning) 2015-06-17 (Afternoon)',
+            '2015-06-23 (Afternoon) 2015-06-24 (Morning)'
           ]);
         done();
-      });
+      })
+      .catch(done);
   });
 
   it('Ensure tooltips include leave type name', done => {
@@ -249,7 +252,8 @@ describe('Ensure that leaves with not full days are rendered properly', function
       expect(title24).to.be.eq('Holiday (morning) : New absence waiting approval');
       return Promise.resolve(1);
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Logout from non-admin account", done => {
@@ -287,13 +291,14 @@ describe('Ensure that leaves with not full days are rendered properly', function
       .then(dates_str => {
         expect(dates_str.sort(), 'Ensure that date ranges values are as expected')
           .to.be.deep.equal([
-            '2015-06-09 (afternoon) 2015-06-11',
-            '2015-06-09 (morning) 2015-06-09',
-            '2015-06-16 (morning) 2015-06-17 (afternoon)',
-            '2015-06-23 (afternoon) 2015-06-24 (morning)'
+            '2015-06-09 (Afternoon) 2015-06-11',
+            '2015-06-09 (Morning) 2015-06-09',
+            '2015-06-16 (Morning) 2015-06-17 (Afternoon)',
+            '2015-06-23 (Afternoon) 2015-06-24 (Morning)'
           ]);
         done();
-      });
+      })
+      .catch(done);
   });
 
   after(done => {

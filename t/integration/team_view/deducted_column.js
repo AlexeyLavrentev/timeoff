@@ -264,15 +264,26 @@ describe('Case when holidays spans through more then one month and is devided by
 
   it("Approve newly added leave request", function(done){
     let click_selector = `tr[vpp="pending_for__${email_B}"] .btn-success`;
-    driver
-      .findElement(By.css( click_selector ))
-      .then(el => el.click())
-      .then(() => driver.findElement(By.css( click_selector )))
-      .then(el => el.click())
-      .then(() => driver.findElement(By.css( click_selector )))
-      .then(el => el.click())
-      .then(() => driver.findElement(By.css( click_selector )))
-      .then(el => el.click())
+    const click_next = remaining => {
+      if (remaining === 0) {
+        return Promise.resolve();
+      }
+
+      return driver
+        .findElement(By.css(click_selector))
+        .then(el => el.click())
+        .then(() => driver.sleep(250))
+        .then(() => click_next(remaining - 1))
+        .catch(err => {
+          if (err && /stale element reference/.test(err.message || '')) {
+            return click_next(remaining);
+          }
+
+          throw err;
+        });
+    };
+
+    click_next(4)
       .then(() => done());
   });
 

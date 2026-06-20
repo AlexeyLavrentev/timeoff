@@ -1,9 +1,0 @@
-{{t "emails.timeBalance.subjectAwaiting"}}
-=====
-<p>{{t "emails.greeting" name=(full_name requester)}}</p>
-
-<p>{{#if supervisor}}{{#if_equal entry.entry_type 'time_off'}}{{t "emails.timeBalance.sentTo" approver=(full_name supervisor) hours=entry.hours type=(t "emails.timeBalance.entryTypes.time_off")}}{{else}}{{t "emails.timeBalance.sentTo" approver=(full_name supervisor) hours=entry.hours type=(t "emails.timeBalance.entryTypes.worked_extra")}}{{/if_equal}}{{else}}{{t "emails.timeBalance.sentWithoutSupervisor" hours=entry.hours}}{{/if}}</p>
-
-<p>{{t "emails.timeBalance.followUp"}}</p>
-
-<p>{{t "emails.thanks"}}</p>

@@ -1,0 +1,65 @@
+name: Core CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - "inf/**"
+
+jobs:
+  test:
+    name: Core contract tests
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run focused tests
+        run: |
+          ./node_modules/.bin/mocha \
+            t/unit/diagnostics.js \
+            t/unit/edition_premium_loader.js \
+            t/unit/edition_community_boundary.js \
+            t/unit/edition_registry.js \
+            t/unit/features.js \
+            t/unit/email_template_paths.js \
+            t/unit/partial_template_paths.js \
+            t/unit/view_engine_paths.js
+
+      - name: Validate community compose
+        run: docker compose config --quiet
+        env:
+          SESSION_SECRET: ci-session-secret
+          CRYPTO_SECRET: ci-crypto-secret
+
+      - name: Validate commercial compose
+        run: |
+          mkdir -p ../timeoff-premium
+          docker compose -f docker-compose.yml -f docker-compose.commercial.yml config --quiet
+        env:
+          SESSION_SECRET: ci-session-secret
+          CRYPTO_SECRET: ci-crypto-secret
+          TIMEOFF_PREMIUM_MODULE_HOST_PATH: ../timeoff-premium
+          TIMEOFF_LICENSE: ci-license-placeholder
+          TIMEOFF_LICENSE_PUBLIC_KEY: ci-public-key-placeholder
+
+      - name: Validate premium dev compose
+        run: |
+          mkdir -p ../timeoff-premium
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.premium-dev.yml config --quiet
+        env:
+          SESSION_SECRET: ci-session-secret
+          CRYPTO_SECRET: ci-crypto-secret
+          TIMEOFF_PREMIUM_MODULE_HOST_PATH: ../timeoff-premium

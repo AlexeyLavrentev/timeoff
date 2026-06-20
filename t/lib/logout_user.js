@@ -3,62 +3,52 @@
 var webdriver = require('selenium-webdriver'),
     By        = require('selenium-webdriver').By,
     expect    = require('chai').expect,
-    until     = require('selenium-webdriver').until,
-    Promise   = require("bluebird");
+    until     = require('selenium-webdriver').until;
 
 
-var logout_user_func = Promise.promisify( function(args, callback){
+function logout_user_func(args) {
 
   var application_host = args.application_host,
       driver           = args.driver,
-      result_callback  = callback,
       logout_link_css_selector = 'li.hidden-xs a[href="/logout/"]';
 
-  // Open front page
-  driver
-    .get( application_host );
-
-  driver
-    .findElement( By.css('a#me_menu') )
+  return driver
+    .get(application_host)
+    .then(function(){
+      return driver.findElement(By.css('a#me_menu'));
+    })
     .then(function(el){ return el.click(); })
     // Make sure that Logout link exists
     .then(function(){
-      return driver.isElementPresent( By.css( logout_link_css_selector ) );
+      return driver.isElementPresent(By.css(logout_link_css_selector));
     })
     .then(function(is_present){
       expect(is_present).to.be.equal(true);
-    });
-
-  // Click logout link
-  driver
-    .findElement( By.css(logout_link_css_selector) )
+    })
+    .then(function(){
+      return driver.findElement(By.css(logout_link_css_selector));
+    })
     .then(function(el){
       return el.click();
     })
     .then(function(){
-
-      driver.wait(until.elementLocated(By.css('body')), 1000);
-
-      return driver.isElementPresent( By.css( logout_link_css_selector ) );
+      return driver.wait(until.elementLocated(By.css('body')), 5000);
+    })
+    .then(function(){
+      return driver.isElementPresent(By.css(logout_link_css_selector));
     })
     // Check that there is no more Logout link
     .then(function(is_present){
 
       expect(is_present).to.be.equal(false);
 
-      // "export" current driver
-      result_callback(
-        null,
-        {
-          driver : driver,
-        }
-      );
+      return {
+        driver : driver,
+      };
     });
-
-});
+}
 
 
 module.exports = function(args){
-  return args.driver.call(function(){return logout_user_func(args)});
+  return logout_user_func(args);
 }
-

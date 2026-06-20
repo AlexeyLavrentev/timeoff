@@ -1,9 +1,0 @@
-{{t "emails.timeBalance.subjectNew"}}
-=====
-<p>{{t "emails.greeting" name=(full_name supervisor)}}</p>
-
-<p>{{#if_equal entry.entry_type 'time_off'}}{{t "emails.timeBalance.newRequest" requester=(full_name requester) hours=entry.hours type=(t "emails.timeBalance.entryTypes.time_off")}}{{else}}{{t "emails.timeBalance.newRequest" requester=(full_name requester) hours=entry.hours type=(t "emails.timeBalance.entryTypes.worked_extra")}}{{/if_equal}}</p>
-
-<p>{{t "emails.timeBalance.pendingRequests"}} {{> email/link href=(concatenate (get_application_domain) '/time-balance/' ) text=(t "emails.timeBalance.pendingRequestsLink")}}.</p>
-
-<p>{{t "emails.thanks"}}</p>

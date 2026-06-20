@@ -1,25 +1,34 @@
 
 {{> header }}
 
-<h1>{{t "calendar.employeeCalendar"}}</h1>
-
-<div class="row">
-    <div class="col-md-6 lead">{{t "calendar.userCalendarForYear" name=logged_user.name lastname=logged_user.lastname year=current_year}}</div>
-    <div class="col-md-6">
-    </div>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
+<div class="page-heading calendar-page-heading">
+  <div>
+    <p class="page-eyebrow">{{t "calendar.calendarTitle"}}</p>
+    <h1>{{t "calendar.employeeCalendar"}}</h1>
+    <p class="lead">{{t "calendar.userCalendarForYear" name=logged_user.name lastname=logged_user.lastname year=current_year}}</p>
+  </div>
+  <div class="page-heading-actions">
+    <a class="btn btn-default" href="/calendar/feeds/" data-toggle="tooltip" data-placement="left" title="{{t 'calendar.exportAbsences'}}">
+      <span class="fa fa-rss" aria-hidden="true"></span>
+      <span>{{t "calendar.exportAbsences"}}</span>
+    </a>
+  </div>
 </div>
 
 {{> show_flash_messages }}
 
-<div class="row">&nbsp;</div>
+<section class="calendar-summary" aria-labelledby="calendar-statistics-title">
+  <div class="section-heading">
+    <div>
+      <p class="page-eyebrow">{{t "calendar.employeeCalendar"}}</p>
+      <h2 id="calendar-statistics-title">{{t "calendar.statistics"}}</h2>
+    </div>
+  </div>
 
-<div class="row main-row_header hidden-xs">
-  <div class="col-md-12">{{t "calendar.statistics"}}</div>
-</div>
-
-<div class="row">
-
-  <div class="col-md-3 top-leave-type-statistics">
+  <div class="calendar-summary-grid">
+  <article class="summary-card summary-card-primary top-leave-type-statistics">
     <dl>
       {{#with current_user }}
       <dt data-tom-days-available-in-allowance>{{ ../user_allowance.number_of_days_available_in_allowance }}</dt>
@@ -27,13 +36,13 @@
       <dd>{{t "calendar.outOfAllowance" total=../user_allowance.total_number_of_days_in_allowance}}</dd>
       {{/with}}
     </dl>
-  </div>
+  </article>
 
-  <div class="col-md-3 secondary-leave-type-statistics hidden-xs">
+  <article class="summary-card secondary-leave-type-statistics">
     {{> user_details/allowance_breakdown user_allowance = user_allowance }}
-  </div>
+  </article>
 
-  <div class="col-md-3 secondary-leave-type-statistics hidden-xs">
+  <article class="summary-card secondary-leave-type-statistics">
     <dl>
       <dt>{{t "calendar.usedSoFar"}}</dt>
 
@@ -46,9 +55,9 @@
         <dd class="text-muted">{{t "calendar.noApprovedRequests"}}</dd>
       {{/if}}
     </dl>
-  </div>
+  </article>
 
-  <div class="col-md-3 secondary-leave-type-statistics hidden-xs">
+  <article class="summary-card secondary-leave-type-statistics">
     <dl>
       <dt>{{t "calendar.details"}}</dt>
       {{~# each supervisors  ~}}
@@ -58,65 +67,64 @@
       </dd>
       {{~/ each ~}}
       <dd><em>{{t "calendar.department"}}:</em> <span class="pull-right"><a href="/calendar/teamview/?department={{ current_user.department.id }}">{{ current_user.department.name }}</a></span></dd>
-      <dd><em>{{t "calendar.allowanceInYear" year=current_year}}:</em><span class="pull-right"> {{ user_allowance.total_number_of_days_in_allowance }} {{t "calendar.daysLabel"}}</span><dd>
+      <dd><em>{{t "calendar.allowanceInYear" year=current_year}}:</em><span class="pull-right"><span data-tom-total-days-in-allowance>{{ user_allowance.total_number_of_days_in_allowance }}</span> {{t "calendar.daysLabel"}}</span></dd>
     </dl>
+  </article>
   </div>
+</section>
 
-</div>
-
-<div class="row">
-</div>
-
-
-<div class="row main-row_header">
-  <div class="col-md-12">{{t "calendar.calendarTitle"}} <a href="/calendar/feeds/" data-toggle="tooltip" data-placement="right" title="{{t 'calendar.exportAbsences'}}"><span class="fa fa-rss"></span></a></div>
-</div>
-
-<div class="row period-navigation">
+<section class="calendar-workspace" aria-labelledby="calendar-grid-title">
+<div class="calendar-toolbar">
+  <div class="section-heading calendar-toolbar-heading">
+    <div>
+      <p class="page-eyebrow">{{t "calendar.employeeCalendar"}}</p>
+      <h2 id="calendar-grid-title">{{t "calendar.calendarTitle"}}</h2>
+    </div>
+  </div>
+<nav class="row period-navigation" aria-label="{{t "calendar.calendarTitle"}}">
   <div class="col-xs-2 period-navigation-side">
     {{#if show_full_year}}
-    <a class="btn btn-default" href="/calendar/?year={{previous_year}}{{#if show_full_year}}&show_full_year=1{{/if}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{previous_year}} </a>
+    <a class="btn btn-default" href="/calendar/?year={{previous_year}}{{#if show_full_year}}&show_full_year=1{{/if}}" aria-label="{{previous_year}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> <span>{{previous_year}}</span></a>
     {{/if}}
   </div>
   <div class="col-xs-8 calendar-section-caption">
 
     <strong>{{#if show_full_year}}{{t "calendar.monthRange" year=current_year}}{{else}}{{t "calendar.upcomingMonths"}}{{/if}}</strong>
-    &nbsp;
 
     {{# unless show_full_year}}
-    <a class="btn btn-default" href="/calendar/?show_full_year=1">{{t "calendar.more"}} &nbsp;<span class="fa fa-plus"></span></a>
+    <a class="btn btn-default btn-sm" href="/calendar/?show_full_year=1">{{t "calendar.more"}} <span class="fa fa-plus" aria-hidden="true"></span></a>
     {{else}}
-    <a class="btn btn-default" href="/calendar/">{{t "calendar.less"}} &nbsp;<span class="fa fa-minus"></span></a>
+    <a class="btn btn-default btn-sm" href="/calendar/">{{t "calendar.less"}} <span class="fa fa-minus" aria-hidden="true"></span></a>
     {{/unless}}
 
 
   </div>
   <div class="col-xs-2 period-navigation-side">
     {{#if show_full_year}}
-    <a class="btn btn-default pull-right" href="/calendar/?year={{next_year}}{{#if show_full_year}}&show_full_year=1{{/if}}">{{next_year}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
+    <a class="btn btn-default pull-right" href="/calendar/?year={{next_year}}{{#if show_full_year}}&show_full_year=1{{/if}}" aria-label="{{next_year}}"><span>{{next_year}}</span> <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
     {{/if}}
   </div>
+</nav>
 </div>
 
-<div class="row">&nbsp;</div>
-
-<div class="row clearfix">
+<div class="row clearfix calendar-month-grid">
 
     {{# each calendar}}
     <div class="col-md-3 month_container">
-        <table class="calendar_month month_{{ this.month }}">
+        <table class="calendar_month month_{{ this.month }}" aria-label="{{#if ../show_full_year}}{{this.month}}{{else}}{{as_date_formatted this.moment 'MMMM, YYYY'}}{{/if}}">
+        <caption class="sr-only">{{#if ../show_full_year}}{{this.month}}{{else}}{{as_date_formatted this.moment 'MMMM, YYYY'}}{{/if}}</caption>
         <thead>
         <tr>
-            <td colspan="14">{{#if ../show_full_year}}{{this.month}}{{else}}{{as_date_formatted this.moment 'MMMM, YYYY'}}{{/if}}</td>
+            <th colspan="14" scope="colgroup">{{#if ../show_full_year}}{{this.month}}{{else}}{{as_date_formatted this.moment 'MMMM, YYYY'}}{{/if}}</th>
         </tr>
         <tr>
-            <td colspan="2">{{t "calendar.weekdayShort.mon"}}</td>
-            <td colspan="2">{{t "calendar.weekdayShort.tue"}}</td>
-            <td colspan="2">{{t "calendar.weekdayShort.wed"}}</td>
-            <td colspan="2">{{t "calendar.weekdayShort.thu"}}</td>
-            <td colspan="2">{{t "calendar.weekdayShort.fri"}}</td>
-            <td colspan="2" class="calendar_weekend_header">{{t "calendar.weekdayShort.sat"}}</td>
-            <td colspan="2" class="calendar_weekend_header">{{t "calendar.weekdayShort.sun"}}</td>
+            <th colspan="2" scope="col">{{t "calendar.weekdayShort.mon"}}</th>
+            <th colspan="2" scope="col">{{t "calendar.weekdayShort.tue"}}</th>
+            <th colspan="2" scope="col">{{t "calendar.weekdayShort.wed"}}</th>
+            <th colspan="2" scope="col">{{t "calendar.weekdayShort.thu"}}</th>
+            <th colspan="2" scope="col">{{t "calendar.weekdayShort.fri"}}</th>
+            <th colspan="2" scope="col" class="calendar_weekend_header">{{t "calendar.weekdayShort.sat"}}</th>
+            <th colspan="2" scope="col" class="calendar_weekend_header">{{t "calendar.weekdayShort.sun"}}</th>
         </tr>
         </thead>
         <tbody>
@@ -133,6 +141,7 @@
     {{/each}}
 
 </div>
+</section>
 
 {{# unless show_full_year}}
 
@@ -140,9 +149,10 @@
     <p class="col-md-12">{{t "calendar.allAbsencesInYear" year=current_year}}</p>
   </div>
 
-  {{> user_requests leaves=current_user.my_leaves }}
+  {{> user_requests leaves=current_user.my_leaves table_label=(t "calendar.allAbsencesInYear" year=current_year) }}
 
 {{/unless}}
 
+</main>
 
 {{> footer }}

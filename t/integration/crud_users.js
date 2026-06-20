@@ -96,7 +96,8 @@ describe('CRUD for users', function(){
       url    : application_host + 'settings/departments/',
       driver : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Get the Admin, Manager and Employee IDs", function(done){
@@ -168,7 +169,8 @@ describe('CRUD for users', function(){
       url    : application_host + 'users/',
       driver : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it('Check that system has 4 users (one currently logged in and 3 added)', function(done){
@@ -411,7 +413,16 @@ describe('CRUD for users', function(){
       url    : application_host + 'users/edit/'+admin_user_id+'/',
       driver : driver,
     })
-    .then(function(){ done() });
+    .then(function(){
+      return driver.wait(function(){
+        return driver.findElements(By.css('input#admin_inp'))
+          .then(function(elements){
+            return elements.length > 0;
+          });
+      }, 5000);
+    })
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it('Revoke admin rights', function(done){

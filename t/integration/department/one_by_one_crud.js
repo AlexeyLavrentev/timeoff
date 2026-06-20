@@ -17,6 +17,41 @@ var test                 = require('selenium-webdriver/testing'),
   new_department_form_id = '#add_new_department_form',
   department_edit_form_id = '#department_edit_form';
 
+function wait_for_alert_text(driver, pattern) {
+  return driver.wait(function() {
+    return driver.findElement(By.css('div.alert'))
+      .then(function(el) {
+        return el.getText();
+      })
+      .then(function(text) {
+        return pattern.test(text) ? text : false;
+      }, function() {
+        return false;
+      });
+  }, 5000);
+}
+
+function wait_for_remove_supervisor_values(driver, expected_values) {
+  return driver.wait(function() {
+    return driver.findElements(By.css('button[name="remove_supervisor_id"]'))
+      .then(function(els) {
+        return Bluebird.map(els, function(el) {
+          return el.getAttribute('value');
+        });
+      })
+      .then(function(values) {
+        var sorted_values = values.sort();
+        var sorted_expected_values = expected_values.map(String).sort();
+
+        return JSON.stringify(sorted_values) === JSON.stringify(sorted_expected_values)
+          ? values
+          : false;
+      }, function() {
+        return false;
+      });
+  }, 5000);
+}
+
 /*
  *  Scenario:
  *    * register new account
@@ -92,9 +127,9 @@ describe('Check departments list page', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return driver.sleep(1000)
+        .then(function(){
+          return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_department_form_id+' input[name="name__new"]',
@@ -106,6 +141,7 @@ describe('Check departments list page', function(){
           }],
           submit_button_selector : new_department_form_id+' button[type="submit"]',
           message : /Changes to departments were saved/,
+          });
         })
         .then(function(){ done() });
       });
@@ -136,9 +172,9 @@ describe('Check departments list page', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return driver.sleep(1000)
+        .then(function(){
+          return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_department_form_id+' input[name="name__new"]',
@@ -150,6 +186,7 @@ describe('Check departments list page', function(){
           }],
           submit_button_selector : new_department_form_id+' button[type="submit"]',
           message : /Changes to departments were saved/,
+          });
         })
         .then(function(){ done() });
       });
@@ -299,8 +336,8 @@ describe("Edit individual department via department details page", function(){
         value           : user_id_B+"",
       },{
         selector : 'input[name="include_public_holidays"]',
-        tick     : false,
-        value    : 'off',
+        tick     : true,
+        value    : 'on',
       }],
     })
     .then(function(){ done() });
@@ -319,20 +356,29 @@ describe("Edit individual department via department details page", function(){
     driver
       .findElement(By.css('button#remove_btn'))
       .then(function(btn){ return btn.click() })
-      .then(function(){ done() });
+      .then(function() {
+        return wait_for_alert_text(
+          driver,
+          /Cannot remove department .+ as it still has 2 users/
+        );
+      })
+      .then(function(){ done() })
+      .catch(done);
   });
 
   it('Ensure that system prevents deleting department', function(done){
-    driver
-      .findElement( By.css('div.alert') )
-      .then(function(el){ return el.getText() })
+    wait_for_alert_text(
+      driver,
+      /Cannot remove department .+ as it still has 2 users/
+    )
       .then(function(txt){
         expect(txt).to.match(
           /Cannot remove department .+ as it still has 2 users/,
           'App complains about non empty department'
         );
         done();
-      });
+      })
+      .catch(done);
   });
 
   it('Go to departments list by clicking on corresponding link', function(done){
@@ -349,9 +395,9 @@ describe("Edit individual department via department details page", function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return driver.sleep(1000)
+        .then(function(){
+          return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_department_form_id+' input[name="name__new"]',
@@ -363,6 +409,7 @@ describe("Edit individual department via department details page", function(){
           }],
           submit_button_selector : new_department_form_id+' button[type="submit"]',
           message : /Changes to departments were saved/,
+          });
         })
         .then(function(){ done() });
       });
@@ -458,12 +505,14 @@ describe("Edit individual department via department details page", function(){
     driver
       .findElement(By.css('button#remove_btn'))
       .then(function(btn){ return btn.click() })
-      .then(function() { return driver.findElement( By.css('div.alert') ) })
-      .then(function(el){ return el.getText() })
+      .then(function() {
+        return wait_for_alert_text(driver, /Department was successfully removed/);
+      })
       .then(function(txt){
         expect(txt).to.match(/Department was successfully removed/);
         done();
       })
+      .catch(done);
   });
 
   it('Ensure that we have landed on correct page', function(done){
@@ -558,8 +607,10 @@ describe('CRUD for department secondary supervisers', function(){
       .findElement(By.css('a[data-vpp-add-new-secondary-supervisor="1"]'))
       .then(function(btn){ return btn.click() })
       .then(function(){
-        driver.sleep(1000);
-        return driver.findElement(By.css('a[data-vpp-add-supervisor-modal-add-new-user="1"]'))
+        return driver.sleep(1000)
+          .then(function(){
+            return driver.findElement(By.css('a[data-vpp-add-supervisor-modal-add-new-user="1"]'));
+          });
       })
       .then(function(link){ return link.getText() })
       .then(function(text){
@@ -650,8 +701,10 @@ describe('CRUD for department secondary supervisers', function(){
       .findElement(By.css('a[data-vpp-add-new-secondary-supervisor="1"]'))
       .then(function(btn){ return btn.click() })
       .then(function(){
-        driver.sleep(1000);
-        return driver.findElements(By.css('input[name="supervisor_id"]'))
+        return driver.sleep(1000)
+          .then(function(){
+            return driver.findElements(By.css('input[name="supervisor_id"]'));
+          });
       })
       .then(function(els){ return Bluebird.map(els, function(el){return el.getAttribute('value')})})
       .then(function(vals){
@@ -675,16 +728,12 @@ describe('CRUD for department secondary supervisers', function(){
   });
 
   it('Observe that user B appeares on the list of secondary supervisers', function(done){
-    driver
-      .findElements(By.css('button[name="remove_supervisor_id"]'))
-      .then(function(els){
-        expect(els.length).to.be.eql(1, 'No remove buttons for supervisers as there are not any');
-        return els[0].getAttribute('value');
-      })
-      .then(function(val){
-        expect(val).to.be.eql(String(user_id_B), 'It is indeed user B');
+    wait_for_remove_supervisor_values(driver, [user_id_B])
+      .then(function(vals){
+        expect(vals).to.be.eql([String(user_id_B)], 'It is indeed user B');
         done();
-      });
+      })
+      .catch(done);
   });
 
   it('Open "add supervisors" pop up again and ensure that user B has tick next to it and user C does not have it', function(done){
@@ -730,27 +779,24 @@ describe('CRUD for department secondary supervisers', function(){
   });
 
   it('Observe that "secondary spervisors" section now contains only user C', function(done) {
-    driver
-      .findElements(By.css('button[name="remove_supervisor_id"]'))
-      .then(els => {
-        expect(els.length).to.be.eql(1, 'No remove buttons for supervisers as there are not any');
-        return els[0].getAttribute('value');
-      })
-      .then(val => {
-        expect(val).to.be.eql(String(user_id_C), 'It is indeed user C');
+    wait_for_remove_supervisor_values(driver, [user_id_C])
+      .then(vals => {
+        expect(vals).to.be.eql([String(user_id_C)], 'It is indeed user C');
         done();
-      });
+      })
+      .catch(done);
   });
 
   it('Click on "Remove" button next to user C and observe that it disappears from "secondary supervisors" section after page is reloaded', function(done){
     driver
       .findElement(By.css(`button[name="remove_supervisor_id"][value="${ user_id_C }"]`))
       .then(el => el.click())
-      .then(() => driver.findElements(By.css('button[name="remove_supervisor_id"]')))
-      .then(els => {
-        expect(els.length, 'There is no users in secondary supervisers section').to.be.eql(0);
+      .then(() => wait_for_remove_supervisor_values(driver, []))
+      .then(vals => {
+        expect(vals.length, 'There is no users in secondary supervisers section').to.be.eql(0);
         done();
-      });
+      })
+      .catch(done);
   });
 
   after(function(done){
