@@ -1,6 +1,6 @@
 # Release Checklist
 
-Use this checklist before publishing a community or commercial TimeOff build.
+Use this checklist before publishing a LeavePilot Community or Premium build.
 
 ## 1. Confirm Repository State
 

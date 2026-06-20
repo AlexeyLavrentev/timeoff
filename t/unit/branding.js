@@ -33,8 +33,8 @@ describe('Branding', function() {
   it('returns default branding from app config', function() {
     var currentBranding = branding.get();
 
-    expect(currentBranding.name).to.equal('Leave Management');
-    expect(currentBranding.shortName).to.equal('Leave');
+    expect(currentBranding.name).to.equal('LeavePilot');
+    expect(currentBranding.shortName).to.equal('LeavePilot');
     expect(currentBranding.applicationDomain).to.equal('http://app.timeoff.management');
     expect(currentBranding.promotionWebsiteDomain).to.equal('http://timeoff.management');
     expect(currentBranding.faviconUrl).to.equal('/favicon.ico');

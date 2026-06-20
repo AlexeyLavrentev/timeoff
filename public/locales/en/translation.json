@@ -104,7 +104,7 @@
     "departmentDetails": "Department details",
     "groups": "Groups",
     "groupDetails": "Group details",
-    "login": "Leave Management"
+    "login": "LeavePilot"
   },
   "userPopup": {
     "available": "Available",
@@ -490,8 +490,8 @@
     "timezonePlaceholder": "Time zone"
   },
   "home": {
-    "title": "Leave Management",
-    "subtitle": "Open source Staff Time off management for companies of all sizes.",
+    "title": "LeavePilot",
+    "subtitle": "Open-source leave management for teams of all sizes.",
     "signUp": "Sign up now",
     "orFork": "or fork us on",
     "features": {
@@ -887,7 +887,7 @@
     "adminPasswordNoticePrefix": "In order to prevent a situation where a company account locks itself out, the current administrator (",
     "adminPasswordNoticeSuffix": ") has to enter the password associated with her/his email on the LDAP server.",
     "adminPasswordNoticeSecondPrefix": "This is to ensure that",
-    "adminPasswordNoticeSecondSuffix": "can log in to Leave Management with the new LDAP settings.",
+    "adminPasswordNoticeSecondSuffix": "can log in to LeavePilot with the new LDAP settings.",
     "currentPasswordLabel": "My LDAP password",
     "currentPasswordHelpPrefix": "Password for",
     "currentPasswordHelpSuffix": "in the new LDAP server.",
@@ -1000,8 +1000,8 @@
     "description": "Open source Staff Time off management system"
   },
   "brand": {
-    "name": "Leave Management",
-    "nameLower": "leave management"
+    "name": "LeavePilot",
+    "nameLower": "LeavePilot"
   },
   "footer": {
     "copyrightPrefix": "©",
