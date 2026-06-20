@@ -1,0 +1,130 @@
+name: Publish Community container
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Existing release tag to publish, for example v1.0.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: alexeylavrentev/leavepilot-community
+
+jobs:
+  publish:
+    name: Build and publish Community image
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Resolve release ref
+        id: release
+        shell: bash
+        env:
+          REQUESTED_REF: ${{ inputs.ref }}
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" ]]; then
+            release_ref="${REQUESTED_REF}"
+          else
+            release_ref="${PUSH_REF}"
+          fi
+          if [[ ! "${release_ref}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release ref must be a semantic version tag such as v1.0.1" >&2
+            exit 1
+          fi
+          echo "ref=${release_ref}" >> "${GITHUB_OUTPUT}"
+          echo "version=${release_ref#v}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.ref }}
+
+      - name: Verify package version
+        id: verify
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          actual_version="$(node -p "require('./package.json').version")"
+          test "${actual_version}" = "${EXPECTED_VERSION}"
+          echo "commit_sha=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"
+          echo "short_sha=$(git rev-parse --short=12 HEAD)" >> "${GITHUB_OUTPUT}"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.release.outputs.ref }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.release.outputs.ref }}
+            type=semver,pattern={{major}},value=${{ steps.release.outputs.ref }}
+            type=raw,value=latest
+            type=raw,value=sha-${{ steps.verify.outputs.short_sha }}
+          labels: |
+            org.opencontainers.image.title=LeavePilot Community
+            org.opencontainers.image.description=Open-source leave management system for teams and growing businesses
+            org.opencontainers.image.version=${{ steps.release.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.verify.outputs.commit_sha }}
+
+      - name: Build smoke image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          load: true
+          tags: leavepilot-community:smoke
+          cache-from: type=gha,scope=community
+          cache-to: type=gha,mode=max,scope=community
+
+      - name: Smoke-test Community boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --entrypoint node leavepilot-community:smoke -e "
+            const fs = require('fs');
+            const branding = require('/app/lib/branding').get();
+            if (branding.name !== 'LeavePilot') throw new Error('Unexpected branding');
+            if (fs.existsSync('/opt/timeoff-premium')) throw new Error('Premium module leaked into Community image');
+            console.log('Community image smoke test passed');
+          "
+
+      - name: Build and push multi-platform image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: |
+            index:org.opencontainers.image.description=LeavePilot Community — open-source leave management system
+          cache-from: type=gha,scope=community
+          cache-to: type=gha,mode=max,scope=community
