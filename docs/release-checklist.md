@@ -222,8 +222,8 @@ Before a commercial release:
 Release tags:
 
 ```sh
-git tag v1.0.0
-git tag v0.1.0
+git tag v1.0.1
+git tag v0.1.1
 ```
 
 ## 9. Rollback
