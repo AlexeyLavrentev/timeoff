@@ -85,12 +85,12 @@ describe('Feature licensing', function() {
     expect(features.isEnabled('time_balance')).to.equal(false);
   });
 
-  it('keeps config licensed features enabled when explicitly allowed', function() {
+  it('does not allow config licensed features to bypass production licensing', function() {
     process.env.NODE_ENV = 'production';
     process.env.ALLOW_CONFIG_LICENSED_FEATURES = 'true';
     config.set('licensed_features', ['time_balance']);
 
-    expect(features.isEnabled('time_balance')).to.equal(true);
+    expect(features.isEnabled('time_balance')).to.equal(false);
   });
 
   it('ignores unsigned TIMEOFF_LICENSE payloads in production-like environments', function() {
@@ -102,7 +102,7 @@ describe('Feature licensing', function() {
     expect(features.isEnabled('time_balance')).to.equal(false);
   });
 
-  it('keeps signed TIMEOFF_LICENSE payloads enabled in production-like environments', function() {
+  it('keeps legacy HMAC signed payloads readable outside commercial startup validation', function() {
     const payload = {
       customer: 'Example Ltd',
       features: ['time_balance'],
@@ -339,6 +339,58 @@ describe('Feature licensing', function() {
 
     expect(features.isEnabled('time_balance')).to.equal(false);
     expect(features.getLicenseStatus().reason).to.equal('unsupported_signature_algorithm');
+  });
+
+  it('does not allow environment overrides to bypass production licensing', function() {
+    process.env.NODE_ENV = 'production';
+    process.env.ALLOW_UNLICENSED_FEATURE_OVERRIDES = 'true';
+    process.env.FEATURE_TIME_BALANCE = 'true';
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('does not allow unsigned licenses to bypass production licensing', function() {
+    process.env.NODE_ENV = 'production';
+    process.env.ALLOW_UNSIGNED_LICENSES = 'true';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      features: ['time_balance'],
+    });
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('requires RSA license inputs for commercial mode', function() {
+    process.env.NODE_ENV = 'production';
+
+    expect(function() {
+      features.assertCommercialLicense();
+    }).to.throw(/TIMEOFF_LICENSE/);
+
+    process.env.TIMEOFF_LICENSE = '{}';
+
+    expect(function() {
+      features.assertCommercialLicense();
+    }).to.throw(/TIMEOFF_LICENSE_PUBLIC_KEY/);
+  });
+
+  it('accepts a valid RSA license for commercial mode', function() {
+    const keyPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+    const privateKey = keyPair.privateKey.export({type: 'pkcs1', format: 'pem'});
+    const publicKey = keyPair.publicKey.export({type: 'pkcs1', format: 'pem'});
+    const payload = {
+      customer: 'Example Ltd',
+      features: ['time_balance'],
+    };
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_LICENSE_PUBLIC_KEY = publicKey;
+    process.env.TIMEOFF_LICENSE = JSON.stringify({
+      payload,
+      algorithm: 'RSA-SHA256',
+      signature: features.signLicensePayloadWithPrivateKey(payload, privateKey),
+    });
+
+    expect(features.assertCommercialLicense().valid).to.equal(true);
   });
 
   it('lets explicit false overrides disable licensed features', function() {
