@@ -183,7 +183,7 @@
 <div class="row">
 
   <div class="col-md-8">
-    <div class="panel panel-default">
+    <div class="panel panel-default leave-types-panel">
       <div class="panel-heading">
         {{t "generalSettings.leaveTypesTitle"}}
       </div>
@@ -231,7 +231,7 @@
               <div class="input-group-btn" data-tom-color-picker="1" data-tom-leave-type-order="colour__{{@index}}">
                 <input type="hidden" name="color__{{ this.id }}" value="{{# with this }}{{ this.get_color_class }}{{/with}}">
                 <button type="button" class="btn btn-default dropdown-toggle {{# with this }}{{ this.get_color_class }}{{/with}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="{{t "leaveTypeModal.pickColor"}}"><i class="fa fa-paint-brush" aria-hidden="true"></i></button>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu color-picker-menu">
                   {{> options_for_color_picker}}
                 </ul>
               </div>
