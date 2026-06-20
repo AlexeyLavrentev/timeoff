@@ -165,4 +165,4 @@ redis-cli KEYS 'sess:*'
 
 Здесь:
 
-[docs/sso-keycloak.md](/home/sdigitaladmin/timeoff/docs/sso-keycloak.md)
+[docs/sso-keycloak.md](sso-keycloak.md)

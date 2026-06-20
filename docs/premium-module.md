@@ -43,8 +43,10 @@ name or the installed package path.
 
 For commercial images, set `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` or
 `premium_module_required=true`. In that mode, startup fails when the configured
-premium module is missing. This makes misconfigured paid deployments fail closed
-instead of silently running as community edition.
+premium module path is empty or the module is missing. In production and
+staging, required-module mode also requires a valid RSA-SHA256
+`TIMEOFF_LICENSE` and `TIMEOFF_LICENSE_PUBLIC_KEY`. This makes misconfigured
+paid deployments fail closed instead of silently running as community edition.
 
 ## Module Shape
 
