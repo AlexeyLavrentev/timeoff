@@ -21,8 +21,8 @@
   "application_domain" : "http://app.timeoff.management",
   "promotion_website_domain" : "http://timeoff.management",
   "branding": {
-    "name": "Leave Management",
-    "shortName": "Leave",
+    "name": "LeavePilot",
+    "shortName": "LeavePilot",
     "applicationDomain": "http://app.timeoff.management",
     "promotionWebsiteDomain": "http://timeoff.management",
     "senderEmail": "email@test.com",
