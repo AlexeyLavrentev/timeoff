@@ -13,7 +13,8 @@ var test             = require('selenium-webdriver/testing'),
     register_new_user_func = require('../lib/register_new_user'),
     logout_user_func       = require('../lib/logout_user'),
     add_new_user_func      = require('../lib/add_new_user'),
-    build_driver           = require('../lib/build_driver');
+    build_driver           = require('../lib/build_driver'),
+    branding               = require('../../lib/branding');
 
 
 describe('Try to access private pages with guest user', function(){
@@ -51,7 +52,7 @@ describe('Try to access private pages with guest user', function(){
     driver.get( application_host);
     driver.getTitle()
       .then(function(title){
-        expect(title).to.be.equal('Time Off Management');
+        expect(title).to.be.equal(branding.get().name);
       });
     driver.quit().then(function(){ done() });
   });

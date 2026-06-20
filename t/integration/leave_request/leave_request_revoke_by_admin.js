@@ -16,6 +16,7 @@ var test             = require('selenium-webdriver/testing'),
     check_elements_func    = require('../../lib/check_elements'),
     check_booking_func     = require('../../lib/check_booking_on_calendar'),
     add_new_user_func      = require('../../lib/add_new_user'),
+    user_info_func         = require('../../lib/user_info'),
     config                 = require('../../lib/config'),
     application_host       = config.get_application_host(),
     currentYear = moment.utc().year();
@@ -193,15 +194,16 @@ describe('Revoke leave request by Admin', function(){
   });
 
   it("Obtain employee ID from department managment page", function(done){
-    driver.findElement(
-        By.css('select[name="boss_id__new"] option:nth-child(2)')
-      )
-      .then(function(el){ return el.getAttribute('value') })
-      .then(function(value){
-        employee_user_id = value;
+    user_info_func({
+      driver : driver,
+      email  : email_employee,
+    })
+      .then(function(data){
+        employee_user_id = String(data.user.id);
         expect( employee_user_id ).to.match(/^\d+$/);
         done();
-      });
+      })
+      .catch(done);
   });
 
   it("Open user editing page for Employee", function(done){

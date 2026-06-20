@@ -8,7 +8,7 @@ var test             = require('selenium-webdriver/testing'),
     expect           = require('chai').expect,
     _                = require('underscore'),
     Promise          = require("bluebird"),
-    moment           = require('moment'),
+    moment           = require('moment-timezone'),
     until            = require('selenium-webdriver').until,
     login_user_func        = require('../../lib/login_with_user'),
     register_new_user_func = require('../../lib/register_new_user'),
@@ -18,6 +18,10 @@ var test             = require('selenium-webdriver/testing'),
     check_elements_func    = require('../../lib/check_elements'),
     check_booking_func     = require('../../lib/check_booking_on_calendar'),
     add_new_user_func      = require('../../lib/add_new_user');
+
+var company_today = function() {
+  return moment().tz('Europe/London');
+};
 
 describe("Check the client side logic to facilitate filling new absence form", function(){
 
@@ -56,10 +60,10 @@ describe("Check the client side logic to facilitate filling new absence form", f
       driver : driver,
       elements_to_check : [{
         selector : 'input.book-leave-from-input',
-        value : moment().format('YYYY-MM-DD'),
+        value : company_today().format('YYYY-MM-DD'),
       },{
         selector : 'input.book-leave-to-input',
-        value : moment().format('YYYY-MM-DD'),
+        value : company_today().format('YYYY-MM-DD'),
       }],
     })
     .then(function(){ done() });
@@ -68,7 +72,7 @@ describe("Check the client side logic to facilitate filling new absence form", f
   it("Update FROM to be in future and make sure TO is automatically addusted to the same date", function(done){
 
     var inp_from,
-      tomorrow_str = moment().add(1, 'days').format('YYYY-MM-DD');
+      tomorrow_str = company_today().add(1, 'days').format('YYYY-MM-DD');
 
     driver
       .findElement(By.css('input.book-leave-from-input'))
@@ -95,8 +99,8 @@ describe("Check the client side logic to facilitate filling new absence form", f
   it("Update FROM to be in past and make sure TO is stays unchanged", function(done){
 
     var inp_from,
-      tomorrow_str = moment().add(1, 'days').format('YYYY-MM-DD'),
-      yesterday_str = moment().subtract(1, 'days').format('YYYY-MM-DD');
+      tomorrow_str = company_today().add(1, 'days').format('YYYY-MM-DD'),
+      yesterday_str = company_today().subtract(1, 'days').format('YYYY-MM-DD');
 
     driver
       .findElement(By.css('input.book-leave-from-input'))

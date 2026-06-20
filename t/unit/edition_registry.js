@@ -6,10 +6,13 @@ var features = require('../../lib/features');
 
 describe('Edition registry', function() {
   var originalFeatureTimeBalance;
+  var originalTimeoffFeatures;
 
   beforeEach(function() {
     originalFeatureTimeBalance = process.env.FEATURE_TIME_BALANCE;
+    originalTimeoffFeatures = process.env.TIMEOFF_FEATURES;
     delete process.env.FEATURE_TIME_BALANCE;
+    delete process.env.TIMEOFF_FEATURES;
     features.registerFeature('time_balance');
   });
 
@@ -18,6 +21,12 @@ describe('Edition registry', function() {
       delete process.env.FEATURE_TIME_BALANCE;
     } else {
       process.env.FEATURE_TIME_BALANCE = originalFeatureTimeBalance;
+    }
+
+    if (typeof originalTimeoffFeatures === 'undefined') {
+      delete process.env.TIMEOFF_FEATURES;
+    } else {
+      process.env.TIMEOFF_FEATURES = originalTimeoffFeatures;
     }
   });
 
