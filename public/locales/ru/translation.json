@@ -109,7 +109,7 @@
     "departmentDetails": "Детали отдела",
     "groups": "Группы",
     "groupDetails": "Детали группы",
-    "login": "Leave Management"
+    "login": "LeavePilot"
   },
   "userPopup": {
     "available": "Доступно",
@@ -495,8 +495,8 @@
     "timezonePlaceholder": "Часовой пояс"
   },
   "home": {
-    "title": "Leave Management",
-    "subtitle": "Open source система управления отсутствиями для компаний любого размера.",
+    "title": "LeavePilot",
+    "subtitle": "Open-source система управления отсутствиями для команд любого размера.",
     "signUp": "Зарегистрироваться",
     "orFork": "или форкните на",
     "features": {
