@@ -7,7 +7,7 @@ Use this checklist before publishing a community or commercial TimeOff build.
 Core repository:
 
 ```sh
-cd /Users/aleksey/timeoff
+cd /Users/aleksey/projects/timeoff
 git status --short
 git log --oneline -5
 ```
@@ -15,7 +15,7 @@ git log --oneline -5
 Premium repository:
 
 ```sh
-cd /Users/aleksey/timeoff-premium
+cd /Users/aleksey/projects/timeoff-premium
 git status --short
 git log --oneline -5
 ```
@@ -31,7 +31,7 @@ Expected:
 Core:
 
 ```sh
-cd /Users/aleksey/timeoff
+cd /Users/aleksey/projects/timeoff
 
 ./node_modules/.bin/mocha \
   t/unit/edition_premium_loader.js \
@@ -45,7 +45,7 @@ cd /Users/aleksey/timeoff
 Premium:
 
 ```sh
-cd /Users/aleksey/timeoff-premium
+cd /Users/aleksey/projects/timeoff-premium
 npm run check
 npm test
 ```
@@ -53,7 +53,7 @@ npm test
 Compose configuration:
 
 ```sh
-cd /Users/aleksey/timeoff
+cd /Users/aleksey/projects/timeoff
 
 SESSION_SECRET=ci-session-secret \
 CRYPTO_SECRET=ci-crypto-secret \
@@ -61,7 +61,7 @@ docker compose config --quiet
 
 SESSION_SECRET=ci-session-secret \
 CRYPTO_SECRET=ci-crypto-secret \
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 TIMEOFF_LICENSE=ci-license-placeholder \
 TIMEOFF_LICENSE_PUBLIC_KEY=ci-public-key-placeholder \
 docker compose -f docker-compose.yml -f docker-compose.commercial.yml config --quiet
@@ -72,7 +72,7 @@ docker compose -f docker-compose.yml -f docker-compose.commercial.yml config --q
 Community build contains only the open-source core.
 
 ```sh
-cd /Users/aleksey/timeoff
+cd /Users/aleksey/projects/timeoff
 docker compose build app
 ```
 
@@ -103,7 +103,7 @@ Required inputs:
 Build and start:
 
 ```sh
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE \
 TIMEOFF_LICENSE_PUBLIC_KEY=PASTE_PUBLIC_KEY_WITH_ESCAPED_NEWLINES_HERE \
 docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build -d
@@ -131,7 +131,7 @@ Generate a customer license:
 ```sh
 node bin/sign_license.js \
   --customer "Customer Name" \
-  --features time_balance,vacation_planning \
+  --features sso_authentication,integration_api,employee_groups,work_calendars,leave_start_reminders,time_balance,vacation_planning \
   --expires 2027-12-31T23:59:59.000Z \
   --private-key-file license_private.pem \
   --base64
@@ -174,7 +174,7 @@ Expected commercial migration output includes premium migrations:
 External module smoke:
 
 ```sh
-TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE=/Users/aleksey/projects/timeoff-premium \
 FEATURE_TIME_BALANCE=true \
 FEATURE_VACATION_PLANNING=true \
 node -e "const app=require('./app'); const db=app.get('db_model'); const edition=require('./lib/edition'); const i18next=require('./lib/i18n').i18next; console.log(Boolean(db.TimeBalanceEntry)+','+Boolean(db.VacationPlan)+','+edition.getInfo().routes.length+','+i18next.t('nav.timeBalance')); process.exit(0);"
@@ -203,7 +203,7 @@ Expected:
 Premium compatibility metadata is stored in:
 
 ```text
-/Users/aleksey/timeoff-premium/package.json
+/Users/aleksey/projects/timeoff-premium/package.json
 ```
 
 The `timeoffCore` field records:
@@ -219,11 +219,11 @@ Before a commercial release:
    the release branch or tag.
 3. Tag core and premium together when the pair is released.
 
-Suggested tags:
+Release tags:
 
 ```sh
-git tag core-open-core-0.1.0
-git tag premium-0.1.0
+git tag v1.0.0
+git tag v0.1.0
 ```
 
 ## 9. Rollback
