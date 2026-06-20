@@ -140,9 +140,20 @@ function invokeRoute(handler, req) {
 describe('Settings authentication route', function() {
   const postAuthenticationHandler = getRouteHandler('/company/authentication/', 'post');
   const originalValidateSsoSettings = ssoService.validateSsoSettings;
+  const originalSsoFeature = process.env.FEATURE_SSO_AUTHENTICATION;
+
+  beforeEach(function() {
+    process.env.FEATURE_SSO_AUTHENTICATION = 'true';
+  });
 
   afterEach(function() {
     ssoService.validateSsoSettings = originalValidateSsoSettings;
+
+    if (typeof originalSsoFeature === 'undefined') {
+      delete process.env.FEATURE_SSO_AUTHENTICATION;
+    } else {
+      process.env.FEATURE_SSO_AUTHENTICATION = originalSsoFeature;
+    }
   });
 
   it('saves OIDC SSO settings after validation', async function() {
@@ -277,5 +288,42 @@ describe('Settings authentication route', function() {
     expect(validateCalled).to.equal(false);
     expect(result.res.locals.flash.errors[0]).to.contain('settings.messages.authUpdateFailed');
     expect(result.res.locals.flash.errors[0]).to.contain('settings.messages.authMutuallyExclusive');
+  });
+
+  it('keeps LDAP editable without changing SSO when the premium feature is disabled', async function() {
+    process.env.FEATURE_SSO_AUTHENTICATION = 'false';
+    const company = createCompany({
+      sso_auth_enabled: false,
+      sso_auth_provider: 'oidc',
+      sso_auth_config: { client_id: 'preserved' },
+    });
+
+    company.get_ldap_server = function() {
+      return {
+        on() {},
+        authenticate(_email, _password, callback) {
+          callback(null, {});
+        },
+      };
+    };
+
+    const result = await invokeRoute(
+      postAuthenticationHandler,
+      createReq({
+        ldap_auth_enabled: 'on',
+        url: 'ldap://ldap.example.com:389',
+        binddn: 'cn=admin,dc=example,dc=com',
+        bindcredentials: 'secret',
+        searchbase: 'dc=example,dc=com',
+        password_to_check: '123456',
+        sso_auth_enabled: 'on',
+      }, company)
+    );
+
+    expect(result.type).to.equal('redirect');
+    expect(company.ldap_auth_enabled).to.equal(true);
+    expect(company.sso_auth_enabled).to.equal(false);
+    expect(company.sso_auth_provider).to.equal('oidc');
+    expect(company.sso_auth_config).to.deep.equal({ client_id: 'preserved' });
   });
 });

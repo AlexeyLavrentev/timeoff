@@ -4,7 +4,7 @@
 <a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
 <main id="main-content" tabindex="-1">
 <h1>{{t "authConfig.title"}}</h1>
-<p class="lead">{{t "authConfig.subtitle"}}</p>
+<p class="lead">{{#if sso_available}}{{t "authConfig.subtitle"}}{{else}}{{t "authConfig.ldapSubtitle"}}{{/if}}</p>
 
 {{> show_flash_messages }}
 
@@ -72,6 +72,7 @@
         <span id="current_user_password_help" class="help-block">{{t "ldapAuth.currentPasswordHelpPrefix"}} <strong>{{#with logged_user}}{{this.full_name}}{{/with}}</strong> {{t "ldapAuth.currentPasswordHelpSuffix"}}</span>
       </div>
 
+      {{#if sso_available}}
       <hr/>
 
       <div class="row main-row_header">
@@ -248,6 +249,7 @@ subsidiary.example.com">{{sso.config.email_domains}}</textarea>
           <p class="form-control-static"><code>{{sso.saml_metadata_url}}</code></p>
         </div>
       </div>
+      {{/if}}
 
       <div class="form-group">
         <div class="col-md-offset-3 col-md-5">
