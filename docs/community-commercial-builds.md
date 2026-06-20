@@ -40,6 +40,9 @@ In this mode:
 - Premium routes are not registered.
 - Premium migrations are not applied.
 - Premium navigation items are hidden.
+- LDAP remains available.
+- OIDC/SAML, employee groups, work calendars, leave reminders, the integration
+  API, time balance, and vacation planning remain disabled.
 
 ## Commercial Image With Docker COPY
 
@@ -65,6 +68,14 @@ The commercial override:
 
 Use this mode for production-like self-hosted commercial delivery.
 
+Commercial startup fails instead of falling back to Community when:
+
+- `TIMEOFF_PREMIUM_MODULE` is missing or cannot be loaded;
+- `TIMEOFF_LICENSE` is missing or malformed;
+- `TIMEOFF_LICENSE_PUBLIC_KEY` is missing;
+- the license is not an RSA-SHA256 envelope, has an invalid signature, or is
+  expired.
+
 ## Local Premium Development
 
 For local development, mount the premium repository instead of copying it into
@@ -77,6 +88,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose
 
 The premium dev override:
 
+- sets `NODE_ENV=development`;
 - mounts the premium repo at `/opt/timeoff-premium`;
 - sets `TIMEOFF_PREMIUM_MODULE=/opt/timeoff-premium`;
 - enables `FEATURE_TIME_BALANCE=true`;
@@ -84,6 +96,23 @@ The premium dev override:
 
 Do not use `FEATURE_*` as the normal production path. Production should use a
 signed license.
+
+Production and staging ignore `TIMEOFF_FEATURES`, positive `FEATURE_*`
+overrides, config feature allowlists, `ALLOW_UNSIGNED_LICENSES`,
+`ALLOW_CONFIG_LICENSED_FEATURES`, and
+`ALLOW_UNLICENSED_FEATURE_OVERRIDES`. Explicit `FEATURE_*=false` remains a
+kill switch.
+
+## Runtime contract
+
+| Premium module | License | Result |
+|---|---|---|
+| absent, not required | absent | Community starts |
+| absent, required | any | startup error |
+| present in development | absent | dev flags may enable registered features |
+| present and required in production | absent | startup error |
+| present and required in production | invalid | startup error |
+| present and required in production | valid RSA | only licensed features are enabled |
 
 ## RSA License
 

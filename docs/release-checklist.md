@@ -232,7 +232,6 @@ Rollback options:
 
 - redeploy the previous core image;
 - redeploy the previous commercial image;
-- disable premium module by clearing `TIMEOFF_PREMIUM_MODULE`;
 - disable a specific premium feature with explicit `FEATURE_NAME=false`;
 - restore a database backup if a migration must be rolled back.
 

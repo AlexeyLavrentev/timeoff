@@ -67,7 +67,9 @@ FEATURE_TIME_BALANCE=true npm start
 FEATURE_VACATION_PLANNING=false npm start
 ```
 
-`TIMEOFF_FEATURES`, `FEATURE_*`, and `features` in config are treated as unlicensed overrides. They work by default in development and test environments, but production-like environments (`production` and `staging`) ignore them unless `ALLOW_UNLICENSED_FEATURE_OVERRIDES=true` or `allow_unlicensed_feature_overrides` is set explicitly.
+`TIMEOFF_FEATURES`, `FEATURE_*`, and `features` in config are development/test
+overrides. Production-like environments (`production` and `staging`) always
+ignore positive unlicensed overrides.
 
 Explicit `false` overrides always work as a kill switch, even for licensed features.
 
@@ -80,11 +82,8 @@ Explicit `false` overrides always work as a kill switch, even for licensed featu
 }
 ```
 
-`licensed_features` is a local allowlist for development, tests, or trusted
-internal deployments. Production-like environments ignore it by default. Set
-`ALLOW_CONFIG_LICENSED_FEATURES=true` or `allow_config_licensed_features=true`
-only for deployments where the operator is trusted to grant features without a
-signed license.
+`licensed_features` is a local allowlist for development and tests.
+Production-like environments always ignore it.
 
 ## License Payload
 
@@ -97,7 +96,8 @@ signed license.
 }
 ```
 
-In production-like environments (`production` and `staging`), `TIMEOFF_LICENSE` must be signed unless `ALLOW_UNSIGNED_LICENSES=true` or `allow_unsigned_licenses` is set explicitly.
+In production-like environments (`production` and `staging`), unsigned
+licenses are always rejected.
 
 Recommended RSA signed license envelope:
 
@@ -132,7 +132,8 @@ node bin/sign_license.js --customer "Example Ltd" --features sso_authentication,
 
 Add `--base64` when the deployment expects a compact value for `TIMEOFF_LICENSE`.
 
-Legacy HMAC signed envelope is still supported:
+Legacy HMAC signed envelopes remain readable for development and compatibility
+outside commercial startup validation:
 
 ```json
 {
@@ -191,6 +192,6 @@ TIMEOFF_PREMIUM_MODULE=/Users/aleksey/timeoff-premium
 For commercial delivery, prefer the private package name or the path where the
 private package is installed in the image.
 
-Development-only overrides such as `TIMEOFF_FEATURES=all` or
-`ALLOW_UNLICENSED_FEATURE_OVERRIDES=true` should not be used as the normal
-commercial path.
+Commercial startup with `TIMEOFF_PREMIUM_MODULE_REQUIRED=true` accepts only a
+valid RSA-SHA256 license. Development-only overrides such as
+`TIMEOFF_FEATURES=all` are ignored in production and staging.

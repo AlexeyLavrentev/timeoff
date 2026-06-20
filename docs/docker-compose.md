@@ -75,7 +75,9 @@ cp .env.example .env
 docker compose restart app
 ```
 
-Если у вас уже есть корпоративный SSO и вы хотите полностью избежать публичной регистрации, можно оставить `false` и заводить пользователей только через заранее подготовленную схему администрирования или auto-provisioning.
+Если используется Premium SSO и вы хотите полностью избежать публичной
+регистрации, можно оставить `false` и заводить пользователей через заранее
+подготовленную схему администрирования или auto-provisioning.
 
 ## Обычный запуск
 
@@ -106,6 +108,9 @@ docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build
 TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
 docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.premium-dev.yml up --build
 ```
+
+`docker-compose.premium-dev.yml` принудительно задаёт `NODE_ENV=development`.
+Флаги `FEATURE_*` в production и staging игнорируются.
 
 Подробная схема community/commercial image описана в
 `docs/community-commercial-builds.md`.
