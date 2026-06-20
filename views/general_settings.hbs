@@ -2,13 +2,15 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
 <h1>{{t "generalSettings.title"}}</h1>
 
 <p class="lead">{{t "generalSettings.subtitle"}}</p>
 
 {{> show_flash_messages }}
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer" aria-hidden="true"></div>
 
 <div class="row">
   <div class="col-md-12">
@@ -126,7 +128,7 @@
               </div>
               <div class="form-group">
                 <div class="col-md-offset-2 col-md-11">
-                  <a class="btn btn-success pull-right" href="/settings/company/backup/"><i class="fa fa-download"></i> {{t "generalSettings.downloadBackup"}}</a>
+                  <a class="btn btn-success pull-right" href="/settings/company/backup/"><i class="fa fa-download" aria-hidden="true"></i> {{t "generalSettings.downloadBackup"}}</a>
                 </div>
               </div>
             </div>
@@ -165,7 +167,7 @@
               </div>
               <div class="form-group">
                 <form class="col-md-offset-2 col-md-11" id="calculate_carry_over_form" method="post" action="/settings/carryOverUnusedAllowance">
-                  <button class="btn btn-success pull-right single-click" type="submit"><i class="fa fa-share"></i> {{t "generalSettings.carryOverButton"}}</button>
+                  <button class="btn btn-success pull-right single-click" type="submit"><i class="fa fa-share" aria-hidden="true"></i> {{t "generalSettings.carryOverButton"}}</button>
                 </form>
               </div>
             </div>
@@ -181,7 +183,7 @@
 <div class="row">
 
   <div class="col-md-8">
-    <div class="panel panel-default">
+    <div class="panel panel-default leave-types-panel">
       <div class="panel-heading">
         {{t "generalSettings.leaveTypesTitle"}}
       </div>
@@ -205,7 +207,7 @@
           </div>
         </div>
 
-        <div class="row">&nbsp;</div>
+        <div class="content-spacer content-spacer-sm" aria-hidden="true"></div>
 
         <form id="delete_leavetype_form" method="post" action="/settings/leavetypes/delete/"></form>
         <form id="leave_type_edit_form" method="post" action="/settings/leavetypes/">
@@ -228,8 +230,8 @@
 
               <div class="input-group-btn" data-tom-color-picker="1" data-tom-leave-type-order="colour__{{@index}}">
                 <input type="hidden" name="color__{{ this.id }}" value="{{# with this }}{{ this.get_color_class }}{{/with}}">
-                <button type="button" class="btn btn-default dropdown-toggle {{# with this }}{{ this.get_color_class }}{{/with}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-paint-brush"></i></button>
-                <ul class="dropdown-menu">
+                <button type="button" class="btn btn-default dropdown-toggle {{# with this }}{{ this.get_color_class }}{{/with}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="{{t "leaveTypeModal.pickColor"}}"><i class="fa fa-paint-brush" aria-hidden="true"></i></button>
+                <ul class="dropdown-menu color-picker-menu">
                   {{> options_for_color_picker}}
                 </ul>
               </div>
@@ -261,15 +263,15 @@
             <input type="number" class="form-control" value="{{minimum_consecutive_days}}" name="minimum_consecutive_days__{{ this.id }}" data-tom-leave-type-order="minimum_consecutive_days_{{@index}}">
           </div>
           <div class="col-md-1 leave-types-remove-cell">
-            <button class="btn btn-default pull-right leavetype-remove-btn" value="{{ this.id }}" data-tom-leave-type-order="remove_{{@index}}"><span class="fa fa-remove"></span></button>
+            <button class="btn btn-default pull-right leavetype-remove-btn" value="{{ this.id }}" data-tom-leave-type-order="remove_{{@index}}" aria-label="{{t "common.remove"}}"><span class="fa fa-remove" aria-hidden="true"></span></button>
           </div>
         </div>
 
-        <div class="row">&nbsp;</div>
+        <div class="content-spacer content-spacer-sm" aria-hidden="true"></div>
 
         {{/each}}
 
-        <div class="row">&nbsp;</div>
+        <div class="content-spacer content-spacer-sm" aria-hidden="true"></div>
 
         <div class="row">
           <div class="col-md-12">
@@ -305,7 +307,7 @@
   <div class="col-md-12">
     <div class="panel panel-danger">
       <div class="panel-heading">
-        <i class="fa fa-bomb"></i> {{t "generalSettings.dangerZoneTitle"}}
+        <i class="fa fa-bomb" aria-hidden="true"></i> {{t "generalSettings.dangerZoneTitle"}}
       </div>
       <div class="panel-body">
 
@@ -322,7 +324,7 @@
                   <p><em>{{t "generalSettings.removeCompanyBackupHint"}} <a href="/settings/company/backup/">{{t "generalSettings.removeCompanyBackupLink"}}</a> {{t "generalSettings.removeCompanyBackupSuffix"}}</em></p>
                 </div>
                 <div class="col-md-6">
-                  <button class="btn btn-danger pull-right" data-toggle="modal" data-target="#remove_company_modal" type="button"><i class="fa fa-remove"></i> {{t "generalSettings.removeCompanyButton"}}</button>
+                  <button class="btn btn-danger pull-right" data-toggle="modal" data-target="#remove_company_modal" type="button"><i class="fa fa-remove" aria-hidden="true"></i> {{t "generalSettings.removeCompanyButton"}}</button>
                 </div>
               </div>
             </div>
@@ -344,4 +346,5 @@
   container_id='remove_company_modal'
 }}
 
+</main>
 {{> footer }}

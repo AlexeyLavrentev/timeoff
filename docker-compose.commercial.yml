@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      target: commercial
+      additional_contexts:
+        timeoff_premium: ${TIMEOFF_PREMIUM_MODULE_HOST_PATH:-../timeoff-premium}
+    environment:
+      TIMEOFF_PREMIUM_MODULE: /opt/timeoff-premium
+      TIMEOFF_PREMIUM_MODULE_REQUIRED: "true"
+      TIMEOFF_LICENSE: ${TIMEOFF_LICENSE:?TIMEOFF_LICENSE is required}
+      TIMEOFF_LICENSE_PUBLIC_KEY: ${TIMEOFF_LICENSE_PUBLIC_KEY:?TIMEOFF_LICENSE_PUBLIC_KEY is required}

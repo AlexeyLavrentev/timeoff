@@ -5,7 +5,7 @@ var test                 = require('selenium-webdriver/testing'),
   By                     = require('selenium-webdriver').By,
   expect                 = require('chai').expect,
   _                      = require('underscore'),
-  moment                 = require('moment'),
+  moment                 = require('moment-timezone'),
   bluebird               = require("bluebird"),
   until                  = require('selenium-webdriver').until,
   register_new_user_func = require('../lib/register_new_user'),
@@ -20,6 +20,10 @@ var test                 = require('selenium-webdriver/testing'),
   config                 = require('../lib/config'),
   application_host       = config.get_application_host(),
   department_edit_form_id = '#department_edit_form';
+
+var company_today = function() {
+  return moment().tz('Europe/London');
+};
 
 /*
  * Scenario to check:
@@ -204,7 +208,7 @@ describe('Dealing with inactive users', function(){
       driver      : driver,
       form_params : [{
         selector : 'input#end_date_inp',
-        value    : moment().subtract(1, 'days').format('YYYY-MM-DD'),
+        value    : company_today().subtract(1, 'days').format('YYYY-MM-DD'),
       }],
       submit_button_selector : 'button#save_changes_btn',
       message : /Details for .+ were updated/,

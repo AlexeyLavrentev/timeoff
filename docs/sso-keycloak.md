@@ -1,5 +1,9 @@
 # SSO через Keycloak: OIDC и SAML
 
+OIDC/SAML SSO относится к Premium-функциям. В production для этого требуются
+private premium module и действующая RSA-лицензия с функцией
+`sso_authentication`. LDAP остаётся доступен в Community без Premium-лицензии.
+
 Этот проект поддерживает SSO для компании через один активный метод одновременно:
 
 - `OIDC`

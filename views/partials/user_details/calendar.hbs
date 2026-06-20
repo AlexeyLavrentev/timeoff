@@ -1,6 +1,5 @@
 
-<div class="col-md-9">
-
+<section class="admin-form-card employee-calendar-card">
   {{> user_details/breadcrumb employee=employee }}
 
   <div class="row period-navigation">
@@ -8,7 +7,7 @@
       <a class="btn btn-default" href="/users/edit/{{current_user.id}}/calendar/?year={{previous_year}}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{previous_year}} </a>
     </div>
     <div class="col-xs-8 calendar-section-caption">
-      <h3>{{current_year}}</h3>
+      <h2 class="employee-calendar-year">{{current_year}}</h2>
     </div>
     <div class="col-xs-2 period-navigation-side">
       {{#if show_full_year}}
@@ -17,13 +16,9 @@
     </div>
   </div>
 
-  <div class="row main-row_header">
-    <div class="col-md-12"><hr/></div>
-  </div>
+  <div class="row employee-calendar-statistics">
 
-  <div class="row">
-
-    <div class="col-md-4 top-leave-type-statistics">
+    <div class="col-sm-4 top-leave-type-statistics">
       <dl>
         {{#with current_user }}
         <dt data-tom-days-available-in-allowance>{{ ../user_allowance.number_of_days_available_in_allowance }}</dt>
@@ -33,11 +28,11 @@
       </dl>
     </div>
 
-    <div class="col-md-4 secondary-leave-type-statistics hidden-xs">
+    <div class="col-sm-4 secondary-leave-type-statistics hidden-xs">
       {{> user_details/allowance_breakdown user_allowance = user_allowance }}
     </div>
 
-    <div class="col-md-4 secondary-leave-type-statistics hidden-xs">
+    <div class="col-sm-4 secondary-leave-type-statistics hidden-xs">
       <dl>
         <dt>{{t "calendar.usedSoFar"}}</dt>
 
@@ -54,27 +49,23 @@
 
   </div>
 
-
-  <div class="row main-row_header">
-    <div class="col-md-12"><hr/></div>
-  </div>
-
-  <div class="row clearfix">
+  <div class="row clearfix employee-calendar-months">
     {{# each calendar}}
     <div class="col-md-4 month_container">
-      <table class="calendar_month month_{{ this.month }}">
+      <table class="calendar_month month_{{ this.month }}" aria-label="{{this.month}}">
+      <caption class="sr-only">{{this.month}}</caption>
       <thead>
       <tr>
-        <td colspan="14">{{this.month}}</td>
+        <th colspan="14" scope="colgroup">{{this.month}}</th>
       </tr>
       <tr>
-        <td colspan="2">{{t "calendar.weekdayShort.mon"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.tue"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.wed"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.thu"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.fri"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.sat"}}</td>
-        <td colspan="2">{{t "calendar.weekdayShort.sun"}}</td>
+        <th colspan="2" scope="col">{{t "calendar.weekdayShort.mon"}}</th>
+        <th colspan="2" scope="col">{{t "calendar.weekdayShort.tue"}}</th>
+        <th colspan="2" scope="col">{{t "calendar.weekdayShort.wed"}}</th>
+        <th colspan="2" scope="col">{{t "calendar.weekdayShort.thu"}}</th>
+        <th colspan="2" scope="col">{{t "calendar.weekdayShort.fri"}}</th>
+        <th colspan="2" scope="col" class="calendar_weekend_header">{{t "calendar.weekdayShort.sat"}}</th>
+        <th colspan="2" scope="col" class="calendar_weekend_header">{{t "calendar.weekdayShort.sun"}}</th>
       </tr>
       </thead>
       <tbody>
@@ -91,5 +82,4 @@
     {{/each}}
   </div>
 
-
-</div>
+</section>

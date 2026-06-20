@@ -111,9 +111,11 @@ describe('CRUD for bank holidays', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_bankholiday_form_id+' input[name="name__new"]',
@@ -124,9 +126,10 @@ describe('CRUD for bank holidays', function(){
           }],
           submit_button_selector: new_bankholiday_form_id+' button[type="submit"]',
           message : /Changes to bank holidays were saved/,
-        })
-        .then(function(){done()});
-      });
+        });
+      })
+      .then(function(){done()})
+      .catch(done);
   });
 
   it("Add new bank holiday to be in the end of the list", function(done){
@@ -135,9 +138,11 @@ describe('CRUD for bank holidays', function(){
       .then(function(){
 
         // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
+        return driver.sleep(1000);
 
-        submit_form_func({
+      })
+      .then(function(){
+        return submit_form_func({
           driver      : driver,
           form_params : [{
             selector : new_bankholiday_form_id+' input[name="name__new"]',
@@ -148,9 +153,10 @@ describe('CRUD for bank holidays', function(){
           }],
           submit_button_selector: new_bankholiday_form_id+' button[type="submit"]',
           message : /Changes to bank holidays were saved/,
-         })
-         .then(function(){done()});
-      });
+         });
+      })
+      .then(function(){done()})
+      .catch(done);
   });
 
   it("Check that the order of all three holidays is based on dates rather than names", function(done){

@@ -8,11 +8,21 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
 var config       = require('./lib/config');
+var branding     = require('./lib/branding');
+var edition      = require('./lib/edition');
+var emailTemplatePaths = require('./lib/email_template_paths');
+var partialTemplatePaths = require('./lib/partial_template_paths');
+var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
 const i18nextMiddleware = require('i18next-express-middleware');
 const { initI18next } = require('./lib/i18n');
 
 var app = express();
+var baseViewPath = path.join(__dirname, 'views');
+var baseLayoutsPath = path.join(baseViewPath, 'layouts');
+var editionContext = {
+  app: app,
+};
 
 const parseTrustProxy = (value) => {
   if (typeof value === 'boolean') {
@@ -43,6 +53,8 @@ var handlebars = require('express-handlebars')
   .create({
     defaultLayout : 'main',
     extname       : '.hbs',
+    layoutsDir    : baseLayoutsPath,
+    partialsDir   : partialTemplatePaths.get(),
     helpers       : require('./lib/view/helpers')(),
     runtimeOptions: {
       allowProtoMethodsByDefault: true,
@@ -52,7 +64,10 @@ var handlebars = require('express-handlebars')
 
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
+app.set('views', [baseViewPath]);
 app.set('trust proxy', parseTrustProxy(config.get('trust_proxy')));
+
+edition.initialize(editionContext);
 
 // Add single reference to the model into application object
 // and reuse it whenever an access to DB is needed
@@ -65,6 +80,30 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.get('/manifest.webmanifest', function(req, res) {
+  var currentBranding = branding.get();
+
+  res.type('application/manifest+json');
+  res.send({
+    name: currentBranding.name,
+    short_name: currentBranding.shortName,
+    icons: [
+      {
+        src: currentBranding.faviconPng32Url,
+        sizes: '32x32',
+        type: 'image/png',
+      },
+      {
+        src: currentBranding.appIconUrl,
+        sizes: '512x512',
+        type: 'image/png',
+      },
+    ],
+    theme_color: '#ffffff',
+    background_color: '#ffffff',
+    display: 'standalone',
+  });
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 const i18next = initI18next();
@@ -104,6 +143,12 @@ app.use(function(req,res,next){
   res.locals.locale = req.language || 'en';
   res.locals.supported_languages = config.get('supported_languages') || ['en'];
   res.locals.default_language = config.get('default_language') || 'en';
+  res.locals.branding = branding.get();
+  res.locals.features = features.getEnabledMap();
+  res.locals.primary_premium_nav_items = edition.getNavigationItems({location: 'primary'});
+  res.locals.settings_department_premium_nav_items = edition.getNavigationItems({location: 'settings_departments'});
+  res.locals.settings_company_premium_nav_items = edition.getNavigationItems({location: 'settings_company'});
+  res.locals.disable_notifications = process.env.DISABLE_NOTIFICATIONS_POLLING === 'true';
   res.locals.req = req;
   // For book leave request modal
   res.locals.booking_start = today,
@@ -157,8 +202,15 @@ app.use(
 
 app.use(
   '/integration/v1/',
+  features.requireFeature('integration_api'),
   require('./lib/route/integration_api')(passport)
 );
+
+if (process.env.DISABLE_NOTIFICATIONS_POLLING === 'true') {
+  app.get('/api/v1/notifications/', function(req, res) {
+    res.json({ data: [] });
+  });
+}
 
 app.use(
   '/',
@@ -174,6 +226,9 @@ app.use(
   '/calendar/',
   require('./lib/route/calendar')
 );
+
+app.use('/settings/groups', features.requireFeature('employee_groups'));
+app.use('/settings/company/integration-api', features.requireFeature('integration_api'));
 
 app.use(
   '/settings/',
@@ -197,15 +252,16 @@ app.use(
   require('./lib/route/requests')
 );
 
-app.use(
-  '/time-balance/',
-  require('./lib/route/time_balance')
-);
+editionContext.passport = passport;
 
-app.use(
-  '/vacation-plans/',
-  require('./lib/route/vacation_plans')
+edition.applyViewPaths(app, [baseViewPath], editionContext);
+emailTemplatePaths.set(emailTemplatePaths.get().concat(edition.getEmailTemplatePaths(editionContext)));
+const activePartialTemplatePaths = partialTemplatePaths.set(
+  partialTemplatePaths.get().concat(edition.getPartialTemplatePaths(editionContext))
 );
+handlebars.partialsDir = activePartialTemplatePaths;
+handlebars.config.partialsDir = activePartialTemplatePaths;
+edition.registerRoutes(app, editionContext);
 
 app.use(
   '/audit/',

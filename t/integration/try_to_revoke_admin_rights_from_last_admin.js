@@ -87,7 +87,7 @@ describe('System prevent revoking admin rights from very last admin within compa
       form_params : [{
         selector : 'input[name="admin"]',
         tick     : true,
-        value    : 'on',
+        value    : 'off',
       }],
       submit_button_selector : 'button#save_changes_btn',
       message: /This is last admin within company. Cannot revoke admin rights./,

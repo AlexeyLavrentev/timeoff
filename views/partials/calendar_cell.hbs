@@ -14,39 +14,34 @@
     {{# if day.is_current_day }}current_day_cell{{/if}}
 ">
 <span
-  {{#unless day.is_bank_holiday}}
-    {{#unless day.is_weekend}}
-      {{# with  day.leave_obj }}
-        {{#if this }}
-          class="leave-details-summary-trigger"
-          data-leave-id="{{this.id}}"
+  {{# with day.leave_obj }}
+    {{#if this }}
+      class="leave-details-summary-trigger"
+      data-leave-id="{{this.id}}"
+      data-original-title="
+        {{~#if ../day.leaveLabel ~}}{{~../day.leaveLabel~}}: {{/if~}}
+        {{~#if ../../day.is_current_day}}{{t "calendar.tooltip.today"}}{{/if~}}
+        {{~#if this.is_new_leave}}{{t "calendar.tooltip.newAbsencePendingApproval"}}{{/if~}}
+        {{~#if this.is_pended_revoke_leave}}{{t "calendar.tooltip.revokedPendingApproval"}}{{/if~}}
+        {{~#if this.is_approved_leave~}}
+          {{~#unless this.is_pended_revoke_leave}}{{t "calendar.tooltip.approvedAbsence"}}{{/unless~}}
+        {{~/if}}"
+    {{/if}}
+  {{/with}}
 
-          data-toggle="tooltip"
-          data-placement="top"
-          title="
-            {{~#if ../day.leaveLabel ~}}{{~../day.leaveLabel~}}: {{/if~}}
-            {{~#if ../../day.is_current_day}}{{t "calendar.tooltip.today"}}{{/if~}}
-            {{~#if this.is_new_leave}}{{t "calendar.tooltip.newAbsencePendingApproval"}}{{/if~}}
-            {{~#if this.is_pended_revoke_leave}}{{t "calendar.tooltip.revokedPendingApproval"}}{{/if~}}
-            {{~#if this.is_approved_leave~}}
-              {{~#unless this.is_pended_revoke_leave}}{{t "calendar.tooltip.approvedAbsence"}}{{/unless~}}
-            {{~/if}}"
-        {{/if}}
-      {{/with}}
-    {{/unless}}
+  {{#unless day.leave_obj}}
+    {{#if day.is_current_day}}
+      data-toggle="tooltip"
+      data-placement="top"
+      title="{{t "calendar.tooltip.today"}}"
+    {{/if}}
+
+    {{#if day.is_bank_holiday}}
+      data-toggle="tooltip"
+      data-placement="top"
+      title="{{t "calendar.tooltip.bankHoliday" name=day.bank_holiday_name}}"
+    {{/if}}
   {{/unless}}
-
-  {{#if day.is_current_day}}
-    data-toggle="tooltip"
-    data-placement="top"
-    title="{{t "calendar.tooltip.today"}}"
-  {{/if}}
-
-  {{#if day.is_bank_holiday}}
-    data-toggle="tooltip"
-    data-placement="top"
-    title="{{t "calendar.tooltip.bankHoliday" name=day.bank_holiday_name}}"
-  {{/if}}
 
 >{{day.val}}</span>
 </td>

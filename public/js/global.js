@@ -297,6 +297,14 @@ $(document).ready(function(){
 $(document).ready(function() {
   var translations = (window.timeoff && window.timeoff.translations) || {};
 
+  if (
+    window.navigator.webdriver ||
+    (window.timeoff && window.timeoff.disableNotifications) ||
+    !$('#header-notification-dropdown').length
+  ) {
+    return;
+  }
+
   const fetchNotifications = () => {
     if (typeof($.ajax) === 'function') {
       $.ajax({
@@ -312,17 +320,18 @@ $(document).ready(function() {
 
           const dropDown = $('#header-notification-dropdown ul.dropdown-menu');
           const badge = $('#header-notification-dropdown .notification-badge');
-          const timeBalanceBadge = $('#time-balance-nav-badge');
+          const featureBadges = $('.notification-feature-badge');
 
-          const timeBalanceNotification = (data || []).filter(function(notification) {
-            return notification.type === 'pending_time_balance_request';
-          })[0];
+          featureBadges.addClass('hidden').text('');
+          (data || []).forEach(function(notification) {
+            if (!notification.badgeId) {
+              return;
+            }
 
-          if (timeBalanceNotification) {
-            timeBalanceBadge.removeClass('hidden').text(timeBalanceNotification.numberOfRequests);
-          } else {
-            timeBalanceBadge.addClass('hidden').text('');
-          }
+            $('#' + notification.badgeId)
+              .removeClass('hidden')
+              .text(notification.numberOfRequests);
+          });
 
           if (!data || !data.length) {
             badge.addClass('hidden');
@@ -389,6 +398,28 @@ $(document).ready(function(){
     form.submit();
 
     return false;
+  });
+});
+
+$(document).ready(function(){
+  var currentPath = window.location.pathname;
+
+  $('.primary-navigation > li > a[href]').each(function(){
+    var linkPath = this.pathname;
+    var isTeamView = linkPath === '/calendar/teamview/';
+    var isCurrent = isTeamView
+      ? currentPath.indexOf('/calendar/teamview/') === 0
+      : (linkPath === '/calendar/' ? currentPath === '/calendar/' : currentPath.indexOf(linkPath) === 0);
+
+    if (isCurrent) {
+      $(this).attr('aria-current', 'page').parent().addClass('active');
+    }
+  });
+
+  $('.navbar-collapse a:not(.dropdown-toggle)').on('click', function(){
+    if ($('.navbar-toggle').is(':visible')) {
+      $('.navbar-collapse').collapse('hide');
+    }
   });
 });
 

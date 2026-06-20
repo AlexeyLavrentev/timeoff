@@ -15,6 +15,9 @@
       data-placement="top"
       data-toggle="popover"
       data-trigger="focus hover"
+      role="button"
+      tabindex="0"
+      aria-label="{{t 'allowanceBreakdown.help'}}"
     ></i>
   </dt>
     <dd>
@@ -25,6 +28,7 @@
         data-toggle="popover"
         data-trigger="focus hover"
         id='nominalAllowancePart'
+        tabindex="0"
       >{{ user_allowance.nominal_allowance }}</span>
     </dd>
     <dd>
@@ -35,6 +39,7 @@
         data-toggle="popover"
         data-trigger="focus hover"
         id="allowanceCarriedOverPart"
+        tabindex="0"
       >{{ user_allowance.carry_over }}</span>
     </dd>
     <dd>
@@ -44,6 +49,7 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
+        tabindex="0"
       >{{ user_allowance.manual_adjustment }}</span>
     </dd>
     <dd>
@@ -53,6 +59,7 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
+        tabindex="0"
       >{{ user_allowance.employement_range_adjustment }}</span>
     </dd>
     <dd>
@@ -62,6 +69,7 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
+        tabindex="0"
       >{{#if_equal user_allowance.number_of_days_taken_from_allowance 0}}{{else}}-{{/if_equal}}{{ user_allowance.number_of_days_taken_from_allowance}}</span>
     </dd>
     {{# if user_allowance.is_accrued_allowance }}
@@ -72,6 +80,7 @@
           data-placement="top"
           data-toggle="popover"
           data-trigger="focus hover"
+          tabindex="0"
         >{{ user_allowance.accrued_adjustment }}</span>
       </dd>
     {{/ if}}

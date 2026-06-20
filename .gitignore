@@ -5,3 +5,9 @@
 *.swm
 node_modules/
 *.sqlite
+.env
+.env.*
+!.env.example
+license_private.pem
+*.license.json
+*.license.txt

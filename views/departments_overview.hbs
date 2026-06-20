@@ -1,6 +1,8 @@
 
 {{> header }}
 
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+<main id="main-content" tabindex="-1">
 <h1>{{t "departments.title"}}</h1>
 
 {{> show_flash_messages }}
@@ -13,7 +15,7 @@
 </div>
 
 
-<div class="row">&nbsp;</div>
+<div class="content-spacer" aria-hidden="true"></div>
 
 
 {{# unless departments.length }}
@@ -25,8 +27,9 @@
 <div class="row">
 
   <div class="col-md-12">
-    <div class="data-table-scroll">
+    <div class="data-table-scroll" role="region" aria-label="{{t "departments.allDepartments"}}" tabindex="0">
     <table class="table table-hover">
+      <caption class="sr-only">{{t "departments.allDepartments"}}</caption>
       <thead>
         <tr>
           <th>{{t "common.name"}}</th>
@@ -41,7 +44,7 @@
               data-toggle="popover"
               data-trigger="focus hover"
             >
-              <span class="fa fa-question-circle"> </span>
+              <span class="fa fa-question-circle" aria-hidden="true"> </span>
             </button>
           </th>
           <th>{{t "departments.accruedAllowance"}}
@@ -52,7 +55,7 @@
               data-toggle="popover"
               data-trigger="focus hover"
             >
-              <span class="fa fa-question-circle"> </span>
+              <span class="fa fa-question-circle" aria-hidden="true"> </span>
             </button>
           </th>
           <th></th>
@@ -69,7 +72,7 @@
           <td><a href="/users/?department={{ this.id }}">{{this.users.length}}</a></td>
           <td>{{# if this.include_public_holidays }}{{t "common.yes"}}{{/if}}</td>
           <td>{{# if this.is_accrued_allowance }}{{t "common.yes"}}{{/if}}</td>
-          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right"><span class="fa fa-chevron-right"></span></a></td>
+          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
         </tr>
         {{/each}}
       </tbody>
@@ -84,4 +87,5 @@
   form_action='/settings/departments/'
 }}
 
+</main>
 {{> footer }}

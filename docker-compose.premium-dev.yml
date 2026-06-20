@@ -1,0 +1,10 @@
+services:
+  app:
+    environment:
+      NODE_ENV: development
+      TIMEOFF_PREMIUM_MODULE: /opt/timeoff-premium
+      TIMEOFF_PREMIUM_MODULE_REQUIRED: "true"
+      FEATURE_TIME_BALANCE: ${FEATURE_TIME_BALANCE:-true}
+      FEATURE_VACATION_PLANNING: ${FEATURE_VACATION_PLANNING:-true}
+    volumes:
+      - ${TIMEOFF_PREMIUM_MODULE_HOST_PATH:-../timeoff-premium}:/opt/timeoff-premium:ro

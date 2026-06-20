@@ -3,6 +3,7 @@
 const expect = require('chai').expect;
 const flashMessages = require('../../../lib/middleware/flash_messages');
 const config = require('../../../lib/config');
+const authDomain = require('../../../lib/auth');
 const loginRouterFactory = require('../../../lib/route/login');
 
 function getRouteHandler(router, path, method) {
@@ -38,6 +39,7 @@ function getRouteHandlers(router, path, method) {
 function createReq(overrides) {
   const req = Object.assign({
     body: {},
+    path: '/register',
     session: {},
     user: null,
     app: {
@@ -258,5 +260,60 @@ describe('Register route', function() {
     expect(req.session.flash.errors).to.deep.equal([
       'login.messages.invalidCsrfToken',
     ]);
+  });
+});
+
+describe('Login route', function() {
+  const router = loginRouterFactory({
+    authenticate() {
+      return function(req, res, next) {
+        return next && next();
+      };
+    },
+  });
+  const getLoginHandlers = getRouteHandlers(router, '/login', 'get');
+  const getSsoLoginHandlers = getRouteHandlers(router, '/login/sso', 'get');
+  let originalSsoContext;
+  let originalSsoFeature;
+
+  beforeEach(function() {
+    originalSsoContext = authDomain.providers.sso.getSsoLoginPageContext;
+    originalSsoFeature = process.env.FEATURE_SSO_AUTHENTICATION;
+    process.env.FEATURE_SSO_AUTHENTICATION = 'false';
+    authDomain.providers.sso.getSsoLoginPageContext = function() {
+      return Promise.resolve({
+        has_sso_companies: false,
+        direct_sso_available: false,
+        default_sso_login_url: '/login/sso/',
+      });
+    };
+  });
+
+  afterEach(function() {
+    authDomain.providers.sso.getSsoLoginPageContext = originalSsoContext;
+
+    if (typeof originalSsoFeature === 'undefined') {
+      delete process.env.FEATURE_SSO_AUTHENTICATION;
+    } else {
+      process.env.FEATURE_SSO_AUTHENTICATION = originalSsoFeature;
+    }
+  });
+
+  it('renders password login when SSO feature is disabled', async function() {
+    const result = await invokeRouteHandlers(getLoginHandlers, createReq({
+      path: '/login',
+    }));
+
+    expect(result.type).to.equal('render');
+    expect(result.view).to.equal('login');
+  });
+
+  it('redirects SSO login page to password login when SSO feature is disabled', async function() {
+    const result = await invokeRouteHandlers(getSsoLoginHandlers, createReq({
+      path: '/login/sso',
+    }));
+
+    expect(result.type).to.equal('redirect');
+    expect(result.location).to.equal('/login/');
   });
 });

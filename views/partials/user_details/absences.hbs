@@ -1,6 +1,5 @@
 
-<div class="col-md-9">
-  <form method="POST" action="/users/edit/{{employee.id}}/">
+  <form method="POST" action="/users/edit/{{employee.id}}/" class="admin-form-card employee-absence-card">
 
   <input type="hidden" name="back_to_absences" value="1">
   <input type="hidden" name="name" value="{{employee.name}}">
@@ -14,8 +13,8 @@
   {{> user_details/breadcrumb employee=employee }}
 
   <div class="form-group">
-    <label class="control-label">{{t "absences.overview"}}</label>
-    <div class="progress bigger">
+    <h2 class="employee-section-title">{{t "absences.overview"}}</h2>
+    <div class="progress bigger employee-allowance-progress">
       <div
         class="progress-bar progress-bar-success"
         style="width: {{ leave_statistics.used_so_far_percent }}%"
@@ -23,8 +22,14 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ leave_statistics.used_so_far_percent }}"
+        aria-label="{{t "absences.usedSoFarLabel" days=leave_statistics.used_so_far}}"
+        tabindex="0"
       >
-        {{t "absences.usedSoFarLabel" days=leave_statistics.used_so_far}}
+        {{#if leave_statistics.used_so_far_percent}}{{t "absences.usedSoFarLabel" days=leave_statistics.used_so_far}}{{/if}}
       </div>
       <div
         class="progress-bar progress-bar-warning"
@@ -33,8 +38,14 @@
         data-placement="top"
         data-toggle="popover"
         data-trigger="focus hover"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ leave_statistics.remaining_percent }}"
+        aria-label="{{t "absences.remainingLabel" days=leave_statistics.remaining}}"
+        tabindex="0"
       >
-        {{t "absences.remainingLabel" days=leave_statistics.remaining}}
+        {{#if leave_statistics.remaining_percent}}{{t "absences.remainingLabel" days=leave_statistics.remaining}}{{/if}}
       </div>
     </div>
   </div>
@@ -49,12 +60,12 @@
     <label class="control-label">{{t "absences.isAccruedAllowance"}}</label>
     <p>{{# if user_allowance.is_accrued_allowance }}{{t "common.yes"}}{{else}}{{t "common.no"}}{{/if}}</p>
     <span class="help-block">
-      {{t "absences.accruedHelp"}} <a href="/settings/departments/edit/{{employee.DepartmentId}}">{{t "common.moreDetails"}} <i class="fa fa-angle-double-right"></i></a>
+      {{t "absences.accruedHelp"}} <a href="/settings/departments/edit/{{employee.DepartmentId}}">{{t "common.moreDetails"}} <i class="fa fa-angle-double-right" aria-hidden="true"></i></a>
     </span>
   </div>
 
-  <div class="row">
-    <div class="col-md-5">
+  <div class="row employee-absence-summary">
+    <div class="col-sm-6">
       <dl>
         <dt>{{t "absences.groupedByType"}}</dt>
         {{# if leave_type_statistics }}
@@ -67,14 +78,14 @@
       </dl>
     </div>
 
-    <div class="col-md-5 col-md-offset-2">
+    <div class="col-sm-6">
       {{> user_details/allowance_breakdown user_allowance = user_allowance }}
     </div>
   </div>
 
   <div class="form-group">
     <label for="carried_over_allowance_inp" class="control-label">{{t "absences.carriedOver"}}</label>
-    <div class="input-group col-md-4">
+    <div class="input-group employee-number-field">
       <input class="form-control" readonly id="carried_over_allowance_inp" type="number" step="0.5" name="carried_over_allowance" value="{{#if carried_over_allowance }}{{carried_over_allowance}}{{else}}0{{/if}}" aria-describedby="carried_over_allowance_help">
       <span class="input-group-addon">{{t "absences.workingDays"}}</span>
     </div>
@@ -86,7 +97,7 @@
 
   <div class="form-group">
     <label for="adjustment_inp" class="control-label">{{t "absences.adjustment"}}</label>
-    <div class="input-group col-md-4">
+    <div class="input-group employee-number-field">
       <input class="form-control" id="adjustment_inp" type="number" step="0.5" name="adjustment" value="{{#if employee_adjustment }}{{employee_adjustment}}{{else}}0{{/if}}" aria-describedby="adjustment_help">
       <span class="input-group-addon">{{t "absences.workingDays"}}</span>
     </div>
@@ -97,15 +108,11 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <div class="col-md-12">
-      <button id="save_changes_btn" type="submit" class="btn btn-success pull-right single-click">{{t "common.saveChanges"}}</button>
-    </div>
+  <div class="admin-form-actions">
+    <button id="save_changes_btn" type="submit" class="btn btn-success single-click">{{t "common.saveChanges"}}</button>
   </div>
   </form>
 
-  <div class="main-row_header">&nbsp;</div>
+  <div class="content-spacer" aria-hidden="true"></div>
 
   {{> user_requests_grouped grouped_leaves=grouped_leaves logged_user=logged_user }}
-
-</div>

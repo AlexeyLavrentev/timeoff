@@ -201,12 +201,16 @@ describe("Remove company account", function(){
   });
 
   it("Login as admin of company B", done => {
-    login_user_func({
-      application_host : application_host,
-      user_email       : emailCompanyB,
-      driver           : driver,
-    })
-    .then(() => done());
+    driver.quit()
+      .then(() => login_user_func({
+        application_host : application_host,
+        user_email       : emailCompanyB,
+      }))
+      .then(data => {
+        driver = data.driver;
+        done();
+      })
+      .catch(done);
   });
 
   it("Ensure that admin still has a leave registered", done => {
@@ -223,7 +227,7 @@ describe("Remove company account", function(){
     .then(dates_str => {
       expect(dates_str.sort(), 'Ensure that date ranges values are as expected')
         .to.be.deep.equal([
-          '2018-06-07 (morning) 2018-06-07'
+          '2018-06-07 (Morning) 2018-06-07'
         ]);
       done();
     });

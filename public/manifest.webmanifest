@@ -1,6 +1,6 @@
 {
-  "name": "TimeOff.Management",
-  "short_name": "TimeOff",
+  "name": "Leave Management",
+  "short_name": "Leave",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

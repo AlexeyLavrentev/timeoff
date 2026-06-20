@@ -4,10 +4,16 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var models = require('../lib/model/db');
 var EmailTransport = require('../lib/email');
+var features = require('../lib/features');
 var leaveReminder = require('../lib/model/leave/upcoming_leave_reminder');
 
 var date = argv.date || null;
 var companyId = argv.company_id ? Number(argv.company_id) : null;
+
+if (!features.isEnabled('leave_start_reminders')) {
+  console.log('Leave start reminders feature disabled');
+  process.exit(0);
+}
 
 models.connect()
   .then(function() {

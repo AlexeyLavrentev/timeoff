@@ -69,9 +69,9 @@ describe('Leave request with single user', function(){
   it("Create new leave request", function(done){
 
     // This is very important line when working with Bootstrap modals!
-    driver.sleep(1000);
-
-    submit_form_func({
+    driver.sleep(1000)
+    .then(function(){
+      return submit_form_func({
       driver      : driver,
       // The order matters here as we need to populate dropdown prior date filds
       form_params : [{
@@ -86,8 +86,10 @@ describe('Leave request with single user', function(){
           value : '2015-06-16',
       }],
       message : /New leave request was added/,
+      });
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Check that all days are marked as pended", function(done){

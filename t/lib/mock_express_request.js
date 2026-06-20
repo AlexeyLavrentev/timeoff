@@ -11,6 +11,15 @@ module.exports = function(args){
     var params = args.params || {},
         error_messages = [];
 
+    var translations = {
+      'leaveRequest.messages.invalidEmployee' : 'Incorrect employee',
+      'leaveRequest.messages.invalidLeaveType' : 'Incorrect leave type',
+      'leaveRequest.messages.dateInvalid' : function(options) {
+        return (options && options.label || 'Date') + ' should be a date';
+      },
+      'leaveRequest.messages.dayPartInvalid' : 'Incorrect day part',
+    };
+
     var req = {
         session : {},
         user    : {
@@ -20,6 +29,15 @@ module.exports = function(args){
           },
         },
         body : params,
+        t : function(key, options) {
+          var translation = translations[key];
+
+          if (typeof translation === 'function') {
+            return translation(options || {});
+          }
+
+          return translation || key;
+        },
     };
 
     // Make request be aware of flash messages

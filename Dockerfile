@@ -61,3 +61,15 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD ["node", "-e", "require('http').get('http://127.0.0.1:3000/', (res) => { process.exit(res.statusCode >= 200 && res.statusCode < 500 ? 0 : 1); }).on('error', () => process.exit(1))"]
 
 CMD ["/bin/sh", "./docker/entrypoint.sh"]
+
+FROM runtime AS commercial
+
+USER root
+
+ARG PREMIUM_MODULE_TARGET=/opt/timeoff-premium
+COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
+
+ENV TIMEOFF_PREMIUM_MODULE=${PREMIUM_MODULE_TARGET} \
+    TIMEOFF_PREMIUM_MODULE_REQUIRED=true
+
+USER appuser

@@ -41,7 +41,8 @@ describe('Reuse email from existing acount when creating new company', function(
       driver = data.driver;
       admin_email = data.email;
       done();
-    });
+    })
+    .catch(done);
   });
 
   it('Logout from newly created account', function(done){
@@ -49,27 +50,29 @@ describe('Reuse email from existing acount when creating new company', function(
       application_host : application_host,
       driver           : driver,
     })
-    .then(function(){ done() });
+    .then(function(){ done() })
+    .catch(done);
   });
 
   it("Close the browser", function(done){
-    driver.quit().then(function(){ done() });
+    driver.quit().then(function(){ done() }).catch(done);
   });
 
   it('Try to create another account with the same email', function(done){
     register_new_user_func({
       application_host      : application_host,
       user_email            : admin_email,
-      failing_error_message : 'Failed to register user please contact customer service. Error: Email is already used',
+      failing_error_message : 'Email is already used',
     })
     .then(function(data){
       driver = data .driver;
       done();
-    });
+    })
+    .catch(done);
   });
 
   after(function(done){
-    driver.quit().then(function(){ done() });
+    driver.quit().then(function(){ done() }).catch(done);
   });
 
 //  after(function() {
