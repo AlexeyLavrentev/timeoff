@@ -2,7 +2,7 @@
   "name": "TimeOff.Management",
   "version": "1.0.0",
   "private": false,
-  "description": "Simple yet powerful absence management software for small and medium size business",
+  "description": "LeavePilot is an open-source leave management system for small and medium-sized businesses",
   "engines": {
     "node": ">=22.0.0 <23"
   },

@@ -13,7 +13,7 @@
 
 - `db` — `MySQL 8`
 - `redis` — `Redis 7`
-- `app` — приложение TimeOff.Management
+- `app` — приложение LeavePilot
 
 Контейнер приложения получает:
 
