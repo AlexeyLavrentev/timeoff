@@ -14,8 +14,11 @@ describe('Premium edition loader', function() {
   var tempDir;
 
   var envKeys = [
+    'NODE_ENV',
     'TIMEOFF_PREMIUM_MODULE',
     'TIMEOFF_PREMIUM_MODULE_REQUIRED',
+    'TIMEOFF_LICENSE',
+    'TIMEOFF_LICENSE_PUBLIC_KEY',
   ];
 
   beforeEach(function() {
@@ -74,6 +77,17 @@ describe('Premium edition loader', function() {
 
     expect(result.loaded).to.equal(false);
     expect(result.moduleName).to.equal(null);
+  });
+
+  it('throws when a required premium module is not configured', function() {
+    process.env.TIMEOFF_PREMIUM_MODULE_REQUIRED = 'true';
+
+    expect(function() {
+      premiumLoader.load({
+        registry: createRegistry(),
+        logger: { warn: function() {} },
+      });
+    }).to.throw(/TIMEOFF_PREMIUM_MODULE is not configured/);
   });
 
   it('loads premium modules that export a function', function() {
@@ -164,6 +178,24 @@ describe('Premium edition loader', function() {
         logger: { warn: function() {} },
       });
     }).to.throw(/Premium module required but not installed: @missing\/timeoff-premium/);
+  });
+
+  it('requires a valid license when loading a required module in production', function() {
+    var modulePath = writeModule('commercial-module.js', [
+      "'use strict';",
+      "module.exports = function() {};",
+    ].join('\n'));
+
+    process.env.NODE_ENV = 'production';
+    process.env.TIMEOFF_PREMIUM_MODULE = modulePath;
+    process.env.TIMEOFF_PREMIUM_MODULE_REQUIRED = 'true';
+
+    expect(function() {
+      premiumLoader.load({
+        registry: createRegistry(),
+        logger: { warn: function() {} },
+      });
+    }).to.throw(/Commercial mode requires TIMEOFF_LICENSE/);
   });
 
   it('rethrows missing dependencies from installed premium module', function() {
