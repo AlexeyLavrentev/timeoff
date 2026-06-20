@@ -96,7 +96,7 @@ docker compose up --build -d
 Пример:
 
 ```bash
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 TIMEOFF_LICENSE=PASTE_BASE64_LICENSE_HERE \
 TIMEOFF_LICENSE_PUBLIC_KEY=PASTE_PUBLIC_KEY_WITH_ESCAPED_NEWLINES_HERE \
 docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build -d
@@ -105,7 +105,7 @@ docker compose -f docker-compose.yml -f docker-compose.commercial.yml up --build
 Для локальной разработки premium-функций можно использовать volume override:
 
 ```bash
-TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/timeoff-premium \
+TIMEOFF_PREMIUM_MODULE_HOST_PATH=/Users/aleksey/projects/timeoff-premium \
 docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.premium-dev.yml up --build
 ```
 
