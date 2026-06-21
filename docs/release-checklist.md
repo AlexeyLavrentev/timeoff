@@ -222,8 +222,8 @@ Before a commercial release:
 Release tags:
 
 ```sh
-CORE_VERSION=1.0.1
-PREMIUM_VERSION=0.1.1
+CORE_VERSION=2.0.0
+PREMIUM_VERSION=0.2.0
 
 git -C /path/to/timeoff tag "v${CORE_VERSION}"
 git -C /path/to/timeoff push origin "v${CORE_VERSION}"
@@ -241,7 +241,7 @@ and provide the existing tag.
 Community:
 
 ```sh
-CORE_VERSION=1.0.1
+CORE_VERSION=2.0.0
 docker buildx imagetools inspect \
   "ghcr.io/alexeylavrentev/leavepilot-community:${CORE_VERSION}"
 ```
@@ -255,8 +255,8 @@ Expected:
 Premium:
 
 ```sh
-PREMIUM_VERSION=0.1.1
-CORE_VERSION=1.0.1
+PREMIUM_VERSION=0.2.0
+CORE_VERSION=2.0.0
 PREMIUM_IMAGE="ghcr.io/alexeylavrentev/leavepilot-premium:${PREMIUM_VERSION}-core-${CORE_VERSION}"
 
 echo "$GHCR_TOKEN" |
