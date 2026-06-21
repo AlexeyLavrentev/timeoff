@@ -290,7 +290,7 @@ http://localhost:3000
 docker compose restart app
 ```
 
-Подробная инструкция: [docs/docker-compose.md](/docs/docker-compose.md)
+Подробная инструкция: [docs/docker-compose.md](docs/docker-compose.md)
 
 ## Как проверить, что приложение вообще работает
 
@@ -417,7 +417,7 @@ npm test
 
 В проекте часть тестов опирается на браузерный стек. Если хотите прогонять сценарии через Chrome, смотрите раздел в:
 
-[docs/verification-and-troubleshooting.md](/docs/verification-and-troubleshooting.md)
+[docs/verification-and-troubleshooting.md](docs/verification-and-troubleshooting.md)
 
 ## Обновление существующей установки
 
@@ -451,7 +451,7 @@ ghcr.io/alexeylavrentev/leavepilot-community
 ```
 
 Для production фиксируйте полную версию образа. Инструкция и отдельный Compose
-файл: [docs/container-images.md](/docs/container-images.md).
+файл: [docs/container-images.md](docs/container-images.md).
 
 ## Частые вопросы
 
@@ -476,16 +476,16 @@ ghcr.io/alexeylavrentev/leavepilot-community
 
 Документ здесь:
 
-[docs/sso-keycloak.md](/docs/sso-keycloak.md)
+[docs/sso-keycloak.md](docs/sso-keycloak.md)
 
 ## Карта документации
 
-- [Локальная установка через npm](/docs/install-local-npm.md)
-- [Установка и запуск через Docker Compose](/docs/docker-compose.md)
-- [Проверка работы, диагностика и типовые проблемы](/docs/verification-and-troubleshooting.md)
-- [FAQ для пользователей и администраторов](/docs/faq.md)
-- [Redis как хранилище сессий](/docs/SessionStoreInRedis.md)
-- [SSO через Keycloak](/docs/sso-keycloak.md)
+- [Локальная установка через npm](docs/install-local-npm.md)
+- [Установка и запуск через Docker Compose](docs/docker-compose.md)
+- [Проверка работы, диагностика и типовые проблемы](docs/verification-and-troubleshooting.md)
+- [FAQ для пользователей и администраторов](docs/faq.md)
+- [Redis как хранилище сессий](docs/SessionStoreInRedis.md)
+- [SSO через Keycloak](docs/sso-keycloak.md)
 
 ## Обратная связь
 
