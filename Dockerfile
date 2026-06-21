@@ -73,6 +73,11 @@ USER root
 ARG PREMIUM_MODULE_TARGET=/opt/timeoff-premium
 COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
 
+# Install SSO packages required by premium (declared as peerDeps, not present in community image)
+RUN npm install --prefix /app --no-save \
+      @node-saml/node-saml@^5.1.0 \
+      openid-client@^5.7.1
+
 ENV TIMEOFF_PREMIUM_MODULE=${PREMIUM_MODULE_TARGET} \
     TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 
