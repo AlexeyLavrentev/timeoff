@@ -77,6 +77,6 @@ Connected to redis successfully
 
 ## Связанные документы
 
-- [README](/home/sdigitaladmin/timeoff/README.md)
-- [Установка через Docker Compose](/home/sdigitaladmin/timeoff/docs/docker-compose.md)
-- [Проверка работы и диагностика](/home/sdigitaladmin/timeoff/docs/verification-and-troubleshooting.md)
+- [README](../README.md)
+- [Установка через Docker Compose](docker-compose.md)
+- [Проверка работы и диагностика](verification-and-troubleshooting.md)
