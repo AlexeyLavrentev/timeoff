@@ -2,7 +2,6 @@
 'use strict';
 
 const
-  test                   = require('selenium-webdriver/testing'),
   register_new_user_func = require('../../lib/register_new_user'),
   login_user_func        = require('../../lib/login_with_user'),
   open_page_func         = require('../../lib/open_page'),

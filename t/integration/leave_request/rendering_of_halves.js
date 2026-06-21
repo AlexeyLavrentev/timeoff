@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test             = require('selenium-webdriver/testing'),
-    until            = require('selenium-webdriver').until,
+var until            = require('selenium-webdriver').until,
     By               = require('selenium-webdriver').By,
     expect           = require('chai').expect,
     _                = require('underscore'),
@@ -47,7 +46,7 @@ describe('Ensure that leaves with not full days are rendered properly', function
       ), 5000));
   }
 
-  test.it('Create new company', done => {
+  it('Create new company', done => {
     register_new_user_func({
       application_host : application_host,
     })

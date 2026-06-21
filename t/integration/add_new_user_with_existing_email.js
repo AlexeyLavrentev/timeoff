@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test                 = require('selenium-webdriver/testing'),
-  register_new_user_func = require('../lib/register_new_user'),
+var register_new_user_func = require('../lib/register_new_user'),
   login_user_func        = require('../lib/login_with_user'),
   add_new_user_func      = require('../lib/add_new_user'),
   config                 = require('../lib/config'),
