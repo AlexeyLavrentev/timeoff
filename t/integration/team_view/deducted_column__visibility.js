@@ -26,7 +26,6 @@
 
 
 const
-  test                   = require('selenium-webdriver/testing'),
   By                     = require('selenium-webdriver').By,
   Promise                = require("bluebird"),
   expect                 = require('chai').expect,
