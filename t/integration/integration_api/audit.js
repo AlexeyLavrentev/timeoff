@@ -13,6 +13,7 @@ const
   addNewUserFunc      = require('../../lib/add_new_user'),
   config              = require('../../lib/config'),
   applicationHost     = config.get_application_host();
+const describePremium = process.env.TIMEOFF_PREMIUM_MODULE ? describe : describe.skip;
 
 /*
  * Scenario:
@@ -27,7 +28,7 @@ const
  *
  * */
 
-describe('Basic audit for user changes', function(){
+describePremium('Basic audit for user changes', function(){
 
   this.timeout( config.get_execution_timeout() );
 
