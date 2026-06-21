@@ -200,11 +200,6 @@ app.use(
   require('./lib/route/feed')
 );
 
-app.use(
-  '/integration/v1/',
-  features.requireFeature('integration_api'),
-  require('./lib/route/integration_api')(passport)
-);
 
 if (process.env.DISABLE_NOTIFICATIONS_POLLING === 'true') {
   app.get('/api/v1/notifications/', function(req, res) {
