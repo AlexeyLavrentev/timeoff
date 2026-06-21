@@ -8,6 +8,7 @@ var path = require('path');
 describe('Edition community boundary', function() {
   var repoRoot = path.join(__dirname, '..', '..');
   var premiumIdentifiers = [
+    // Time Balance
     'timeBalance',
     'vacationPlans',
     'time_balance',
@@ -18,6 +19,10 @@ describe('Edition community boundary', function() {
     'VacationPlan',
     'pendingTimeBalanceRequest',
     'pendingVacationPlan',
+    // Reminders
+    'LeaveNotification',
+    'leaveStartReminder',
+    'UpcomingLeaveReminder',
   ];
   var scannedPaths = [
     'app.js',
@@ -87,6 +92,45 @@ describe('Edition community boundary', function() {
     ].join(''));
 
     expect(output).to.equal('false,false,nav.timeBalance');
+  });
+
+  it('registers no routes in the community edition registry', function() {
+    var output = runNode([
+      "delete process.env.TIMEOFF_PREMIUM_MODULE;",
+      "const edition = require('./lib/edition');",
+      "edition.initialize({});",
+      "const routes = edition.getRegistry().getRoutes().map(r => r.path);",
+      "console.log(JSON.stringify(routes));",
+      "process.exit(0);",
+    ].join(''));
+
+    expect(JSON.parse(output)).to.deep.equal([]);
+  });
+
+  it('registers no schedulers in the community edition registry', function() {
+    var output = runNode([
+      "delete process.env.TIMEOFF_PREMIUM_MODULE;",
+      "const edition = require('./lib/edition');",
+      "edition.initialize({});",
+      "const schedulers = edition.getRegistry().getSchedulers().map(s => s.name);",
+      "console.log(JSON.stringify(schedulers));",
+      "process.exit(0);",
+    ].join(''));
+
+    expect(JSON.parse(output)).to.deep.equal([]);
+  });
+
+  it('uses the SSO stub (SSO disabled) in community mode', function() {
+    var output = runNode([
+      "delete process.env.TIMEOFF_PREMIUM_MODULE;",
+      "const edition = require('./lib/edition');",
+      "edition.initialize({});",
+      "const sso = edition.getRegistry().getSsoProvider();",
+      "console.log(sso !== null && sso.isSsoEnabled());",
+      "process.exit(0);",
+    ].join(''));
+
+    expect(output).to.equal('false');
   });
 
 });

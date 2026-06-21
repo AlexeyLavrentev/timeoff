@@ -601,18 +601,6 @@
       "requestorBody": "Ваша заявка была отменена",
       "subjectSupervisor": "Отмена заявки",
       "noAction": "Действия не требуются."
-    },
-    "leaveStartReminder": {
-      "subjectSupervisor": "Отпуск сотрудника начинается через {{daysBefore}} дней",
-      "subjectEmployee": "Ваш отпуск начинается через {{daysBefore}} дней",
-      "supervisorBody": "У сотрудника {{employee}} отпуск начинается через {{daysBefore}} дней:",
-      "supervisorAction": "Пожалуйста, напомните сотруднику подать заявление на отпуск и пройти все внутренние процедуры, принятые в отделе {{department}}.",
-      "openEmployeeProfile": "Открыть карточку сотрудника:",
-      "employeeProfileLink": "Данные сотрудника",
-      "employeeBody": "Ваш отпуск начинается через {{daysBefore}} дней:",
-      "employeeAction": "Пожалуйста, заранее подайте заявление на отпуск и выполните все внутренние процедуры, принятые для отдела {{department}}.",
-      "openCalendar": "Открыть календарь:",
-      "calendarLink": "Мой календарь"
     }
   },
   "teamView": {
