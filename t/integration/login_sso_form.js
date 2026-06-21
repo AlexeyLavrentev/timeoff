@@ -32,7 +32,7 @@ describe('Login page SSO UX', function(){
 
   before(function(){
     driver = build_driver();
-    driver.manage().window().setSize(1024, 768);
+    driver.manage().window().setRect({width: 1024, height: 768});
     return driver.get(application_host + 'login/');
   });
 
