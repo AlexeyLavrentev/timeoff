@@ -141,9 +141,9 @@ function check_presense_promises(args){
    selectors,
     function( selector ){
       return driver
-        .isElementPresent(By.css(selector))
-        .then(function(is_present){
-          expect(is_present).to.be.equal(presense);
+        .findElements(By.css(selector))
+        .then(function(elements){
+          expect(elements.length > 0).to.be.equal(presense);
           return bluebird.resolve();
         })
     }

@@ -102,9 +102,9 @@ describe('Try to book more holidays then in allowance', function(){
       // Following code is to ensure that non admin user can request leave only for
       // herself
       .then(function(){
-        return driver.isElementPresent(By.css('select#employee'))
-          .then(function(is_present){
-            expect(is_present).to.be.equal(false);
+        return driver.findElements(By.css('select#employee'))
+          .then(function(elements){
+            expect(elements.length).to.be.equal(0);
           });
       })
 

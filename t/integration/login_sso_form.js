@@ -8,6 +8,7 @@ var By               = require('selenium-webdriver').By,
     logout_user_func = require('../lib/logout_user'),
     build_driver     = require('../lib/build_driver'),
     application_host = config.get_application_host();
+var itPremium = process.env.TIMEOFF_PREMIUM_MODULE ? it : it.skip;
 
 var TEST_SAML_CERT = [
   '-----BEGIN CERTIFICATE-----',
@@ -74,7 +75,7 @@ describe('Login page SSO UX', function(){
       });
   });
 
-  it('redirects password login into the SSO flow for SSO-enabled companies', function(done){
+  itPremium('redirects password login into the SSO flow for SSO-enabled companies', function(done){
     register_new_user_func({
       application_host : application_host,
       driver           : driver,

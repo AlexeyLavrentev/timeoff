@@ -178,16 +178,14 @@ describe('Request leave for outher users', function(){
       .findElement(By.css('#book_time_off_btn'))
       .then(function(el){ return el.click() })
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        driver
-          .isElementPresent(By.css('select#employee'))
-          .then(function(is_present){
-            expect(is_present).to.be.equal(false);
-            done();
-          });
+        return driver.sleep(1000);
+      })
+      .then(function(){
+        return driver.findElements(By.css('select#employee'));
+      })
+      .then(function(elements){
+        expect(elements.length).to.be.equal(0);
+        done();
       });
   });
 
@@ -222,17 +220,14 @@ describe('Request leave for outher users', function(){
       .findElement(By.css('#book_time_off_btn'))
       .then(function(el){ return el.click() })
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        // Make sure there is a drop down with users
-        driver
-          .isElementPresent(By.css('select#employee'))
-          .then(function(is_present){
-            expect(is_present).to.be.equal(true);
-            done();
-          });
+        return driver.sleep(1000);
+      })
+      .then(function(){
+        return driver.findElements(By.css('select#employee'));
+      })
+      .then(function(elements){
+        expect(elements.length).to.be.greaterThan(0);
+        done();
       });
   });
 
@@ -250,7 +245,7 @@ describe('Request leave for outher users', function(){
       .findElement(
         By.css('select#employee option:nth-child(2)')
       )
-      .then(function(el){ return el.getInnerHtml() })
+      .then(function(el){ return el.getText() })
       .then(function(text){
         expect( text ).to.match( new RegExp(
            ordenary_user_email.substring(0,ordenary_user_email.lastIndexOf('@'))
@@ -289,24 +284,18 @@ describe('Request leave for outher users', function(){
       .findElement(By.css('#book_time_off_btn'))
       .then(function(el){ return el.click() })
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        // Make sure there is a drop down with users
-        driver
-          .isElementPresent(By.css('select#employee'))
-          .then(function(is_present){
-            expect(is_present).to.be.equal(true);
-          });
-
-        // Make sure there are three records in it (all users for company)
-        driver
-          .findElements(By.css('select#employee option'))
-          .then(function(elements){
-            expect( elements.length ).to.be.equal(3);
-            done();
-          });
+        return driver.sleep(1000);
+      })
+      .then(function(){
+        return driver.findElements(By.css('select#employee'));
+      })
+      .then(function(elements){
+        expect(elements.length).to.be.greaterThan(0);
+        return driver.findElements(By.css('select#employee option'));
+      })
+      .then(function(elements){
+        expect(elements.length).to.be.equal(3);
+        done();
       });
   });
 

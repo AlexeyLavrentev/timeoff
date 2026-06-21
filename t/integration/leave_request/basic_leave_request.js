@@ -106,9 +106,9 @@ describe('Basic leave request', function(){
   });
 
   it("Following code is to ensure that non admin user can request leave only for herself", function(done){
-    driver.isElementPresent(By.css('select#employee'))
-      .then(function(is_present){
-        expect(is_present).to.be.equal(false);
+    driver.findElements(By.css('select#employee'))
+      .then(function(elements){
+        expect(elements.length).to.be.equal(0);
         done();
       });
   });

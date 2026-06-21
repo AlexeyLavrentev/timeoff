@@ -11,6 +11,7 @@ const
   checkElementsFunc   = require('../../lib/check_elements'),
   config              = require('../../lib/config'),
   applicationHost     = config.get_application_host();
+const describePremium = process.env.TIMEOFF_PREMIUM_MODULE ? describe : describe.skip;
 
 /*
  *  Scenario to go in this test:
@@ -28,7 +29,7 @@ const
  *
  * */
 
-describe('Enable/disable Integration APIs', function(){
+describePremium('Enable/disable Integration APIs', function(){
 
   this.timeout( config.get_execution_timeout() );
 
