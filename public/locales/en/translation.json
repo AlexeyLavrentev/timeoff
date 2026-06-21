@@ -596,18 +596,6 @@
       "requestorBody": "Your leave request was cancelled",
       "subjectSupervisor": "Cancel leave request",
       "noAction": "No actions are needed."
-    },
-    "leaveStartReminder": {
-      "subjectSupervisor": "Employee leave starts in {{daysBefore}} days",
-      "subjectEmployee": "Your leave starts in {{daysBefore}} days",
-      "supervisorBody": "{{employee}} is scheduled to start leave in {{daysBefore}} days:",
-      "supervisorAction": "Please remind the employee to submit the required leave application and complete the procedures used in {{department}}.",
-      "openEmployeeProfile": "Open employee profile:",
-      "employeeProfileLink": "Employee details",
-      "employeeBody": "Your leave is scheduled to start in {{daysBefore}} days:",
-      "employeeAction": "Please make sure you submit the required leave application and complete all internal procedures for {{department}}.",
-      "openCalendar": "Open your calendar:",
-      "calendarLink": "My calendar"
     }
   },
   "teamView": {
