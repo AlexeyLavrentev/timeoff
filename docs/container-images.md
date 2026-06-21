@@ -17,7 +17,7 @@ Release tags include the full version, minor version, major version, `latest`,
 and the source commit SHA. Production deployments should pin the full version:
 
 ```sh
-export LEAVEPILOT_IMAGE=ghcr.io/alexeylavrentev/leavepilot-community:1.0.1
+export LEAVEPILOT_IMAGE=ghcr.io/alexeylavrentev/leavepilot-community:2.0.0
 export SESSION_SECRET=replace-with-a-long-random-session-secret
 export CRYPTO_SECRET=replace-with-a-long-random-crypto-secret
 
@@ -31,7 +31,7 @@ local source checkout to build the application.
 
 The Community workflow runs automatically for new semantic version tags. An
 existing tag can be published from GitHub Actions with **Run workflow** by
-entering a tag such as `v1.0.1`.
+entering a tag such as `v2.0.0`.
 
 The workflow:
 
@@ -50,7 +50,7 @@ After publishing, verify the manifest:
 
 ```sh
 docker buildx imagetools inspect \
-  ghcr.io/alexeylavrentev/leavepilot-community:1.0.1
+  ghcr.io/alexeylavrentev/leavepilot-community:2.0.0
 ```
 
 The output must include both `linux/amd64` and `linux/arm64`.
