@@ -34,7 +34,7 @@ adding new premium surfaces.
 During local development, point the app at the private premium repository:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=/Users/aleksey/projects/timeoff-premium
+TIMEOFF_PREMIUM_MODULE=/path/to/timeoff-premium
 ```
 
 Use it together with a license that enables the corresponding features.

@@ -186,7 +186,7 @@ TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 For local development with the private premium repository:
 
 ```env
-TIMEOFF_PREMIUM_MODULE=/Users/aleksey/projects/timeoff-premium
+TIMEOFF_PREMIUM_MODULE=/path/to/timeoff-premium
 ```
 
 For commercial delivery, prefer the private package name or the path where the
