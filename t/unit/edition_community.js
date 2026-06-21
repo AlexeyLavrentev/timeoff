@@ -18,6 +18,7 @@ describe('Community edition module', function() {
       registerNotificationProvider: function(provider) {
         this.notificationProviders.push(provider);
       },
+      registerSsoProvider: function() {},
     };
   }
 
