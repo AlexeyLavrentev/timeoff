@@ -2,7 +2,6 @@
 'use strict';
 
 const
-  test                   = require('selenium-webdriver/testing'),
   By                     = require('selenium-webdriver').By,
   expect                 = require('chai').expect,
   _                      = require('underscore'),

@@ -2,8 +2,7 @@
 'use strict';
 
 
-var test                 = require('selenium-webdriver/testing'),
-  register_new_user_func = require('../lib/register_new_user'),
+var register_new_user_func = require('../lib/register_new_user'),
   login_user_func        = require('../lib/login_with_user'),
   add_new_user_func      = require('../lib/add_new_user'),
   By                     = require('selenium-webdriver').By,
@@ -142,9 +141,9 @@ function check_presense_promises(args){
    selectors,
     function( selector ){
       return driver
-        .isElementPresent(By.css(selector))
-        .then(function(is_present){
-          expect(is_present).to.be.equal(presense);
+        .findElements(By.css(selector))
+        .then(function(elements){
+          expect(elements.length > 0).to.be.equal(presense);
           return bluebird.resolve();
         })
     }

@@ -2,11 +2,9 @@
 'use strict';
 
 const
-  test                = require('selenium-webdriver/testing'),
     By                = require('selenium-webdriver').By,
   expect              = require('chai').expect,
   Promise             = require("bluebird"),
-  rp                  = require('request-promise'),
   registerNewUserFunc = require('../../lib/register_new_user'),
   openPageFunc        = require('../../lib/open_page'),
   submitFormFunc      = require('../../lib/submit_form'),
@@ -15,6 +13,7 @@ const
   addNewUserFunc      = require('../../lib/add_new_user'),
   config              = require('../../lib/config'),
   applicationHost     = config.get_application_host();
+const describePremium = process.env.TIMEOFF_PREMIUM_MODULE ? describe : describe.skip;
 
 /*
  * Scenario:
@@ -29,7 +28,7 @@ const
  *
  * */
 
-describe('Basic audit for user changes', function(){
+describePremium('Basic audit for user changes', function(){
 
   this.timeout( config.get_execution_timeout() );
 
@@ -115,15 +114,14 @@ describe('Basic audit for user changes', function(){
   });
 
   it('Fetch the Audit feed from integration API', done => {
-    rp(`${applicationHost}integration/v1/audit`,{
+    fetch(`${applicationHost}integration/v1/audit`, {
       method : 'GET',
-      body: '{}',
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
       },
     })
-    .then(res => JSON.parse(res))
+    .then(res => res.json())
     .then(obj => {
       const twoEvents = obj
         .filter(i=>i.entityType === 'USER')

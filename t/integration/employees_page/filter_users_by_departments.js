@@ -2,8 +2,7 @@
 'use strict';
 
 
-var test                 = require('selenium-webdriver/testing'),
-  By                     = require('selenium-webdriver').By,
+var By                     = require('selenium-webdriver').By,
   expect                 = require('chai').expect,
   Promise                = require("bluebird"),
   until                  = require('selenium-webdriver').until,

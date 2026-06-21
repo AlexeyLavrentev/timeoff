@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test             = require('selenium-webdriver/testing'),
-    config           = require('../../lib/config'),
+var config           = require('../../lib/config'),
     application_host = config.get_application_host(),
     By               = require('selenium-webdriver').By,
     expect           = require('chai').expect,
@@ -77,21 +76,20 @@ describe("Check the client side logic to facilitate filling new absence form", f
     driver
       .findElement(By.css('input.book-leave-from-input'))
       .then(function(el){ inp_from = el; return el.clear() })
-      .then(function(){ return inp_from.sendKeys( tomorrow_str ) });
-
-    driver.call(function(){
-      check_elements_func({
-        driver : driver,
-        elements_to_check : [{
-          selector : 'input.book-leave-from-input',
-          value : tomorrow_str,
-        },{
-          selector : 'input.book-leave-to-input',
-          value : tomorrow_str,
-        }],
+      .then(function(){ return inp_from.sendKeys( tomorrow_str ) })
+      .then(function(){
+        return check_elements_func({
+          driver : driver,
+          elements_to_check : [{
+            selector : 'input.book-leave-from-input',
+            value : tomorrow_str,
+          },{
+            selector : 'input.book-leave-to-input',
+            value : tomorrow_str,
+          }],
+        });
       })
       .then(function(){ done() });
-    });
 
   });
 
@@ -105,21 +103,20 @@ describe("Check the client side logic to facilitate filling new absence form", f
     driver
       .findElement(By.css('input.book-leave-from-input'))
       .then(function(el){ inp_from = el; return el.clear() })
-      .then(function(){ return inp_from.sendKeys( yesterday_str ) });
-
-    driver.call(function(){
-      check_elements_func({
-        driver : driver,
-        elements_to_check : [{
-          selector : 'input.book-leave-from-input',
-          value : yesterday_str,
-        },{
-          selector : 'input.book-leave-to-input',
-          value : tomorrow_str,
-        }],
+      .then(function(){ return inp_from.sendKeys( yesterday_str ) })
+      .then(function(){
+        return check_elements_func({
+          driver : driver,
+          elements_to_check : [{
+            selector : 'input.book-leave-from-input',
+            value : yesterday_str,
+          },{
+            selector : 'input.book-leave-to-input',
+            value : tomorrow_str,
+          }],
+        });
       })
       .then(function(){ done() });
-    });
 
   });
 

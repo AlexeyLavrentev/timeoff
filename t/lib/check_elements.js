@@ -48,5 +48,5 @@ var check_elements_func = Promise.promisify( function(args, callback){
 });
 
 module.exports = function(args){
-  return args.driver.call(function(){return check_elements_func(args)});
-}
+  return check_elements_func(args);
+};

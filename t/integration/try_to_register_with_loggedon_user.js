@@ -2,8 +2,7 @@
 
 'use strict';
 
-var test             = require('selenium-webdriver/testing'),
-    config           = require('../lib/config'),
+var config           = require('../lib/config'),
     application_host = config.get_application_host(),
     expect           = require('chai').expect,
     Promise          = require("bluebird"),

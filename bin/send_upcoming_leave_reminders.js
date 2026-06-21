@@ -3,9 +3,8 @@
 var argv = require('minimist')(process.argv.slice(2));
 
 var models = require('../lib/model/db');
-var EmailTransport = require('../lib/email');
 var features = require('../lib/features');
-var leaveReminder = require('../lib/model/leave/upcoming_leave_reminder');
+var edition = require('../lib/edition');
 
 var date = argv.date || null;
 var companyId = argv.company_id ? Number(argv.company_id) : null;
@@ -17,12 +16,12 @@ if (!features.isEnabled('leave_start_reminders')) {
 
 models.connect()
   .then(function() {
-    return leaveReminder.sendLeaveStartReminders({
-      models         : models,
-      emailTransport : new EmailTransport(),
-      date           : date,
-      companyId      : companyId,
-      daysBefore     : leaveReminder.LEAVE_START_REMINDER_DAYS,
+    edition.initialize({ models: models });
+
+    return edition.getRegistry().runSchedulerOnce('leave-start-reminders', {
+      models    : models,
+      date      : date,
+      companyId : companyId,
     });
   })
   .then(function(notifications) {

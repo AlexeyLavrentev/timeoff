@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test             = require('selenium-webdriver/testing'),
-    until            = require('selenium-webdriver').until,
+var until            = require('selenium-webdriver').until,
     By               = require('selenium-webdriver').By,
     expect           = require('chai').expect,
     _                = require('underscore'),

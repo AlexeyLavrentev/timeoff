@@ -3,8 +3,7 @@ var fs = require('fs'),
     os = require('os'),
     webdriver = require('selenium-webdriver'),
     chrome = require('selenium-webdriver/chrome'),
-    puppeteer = require('puppeteer'),
-    capabilities = process.env.USE_PHANTOMJS ? 'phantomjs' : 'chrome';
+    puppeteer = require('puppeteer');
 
 function findCachedChromeHeadlessShell() {
   var cacheDir = path.join(os.homedir(), '.cache', 'puppeteer', 'chrome-headless-shell');
@@ -47,12 +46,6 @@ function resolveChromeBinary() {
 }
 
 module.exports = function() {
-  if (capabilities === 'phantomjs') {
-    return new webdriver.Builder()
-      .withCapabilities(webdriver.Capabilities[capabilities]())
-      .build();
-  }
-
   var options = new chrome.Options();
   var chromeBinary = resolveChromeBinary();
 
@@ -61,14 +54,14 @@ module.exports = function() {
   }
 
   if (!process.env.SHOW_CHROME) {
-    options.addArguments('headless');
-    options.addArguments('disable-gpu');
-    options.addArguments('no-sandbox');
-    options.addArguments('disable-dev-shm-usage');
+    options.addArguments('--headless=new');
+    options.addArguments('--disable-gpu');
+    options.addArguments('--no-sandbox');
+    options.addArguments('--disable-dev-shm-usage');
   }
 
   return new webdriver.Builder()
-    .withCapabilities(webdriver.Capabilities[capabilities]())
+    .forBrowser('chrome')
     .setChromeOptions(options)
     .build();
 };

@@ -73,6 +73,16 @@ USER root
 ARG PREMIUM_MODULE_TARGET=/opt/timeoff-premium
 COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
 
+# Install SSO packages into a temp dir (no package.json = no devDeps bleed),
+# then merge into the app's node_modules.
+RUN mkdir -p /tmp/sso-deps && \
+    cd /tmp/sso-deps && \
+    npm install --no-package-lock --no-audit --no-fund \
+      @node-saml/node-saml@^5.1.0 \
+      openid-client@^5.7.1 && \
+    cp -a node_modules/. /app/node_modules/ && \
+    rm -rf /tmp/sso-deps
+
 ENV TIMEOFF_PREMIUM_MODULE=${PREMIUM_MODULE_TARGET} \
     TIMEOFF_PREMIUM_MODULE_REQUIRED=true
 
