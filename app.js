@@ -200,11 +200,6 @@ app.use(
   require('./lib/route/feed')
 );
 
-app.use(
-  '/integration/v1/',
-  features.requireFeature('integration_api'),
-  require('./lib/route/integration_api')(passport)
-);
 
 if (process.env.DISABLE_NOTIFICATIONS_POLLING === 'true') {
   app.get('/api/v1/notifications/', function(req, res) {
@@ -227,7 +222,6 @@ app.use(
   require('./lib/route/calendar')
 );
 
-app.use('/settings/groups', features.requireFeature('employee_groups'));
 app.use('/settings/company/integration-api', features.requireFeature('integration_api'));
 
 app.use(
@@ -238,7 +232,6 @@ app.use(
 // '/settings/' path is quite big hence there are two modules providing handlers for it
 app.use('/settings/', require('./lib/route/departments'));
 app.use('/settings/', require('./lib/route/bankHolidays'));
-app.use('/settings/', require('./lib/route/groups'));
 
 app.use(
   '/users/',

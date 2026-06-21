@@ -10,7 +10,6 @@
     "settings": "Settings",
     "general": "General",
     "departments": "Departments",
-    "groups": "Groups",
     "bankHolidays": "Bank Holidays",
     "ldapConfig": "LDAP configuration",
     "apiConfig": "API configuration",
@@ -597,18 +596,6 @@
       "requestorBody": "Your leave request was cancelled",
       "subjectSupervisor": "Cancel leave request",
       "noAction": "No actions are needed."
-    },
-    "leaveStartReminder": {
-      "subjectSupervisor": "Employee leave starts in {{daysBefore}} days",
-      "subjectEmployee": "Your leave starts in {{daysBefore}} days",
-      "supervisorBody": "{{employee}} is scheduled to start leave in {{daysBefore}} days:",
-      "supervisorAction": "Please remind the employee to submit the required leave application and complete the procedures used in {{department}}.",
-      "openEmployeeProfile": "Open employee profile:",
-      "employeeProfileLink": "Employee details",
-      "employeeBody": "Your leave is scheduled to start in {{daysBefore}} days:",
-      "employeeAction": "Please make sure you submit the required leave application and complete all internal procedures for {{department}}.",
-      "openCalendar": "Open your calendar:",
-      "calendarLink": "My calendar"
     }
   },
   "teamView": {
@@ -892,39 +879,6 @@
     "currentPasswordHelpPrefix": "Password for",
     "currentPasswordHelpSuffix": "in the new LDAP server.",
     "saveButton": "Save LDAP configuration"
-  },
-  "groups": {
-    "title": "Groups",
-    "allGroups": "All groups",
-    "addNew": "Add new group",
-    "name": "Name",
-    "maxCriticalOverlap": "Critical coverage limit",
-    "overlapHelp": "Maximum number of critical employees from this group who may be absent at the same time. If the limit is 1, only one critical employee can be away.",
-    "members": "Members",
-    "criticalEmployees": "Critical employees",
-    "criticalHelp": "Select employees whose simultaneous absence can affect operations. Vacation plans will highlight risky overlaps for them.",
-    "hrModeLabel": "HR mode (view all absences)",
-    "hrModeHelp": "Members of this group can view all employee absences without admin privileges.",
-    "save": "Save changes",
-    "delete": "Delete",
-    "noGroups": "No group records",
-    "details": "Group details",
-    "editMembers": "Group members",
-    "messages": {
-      "loadFailed": "Failed to load groups",
-      "nameRequired": "Group name is required",
-      "duplicateName": "Group with the same name already exists",
-      "criticalOverlapRange": "Max critical overlap for {{group}} should be a number between 1 and 50",
-      "created": "Group was created",
-      "createFailed": "Failed to create group",
-      "invalidId": "Invalid group id",
-      "notFound": "Group not found",
-      "detailsFailed": "Failed to load group details",
-      "updated": "Group was updated",
-      "updateFailed": "Failed to update group",
-      "deleted": "Group was removed",
-      "deleteFailed": "Failed to delete group"
-    }
   },
   "emailAudit": {
     "title": "Emails audit",

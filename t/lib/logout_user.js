@@ -1,9 +1,9 @@
 'use strict';
 
-var webdriver = require('selenium-webdriver'),
-    By        = require('selenium-webdriver').By,
+var By        = require('selenium-webdriver').By,
     expect    = require('chai').expect,
-    until     = require('selenium-webdriver').until;
+    until     = require('selenium-webdriver').until,
+    element_exists = require('./element_exists');
 
 
 function logout_user_func(args) {
@@ -20,7 +20,10 @@ function logout_user_func(args) {
     .then(function(el){ return el.click(); })
     // Make sure that Logout link exists
     .then(function(){
-      return driver.isElementPresent(By.css(logout_link_css_selector));
+      return element_exists({
+        driver : driver,
+        selector : logout_link_css_selector,
+      });
     })
     .then(function(is_present){
       expect(is_present).to.be.equal(true);
@@ -35,7 +38,10 @@ function logout_user_func(args) {
       return driver.wait(until.elementLocated(By.css('body')), 5000);
     })
     .then(function(){
-      return driver.isElementPresent(By.css(logout_link_css_selector));
+      return element_exists({
+        driver : driver,
+        selector : logout_link_css_selector,
+      });
     })
     // Check that there is no more Logout link
     .then(function(is_present){

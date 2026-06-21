@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test                 = require('selenium-webdriver/testing'),
-  By                     = require('selenium-webdriver').By,
+var By                     = require('selenium-webdriver').By,
   expect                 = require('chai').expect,
   Promise                = require("bluebird"),
   register_new_user_func = require('../../lib/register_new_user'),

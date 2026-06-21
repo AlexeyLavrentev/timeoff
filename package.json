@@ -7,7 +7,6 @@
     "node": ">=22.0.0 <23"
   },
   "dependencies": {
-    "@node-saml/node-saml": "^5.1.0",
     "bluebird": "^2.10.2",
     "body-parser": "^1.20.5",
     "connect-redis": "^6.0.0",
@@ -34,7 +33,6 @@
     "mysql2": "^3.11.0",
     "nconf": "^0.13.0",
     "nodemailer": "^9.0.1",
-    "openid-client": "^5.7.1",
     "minimist": "^1.2.8",
     "passport": "^0.7.0",
     "passport-http-bearer": "^1.0.1",
@@ -52,11 +50,10 @@
   "devDependencies": {
     "chai": "^2.2.0",
     "chromedriver": "^146.0.5",
-    "mocha": "^6.2.2",
+    "mocha": "^10.8.2",
     "puppeteer": "^24.40.0",
-    "request-promise": "^4.2.2",
     "sass": "^1.77.8",
-    "selenium-webdriver": "2.53.3"
+    "selenium-webdriver": "^4.0.0"
   },
   "scripts": {
     "test": "node bin/test.js",

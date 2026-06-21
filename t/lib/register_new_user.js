@@ -33,7 +33,7 @@ var register_new_user_func = Promise.promisify( function(args, callback){
   var driver = args.driver || build_driver()
 
 
-  driver.manage().window().setSize(1024, 768)
+  driver.manage().window().setRect({width: 1024, height: 768})
     .then(function(){
       return driver.get(application_root + '/register/');
     })
@@ -178,9 +178,5 @@ var register_new_user_func = Promise.promisify( function(args, callback){
 });
 
 module.exports = function(args){
-  if (args.hasOwnProperty('driver')) {
-    return args.driver.call(function(){return register_new_user_func(args)});
-  } else {
-    return register_new_user_func(args);
-  }
-}
+  return register_new_user_func(args);
+};

@@ -1,8 +1,7 @@
 
 'use strict';
 
-var test             = require('selenium-webdriver/testing'),
-    config           = require('../lib/config'),
+var config           = require('../lib/config'),
     application_host = config.get_application_host(),
     By        = require('selenium-webdriver').By,
     expect    = require('chai').expect,
@@ -30,16 +29,18 @@ describe('Try to access private pages with guest user', function(){
       ],
       function(path) {
 
-        var driver = build_driver()
+        var driver = build_driver();
 
-        // Open front page
-        driver.get( application_host + path);
-        driver.getCurrentUrl()
+        return driver.get(application_host + path)
+          .then(function(){
+            return driver.getCurrentUrl();
+          })
           .then(function(url){
             expect(url).to.be.equal(application_host+'login/');
+          })
+          .then(function(){
+            return driver.quit();
           });
-
-        return driver.quit();
       })
     )
     .then(function(){ done() });
@@ -49,12 +50,19 @@ describe('Try to access private pages with guest user', function(){
     var driver = build_driver();
 
     // Open front page
-    driver.get( application_host);
-    driver.getTitle()
+    driver.get(application_host)
+      .then(function(){
+        return driver.getTitle();
+      })
       .then(function(title){
         expect(title).to.be.equal(branding.get().name);
+      })
+      .then(function(){
+        return driver.quit();
+      })
+      .then(function(){
+        done();
       });
-    driver.quit().then(function(){ done() });
   });
 
 });
@@ -76,9 +84,13 @@ describe('Try to access admin pages with non-admin user', function(){
     ];
 
     return Promise.each(admin_pages, function(path){
-      driver.get( application_host + path);
-      driver.wait(until.elementLocated(By.css('body')), 1000);
-      return driver.getCurrentUrl()
+      return driver.get(application_host + path)
+        .then(function(){
+          return driver.wait(until.elementLocated(By.css('body')), 1000);
+        })
+        .then(function(){
+          return driver.getCurrentUrl();
+        })
         .then(function(url){
            if (reachable) {
             expect(url).to.be.equal(application_host + path);
