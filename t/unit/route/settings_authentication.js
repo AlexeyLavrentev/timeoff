@@ -326,4 +326,38 @@ describe('Settings authentication route', function() {
     expect(company.sso_auth_provider).to.equal('oidc');
     expect(company.sso_auth_config).to.deep.equal({ client_id: 'preserved' });
   });
+
+  it('does not expose LDAP connection details to the administrator', async function() {
+    process.env.FEATURE_SSO_AUTHENTICATION = 'false';
+    const company = createCompany();
+    company.get_ldap_server = function() {
+      return {
+        on() {},
+        authenticate(_email, _password, callback) {
+          callback(new Error('connect ECONNREFUSED ldap.internal:389'));
+        },
+      };
+    };
+
+    const result = await invokeRoute(
+      postAuthenticationHandler,
+      createReq({
+        ldap_auth_enabled: 'on',
+        url: 'ldap://ldap.internal:389',
+        binddn: 'cn=admin,dc=example,dc=com',
+        bindcredentials: 'secret',
+        searchbase: 'dc=example,dc=com',
+        password_to_check: 'wrong',
+      }, company)
+    );
+
+    expect(result.type).to.equal('render');
+    expect(result.statusCode).to.equal(422);
+    expect(result.res.locals.flash.errors[0])
+      .to.contain('settings.messages.ldapValidationFailed');
+    expect(result.res.locals.flash.errors[0])
+      .not.to.contain('ldap.internal');
+    expect(result.res.locals.flash.errors[0])
+      .not.to.contain('ECONNREFUSED');
+  });
 });

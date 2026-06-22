@@ -101,9 +101,6 @@ describe('Request leave for outher users', function(){
       .then(function(el){ return el.click() })
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{

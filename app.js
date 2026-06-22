@@ -200,6 +200,10 @@ app.use(
   require('./lib/route/feed')
 );
 
+// Extension routes that provide their own authentication (for example bearer
+// token APIs) must be mounted before the browser-session authentication wall.
+edition.registerPublicRoutes(app, editionContext);
+
 
 if (process.env.DISABLE_NOTIFICATIONS_POLLING === 'true') {
   app.get('/api/v1/notifications/', function(req, res) {
