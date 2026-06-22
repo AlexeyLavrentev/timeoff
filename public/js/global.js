@@ -52,7 +52,12 @@ $(document).ready(function(){
 
     $placeholder
       .html('<span class="text-muted">' + translations.loading + '</span>')
-      .load($button.data('conflict-url'), function(){
+      .load($button.data('conflict-url'), function(response, status){
+        if (status === 'error') {
+          $placeholder.text(translations.requestFailed);
+          return;
+        }
+
         $placeholder.data('loaded', true);
       });
   });
@@ -116,7 +121,11 @@ $('#add_secondary_supervisers_modal').on('show.bs.modal', function (event) {
   $(this).find(".modal-body")
     // Show "loading" icon while content of modal is loaded
     .html('<p class="text-center"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i><span class="sr-only">' + translations.loading + '</span></p>')
-    .load('/settings/departments/available-supervisors/'+department_id+'/');
+    .load('/settings/departments/available-supervisors/'+department_id+'/', function(response, status){
+      if (status === 'error') {
+        $(this).text(translations.requestFailed);
+      }
+    });
 });
 
 /*
@@ -248,6 +257,9 @@ $(document).ready(function(){
       url: '/users/summary/'+userId+'/',
       success: function(response){
         $('#'+divId).html(response);
+      },
+      error: function(){
+        $('#'+divId).text(translations.requestFailed);
       }
     });
 
@@ -288,6 +300,9 @@ $(document).ready(function(){
       url: '/calendar/leave-summary/'+leaveId+'/',
       success: function(response){
         $('#'+divId).html(response);
+      },
+      error: function(){
+        $('#'+divId).text(translations.requestFailed);
       }
     });
     return '<div id="'+ divId +'">' + translations.loading + '</div>';
@@ -363,6 +378,9 @@ $(document).ready(function() {
               '<li><a href="'+notification.link+'">'+notification.label+'</a></li>'
             );
           }
+        },
+        error: function(){
+          console.log('Failed to fetch notifications');
         }
       });
     }

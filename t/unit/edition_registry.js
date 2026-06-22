@@ -55,6 +55,44 @@ describe('Edition registry', function() {
     expect(calls[0][2]).to.equal(router);
   });
 
+  it('mounts public and authenticated extension routes separately', function() {
+    var registry = new EditionRegistry();
+    var publicCalls = [];
+    var authenticatedCalls = [];
+    var publicRouter = function() {};
+    var authenticatedRouter = function() {};
+
+    registry.registerRoute({
+      name      : 'integration-api',
+      path      : '/integration/v1/',
+      placement : 'public',
+      router    : publicRouter,
+    });
+    registry.registerRoute({
+      name   : 'premium-page',
+      path   : '/premium/',
+      router : authenticatedRouter,
+    });
+
+    registry.applyRoutes({
+      use: function() {
+        publicCalls.push(Array.prototype.slice.call(arguments));
+      },
+    }, { placement: 'public' });
+    registry.applyRoutes({
+      use: function() {
+        authenticatedCalls.push(Array.prototype.slice.call(arguments));
+      },
+    }, { placement: 'authenticated' });
+
+    expect(publicCalls.length).to.equal(1);
+    expect(publicCalls[0][0]).to.equal('/integration/v1/');
+    expect(publicCalls[0][1]).to.equal(publicRouter);
+    expect(authenticatedCalls.length).to.equal(1);
+    expect(authenticatedCalls[0][0]).to.equal('/premium/');
+    expect(authenticatedCalls[0][1]).to.equal(authenticatedRouter);
+  });
+
   it('starts registered schedulers', function() {
     var registry = new EditionRegistry();
     var startedWith;

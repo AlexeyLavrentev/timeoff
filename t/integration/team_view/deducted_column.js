@@ -101,9 +101,6 @@ describe('Case when holidays spans through more then one month and is devided by
       .then(el => el.click())
       .then(() => {
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{

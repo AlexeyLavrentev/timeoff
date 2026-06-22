@@ -261,6 +261,62 @@ describe('Register route', function() {
       'login.messages.invalidCsrfToken',
     ]);
   });
+
+  it('rejects registration with a blank company name', async function() {
+    config.set('allow_create_new_accounts', true);
+
+    const req = createReq({
+      body: {
+        email: 'admin@example.com',
+        name: 'Admin',
+        lastname: 'User',
+        company_name: '   ',
+        password: 'secret',
+        password_confirmed: 'secret',
+        country: 'GB',
+        timezone: 'Europe/London',
+        _csrf: 'expected-token',
+      },
+      session: {
+        csrf_token: 'expected-token',
+      },
+    });
+
+    const result = await invokeRouteHandlers(postRegisterHandlers, req);
+
+    expect(result.type).to.equal('redirect');
+    expect(result.location).to.equal('/register/');
+    expect(req.session.flash.errors).to.include(
+      'login.messages.companyNameMissing'
+    );
+  });
+
+  it('rejects whitespace-only administrator names', async function() {
+    config.set('allow_create_new_accounts', true);
+
+    const req = createReq({
+      body: {
+        email: 'admin@example.com',
+        name: '   ',
+        lastname: '\t',
+        company_name: 'Corp',
+        password: 'secret',
+        password_confirmed: 'secret',
+        country: 'GB',
+        timezone: 'Europe/London',
+        _csrf: 'expected-token',
+      },
+      session: {
+        csrf_token: 'expected-token',
+      },
+    });
+
+    const result = await invokeRouteHandlers(postRegisterHandlers, req);
+
+    expect(result.location).to.equal('/register/');
+    expect(req.session.flash.errors).to.include('login.messages.nameMissing');
+    expect(req.session.flash.errors).to.include('login.messages.lastNameMissing');
+  });
 });
 
 describe('Login route', function() {
