@@ -13,8 +13,8 @@ describe("Department validation", function() {
 
     expect(source).to.contain("departments.messages.nameRequired");
     expect(source).to.contain("departments.messages.duplicateName");
-    expect(source).to.contain("model.Department.findOne");
-    expect(source).to.contain("department.constructor.findOne");
+    expect(source).to.contain("find_department_with_same_name");
+    expect(source).to.contain("toLocaleLowerCase");
   });
 
   it("replaces secondary supervisors inside one transaction", function() {

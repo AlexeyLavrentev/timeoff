@@ -335,13 +335,13 @@ describe('Reset password route', function() {
     expect(emailSendAttempts).to.equal(0);
   });
 
-  it('rejects a blank password before looking up the token', async function() {
+  it('rejects a blank or whitespace-only password before looking up the token', async function() {
     let lookupAttempts = 0;
     const req = createReq({
       body: {
         t: 'token',
-        password: '',
-        confirm_password: '',
+        password: '   ',
+        confirm_password: '   ',
         _csrf: 'expected-token',
       },
       path: '/reset-password/',
