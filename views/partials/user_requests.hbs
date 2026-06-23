@@ -41,6 +41,8 @@
             <button type="submit" class="pull-right btn btn-default btn-xs revoke-btn single-click" title="{{t 'requests.revokeTooltip'}}"><i class="fa fa-trash" aria-hidden="true"></i> {{t "requests.revoke"}}</button>
           </form>
           {{/unless}}
+          {{!-- Edition extension slot: premium fills this with leave-order actions; renders empty in community --}}
+          {{#> leave_order_actions leave=this logged_user=../logged_user}}{{/leave_order_actions}}
           {{else}}
             {{#if_equal this.userId ../logged_user.id }}
             <form method="post" action='/requests/cancel/'>
