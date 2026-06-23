@@ -19,6 +19,8 @@ const baseTestEnv = Object.assign({}, process.env, {
   DB_DIALECT: 'sqlite',
   DB_STORAGE: dbStorage,
   DISABLE_NOTIFICATIONS_POLLING: 'true',
+  SILENCE_PRETEND_EMAILS: 'true',
+  SILENCE_HTTP_LOGS: 'true',
   TIMEOFF_FEATURES: 'all',
 });
 const serverEnv = Object.assign({}, baseTestEnv, {

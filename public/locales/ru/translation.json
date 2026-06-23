@@ -657,8 +657,8 @@
       "invalidSearchEmail": "Указанный email выглядит неверно: \"{{email}}\""
     },
   "validation": {
-      "nameRequired": "Укажите имя для {{itemName}}",
-      "lastNameRequired": "Укажите фамилию для {{itemName}}",
+      "nameRequired": "Укажите имя сотрудника",
+      "lastNameRequired": "Укажите фамилию сотрудника",
       "emailInvalid": "Новый email для {{itemName}} должен быть корректным адресом",
       "departmentInvalid": "Новый отдел для {{itemName}} должен быть корректным номером",
       "adjustmentInvalid": "Новое значение корректировки лимита для {{itemName}} должно быть числом",

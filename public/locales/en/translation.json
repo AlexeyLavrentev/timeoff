@@ -652,8 +652,8 @@
       "invalidSearchEmail": "Provided email does not look like valid one: \"{{email}}\""
     },
   "validation": {
-      "nameRequired": "First name of {{itemName}} is required",
-      "lastNameRequired": "Last name of {{itemName}} is required",
+      "nameRequired": "Employee first name is required",
+      "lastNameRequired": "Employee last name is required",
       "emailInvalid": "New email of {{itemName}} should be valid email address",
       "departmentInvalid": "New department number of {{itemName}} should be a valid number",
       "adjustmentInvalid": "New allowance adjustment of {{itemName}} should be a valid number",
