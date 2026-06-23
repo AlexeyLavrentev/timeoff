@@ -11,3 +11,7 @@ node_modules/
 license_private.pem
 *.license.json
 *.license.txt
+
+# Agent/tooling scratch — must not be committed
+.supergoal/
+AGENTS.md
