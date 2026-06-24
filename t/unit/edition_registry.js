@@ -368,4 +368,24 @@ describe('Edition registry', function() {
     expect(registry.getDbAssociations()[0].name).to.equal('premium-association');
     expect(associated).to.deep.equal(['Company']);
   });
+
+  it('registers a leave event dispatcher with validation', function() {
+    var registry = new EditionRegistry();
+
+    expect(function() {
+      registry.registerLeaveEventDispatcher({broken: true});
+    }).to.throw(/dispatch function/);
+
+    expect(function() {
+      registry.registerLeaveEventDispatcher(null);
+    }).to.throw(/dispatch function/);
+
+    expect(registry.getLeaveEventDispatcher()).to.equal(null);
+
+    var dispatcher = {dispatch: function() {}};
+    var result = registry.registerLeaveEventDispatcher(dispatcher);
+
+    expect(result).to.equal(registry);
+    expect(registry.getLeaveEventDispatcher()).to.equal(dispatcher);
+  });
 });
