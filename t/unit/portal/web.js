@@ -340,6 +340,118 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('session regeneration', function() {
+    it('CSRF token rotates after login', async function() {
+      const loginPage = await get(port, '/login');
+      const preLoginCsrf = extractCsrf(loginPage.body);
+
+      const loginRes = await post(port, '/login', {
+        email: 'admin@test.com', password: 'admin123', _csrf: preLoginCsrf,
+      }, loginPage.cookie);
+      expect(loginRes.status).to.equal(302);
+
+      const dashPage = await get(port, '/', loginRes.cookie || loginPage.cookie);
+      const postLoginCsrf = extractCsrf(dashPage.body);
+
+      expect(postLoginCsrf).to.be.a('string');
+      expect(postLoginCsrf).to.not.equal(preLoginCsrf);
+    });
+  });
+
+  describe('web lockout', function() {
+    it('5 wrong password attempts set lockedUntil', async function() {
+      await models.AdminUser.create({
+        email: 'weblock@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+      });
+
+      for (let i = 0; i < 5; i++) {
+        const pg = await get(port, '/login');
+        const csrf = extractCsrf(pg.body);
+        await post(port, '/login', { email: 'weblock@test.com', password: 'wrong', _csrf: csrf }, pg.cookie);
+      }
+
+      const user = await models.AdminUser.findOne({ where: { email: 'weblock@test.com' } });
+      expect(user.lockedUntil).to.not.be.null;
+      expect(new Date(user.lockedUntil)).to.be.greaterThan(new Date());
+    });
+
+    it('locked user cannot login even with correct password', async function() {
+      await models.AdminUser.create({
+        email: 'weblocked@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      const pg = await get(port, '/login');
+      const csrf = extractCsrf(pg.body);
+      const res = await post(port, '/login', { email: 'weblocked@test.com', password: 'correct123', _csrf: csrf }, pg.cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Неверный email или пароль');
+    });
+
+    it('locked user sees same generic error as wrong credentials', async function() {
+      await models.AdminUser.create({
+        email: 'weblockmsg@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      const pg1 = await get(port, '/login');
+      const csrf1 = extractCsrf(pg1.body);
+      const lockedRes = await post(port, '/login', { email: 'weblockmsg@test.com', password: 'correct123', _csrf: csrf1 }, pg1.cookie);
+
+      const pg2 = await get(port, '/login');
+      const csrf2 = extractCsrf(pg2.body);
+      const wrongRes = await post(port, '/login', { email: 'admin@test.com', password: 'wrong', _csrf: csrf2 }, pg2.cookie);
+
+      expect(lockedRes.body).to.contain('Неверный email или пароль');
+      expect(wrongRes.body).to.contain('Неверный email или пароль');
+    });
+
+    it('locked account audit log contains account_locked reason', async function() {
+      await models.AdminUser.create({
+        email: 'weblockaudit@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      const pg = await get(port, '/login');
+      const csrf = extractCsrf(pg.body);
+      await post(port, '/login', { email: 'weblockaudit@test.com', password: 'correct123', _csrf: csrf }, pg.cookie);
+
+      const logs = await models.AuditLog.findAll({ where: { action: 'login_failed' } });
+      const lockLog = logs.find(l => l.actorName === 'weblockaudit@test.com' && l.details && l.details.reason === 'account_locked');
+      expect(lockLog).to.not.be.undefined;
+    });
+  });
+
+  describe('features textarea preservation', function() {
+    it('preserves features value after validation error', async function() {
+      const { cookie } = await login(port, 'issuer@test.com', 'issuer123');
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: '00000000-0000-0000-0000-000000000000',
+        planId: '00000000-0000-0000-0000-000000000000',
+        features: 'sso_authentication\nintegration_api',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('sso_authentication');
+      expect(res.body).to.contain('integration_api');
+    });
+  });
+
   describe('isolation', function() {
     it('portal web app is not mounted in customer runtime', function() {
       const mainApp = require('express')();
