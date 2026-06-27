@@ -479,6 +479,40 @@ describe('Portal Web UI', function() {
       expect(res.body).to.not.contain('scrypt$');
       expect(res.body).to.not.contain('PRIVATE');
     });
+
+    it('audit page filters unsafe detail keys', async function() {
+      await models.AuditLog.create({
+        actorName: 'test@example.com',
+        action: 'test_unsafe',
+        entityType: 'Test',
+        details: {
+          licensePayload: '{"payload":{},"signature":"secret-sig"}',
+          signature: 'base64signaturevalue',
+          privateKey: '-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----',
+          passwordHash: 'scrypt$16384$8$1$abc$def',
+          token: 'session-token-12345',
+          secret: 'my-secret-value',
+          reason: 'invalid_credentials',
+          count: 5,
+          payloadHash: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
+        },
+      });
+
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+
+      expect(res.body).to.not.contain('secret-sig');
+      expect(res.body).to.not.contain('base64signaturevalue');
+      expect(res.body).to.not.contain('RSA PRIVATE KEY');
+      expect(res.body).to.not.contain('scrypt$');
+      expect(res.body).to.not.contain('session-token-12345');
+      expect(res.body).to.not.contain('my-secret-value');
+      expect(res.body).to.contain('reason');
+      expect(res.body).to.contain('invalid_credentials');
+      expect(res.body).to.contain('count');
+      expect(res.body).to.contain('payloadHash');
+      expect(res.body).to.contain('abc123def456abc1');
+    });
   });
 
   describe('registry export', function() {
@@ -517,11 +551,20 @@ describe('Portal Web UI', function() {
     it('registry export excludes licensePayload and signature', async function() {
       const { cookie } = await login(port, 'admin@test.com', 'admin123');
       const res = await get(port, '/licenses/export/registry.json', cookie);
+      const data = JSON.parse(res.body);
       const json = res.body;
       expect(json).to.not.contain('licensePayload');
       expect(json).to.not.contain('signature');
       expect(json).to.not.contain('PRIVATE');
       expect(json).to.not.contain('passwordHash');
+
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        expect(keys).to.not.include('licensePayload');
+        expect(keys).to.not.include('signature');
+        expect(keys).to.not.include('privateKey');
+        expect(keys).to.not.include('passwordHash');
+      }
     });
 
     it('registry export creates audit log entry', async function() {

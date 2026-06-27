@@ -42,6 +42,41 @@ const escapeHtml = (str) => String(str || '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 
+const SAFE_DETAIL_KEYS = new Set([
+  'reason', 'role', 'email', 'customer', 'plan', 'features',
+  'expiresAt', 'payloadHash', 'licenseHash', 'count', 'source',
+]);
+
+const BLOCKED_KEY_PATTERNS = [
+  'password', 'secret', 'token', 'private', 'signature',
+  'licensepayload', 'session', 'key',
+];
+
+const summarizeAuditDetails = (details) => {
+  if (!details || typeof details !== 'object') return '—';
+
+  const parts = [];
+  for (const [key, value] of Object.entries(details)) {
+    const lower = key.toLowerCase();
+
+    if (lower === 'payloadhash' || lower === 'licensehash') {
+      parts.push(key + '=' + String(value).substring(0, 16) + '…');
+      continue;
+    }
+
+    if (!SAFE_DETAIL_KEYS.has(key)) continue;
+
+    const blocked = BLOCKED_KEY_PATTERNS.some(p => lower.includes(p));
+    if (blocked) continue;
+
+    const str = Array.isArray(value) ? value.join(',') : String(value);
+    parts.push(key + '=' + str.substring(0, 40));
+  }
+
+  const result = parts.join(', ');
+  return result ? result.substring(0, 120) : '—';
+};
+
 const createWebRoutes = (models, options = {}) => {
   const router = express.Router();
   const { AdminUser, Customer, Plan, License, AuditLog } = models;
@@ -470,7 +505,7 @@ const createWebRoutes = (models, options = {}) => {
           action: escapeHtml(l.action),
           entityType: escapeHtml(l.entityType),
           entityId: l.entityId ? l.entityId.substring(0, 8) + '…' : '—',
-          detailsSummary: l.details ? escapeHtml(JSON.stringify(l.details).substring(0, 120)) : '—',
+          detailsSummary: escapeHtml(summarizeAuditDetails(l.details)),
         })),
       });
     } catch (error) {
