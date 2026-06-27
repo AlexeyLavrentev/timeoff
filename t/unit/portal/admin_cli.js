@@ -231,12 +231,23 @@ describe('Portal admin CLI', function() {
   });
 
   describe('reset-password', function() {
-    it('resets password and clears lockout', function() {
+    it('resets password and clears lockout', async function() {
       const { dir, dbPath } = makeTempDb('reset');
       try {
-        runAdmin([
+        const createResult = runAdmin([
           'create', '--email', 'reset@test.com', '--password-env', 'TEST_PW',
         ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+        expect(createResult.status).to.equal(0);
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        await models.AdminUser.update(
+          { failedLoginCount: 5, lockedUntil: new Date(Date.now() + 60000) },
+          { where: { email: 'reset@test.com' } }
+        );
+        const oldUser = await models.AdminUser.findOne({ where: { email: 'reset@test.com' } });
+        const oldHash = oldUser.passwordHash;
+        await models.sequelize.close();
 
         const result = runAdmin([
           'reset-password', '--email', 'reset@test.com', '--password-env', 'NEW_PW',
@@ -245,6 +256,16 @@ describe('Portal admin CLI', function() {
         expect(result.status).to.equal(0);
         expect(result.stdout).to.contain('Password reset');
         expect(result.stdout).to.not.contain('new-secure-pw-9876');
+
+        const models2 = loadPortalModels({ storage: dbPath });
+        await models2.sequelize.sync();
+        const updatedUser = await models2.AdminUser.findOne({ where: { email: 'reset@test.com' } });
+        expect(updatedUser.passwordHash).to.not.equal(oldHash);
+        expect(verifyPassword('new-secure-pw-9876', updatedUser.passwordHash)).to.equal(true);
+        expect(verifyPassword('secure-password-1234', updatedUser.passwordHash)).to.equal(false);
+        expect(updatedUser.failedLoginCount).to.equal(0);
+        expect(updatedUser.lockedUntil).to.be.null;
+        await models2.sequelize.close();
       } finally {
         fs.rmSync(dir, { recursive: true, force: true });
       }
@@ -288,6 +309,64 @@ describe('Portal admin CLI', function() {
         expect(result.status).to.equal(0);
         expect(result.stderr).to.not.contain('--password secure');
         expect(result.stdout).to.not.contain('--password');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  });
+
+  describe('email validation', function() {
+    it('create with invalid email fails', function() {
+      const { dir, dbPath } = makeTempDb('invalidemail');
+      try {
+        const result = runAdmin([
+          'create', '--email', 'not-an-email', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('invalid email');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('create with whitespace-only email fails', function() {
+      const { dir, dbPath } = makeTempDb('spaceemail');
+      try {
+        const result = runAdmin([
+          'create', '--email', '   ', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('email');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('disable with invalid email fails', function() {
+      const { dir, dbPath } = makeTempDb('disinvalid');
+      try {
+        const result = runAdmin([
+          'disable', '--email', 'bad@@email',
+        ], { PORTAL_DB_STORAGE: dbPath });
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('invalid email');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('reset-password with invalid email fails', function() {
+      const { dir, dbPath } = makeTempDb('resetinvalid');
+      try {
+        const result = runAdmin([
+          'reset-password', '--email', 'bad@@email', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('invalid email');
       } finally {
         fs.rmSync(dir, { recursive: true, force: true });
       }
