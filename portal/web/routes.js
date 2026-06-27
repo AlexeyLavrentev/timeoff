@@ -336,8 +336,13 @@ const createWebRoutes = (models, options = {}) => {
       const rawStatus = singleValue(req.query.status);
       const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
 
-      if (customerFilter) {
-        customerWhere.name = { [Op.like]: '%' + sanitizeLike(customerFilter) + '%' };
+      const customerLike = sanitizeLike(customerFilter);
+      const qLike = sanitizeLike(qFilter);
+
+      if (customerFilter && customerLike) {
+        customerWhere.name = { [Op.like]: '%' + customerLike + '%' };
+      } else if (customerFilter && !customerLike) {
+        customerWhere.id = { [Op.in]: [] };
       }
 
       if (planFilter) {
@@ -353,13 +358,12 @@ const createWebRoutes = (models, options = {}) => {
         where.expiresAt = { [Op.lt]: new Date() };
       }
 
-      if (qFilter) {
-        const escaped = sanitizeLike(qFilter);
+      if (qFilter && qLike) {
         const qConditions = [
-          { payloadHash: { [Op.like]: escaped + '%' } },
-          { licenseHash: { [Op.like]: escaped + '%' } },
-          { '$customer.name$': { [Op.like]: '%' + escaped + '%' } },
-          { '$plan.name$': { [Op.like]: '%' + escaped + '%' } },
+          { payloadHash: { [Op.like]: qLike + '%' } },
+          { licenseHash: { [Op.like]: qLike + '%' } },
+          { '$customer.name$': { [Op.like]: '%' + qLike + '%' } },
+          { '$plan.name$': { [Op.like]: '%' + qLike + '%' } },
         ];
 
         if (where[Op.or]) {
@@ -371,6 +375,8 @@ const createWebRoutes = (models, options = {}) => {
         } else {
           where[Op.or] = qConditions;
         }
+      } else if (qFilter && !qLike) {
+        where.id = { [Op.in]: [] };
       }
 
       const allPlans = await listPlans(Plan);

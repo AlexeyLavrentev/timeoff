@@ -404,10 +404,24 @@ describe('Portal Web UI', function() {
       }
     });
 
-    it('wildcard input with % and _ does not cause 500', async function() {
+    it('wildcard-only customer filter returns empty result', async function() {
       const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licensesBefore = await models.License.count();
       const res = await get(port, '/licenses?customer=%25_%25', cookie);
       expect(res.status).to.equal(200);
+      if (licensesBefore > 0) {
+        expect(res.body).to.contain('Ничего не найдено');
+      }
+    });
+
+    it('wildcard-only q filter returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licensesBefore = await models.License.count();
+      const res = await get(port, '/licenses?q=%25_%25', cookie);
+      expect(res.status).to.equal(200);
+      if (licensesBefore > 0) {
+        expect(res.body).to.contain('Ничего не найдено');
+      }
     });
   });
 
