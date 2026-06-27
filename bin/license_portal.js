@@ -5,6 +5,7 @@
 const { getPortalConfig, validateProductionConfig, ensureDbDirectory } = require('../portal/config');
 const { loadPortalModels } = require('../portal/models');
 const { seedPlans } = require('../portal/seeders/seed_plans');
+const { runSchemaMaintenance } = require('../portal/models/schema_maintenance');
 const { createSigningProvider } = require('../portal/signing/provider_factory');
 const { createPortalWebApp } = require('../portal/web/app');
 const { createPersistentStore } = require('../portal/auth/session_store');
@@ -20,6 +21,11 @@ const run = async () => {
 
   const models = loadPortalModels({ storage: config.dbStorage });
   await models.sequelize.sync();
+
+  const schemaChanges = await runSchemaMaintenance(models.sequelize);
+  if (schemaChanges.metadataColumnAdded) {
+    console.log('Schema maintenance: added metadata column to licenses table');
+  }
 
   const seeded = await seedPlans(models.Plan);
   console.log('Plans seeded:', seeded.map(s => s.name).join(', '));
