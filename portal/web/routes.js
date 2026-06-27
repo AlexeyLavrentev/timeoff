@@ -42,6 +42,41 @@ const escapeHtml = (str) => String(str || '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 
+const SAFE_DETAIL_KEYS = new Set([
+  'reason', 'role', 'email', 'customer', 'plan', 'features',
+  'expiresAt', 'payloadHash', 'licenseHash', 'count', 'source',
+]);
+
+const BLOCKED_KEY_PATTERNS = [
+  'password', 'secret', 'token', 'private', 'signature',
+  'licensepayload', 'session', 'key',
+];
+
+const summarizeAuditDetails = (details) => {
+  if (!details || typeof details !== 'object') return '—';
+
+  const parts = [];
+  for (const [key, value] of Object.entries(details)) {
+    const lower = key.toLowerCase();
+
+    if (lower === 'payloadhash' || lower === 'licensehash') {
+      parts.push(key + '=' + String(value).substring(0, 16) + '…');
+      continue;
+    }
+
+    if (!SAFE_DETAIL_KEYS.has(key)) continue;
+
+    const blocked = BLOCKED_KEY_PATTERNS.some(p => lower.includes(p));
+    if (blocked) continue;
+
+    const str = Array.isArray(value) ? value.join(',') : String(value);
+    parts.push(key + '=' + str.substring(0, 40));
+  }
+
+  const result = parts.join(', ');
+  return result ? result.substring(0, 120) : '—';
+};
+
 const createWebRoutes = (models, options = {}) => {
   const router = express.Router();
   const { AdminUser, Customer, Plan, License, AuditLog } = models;
@@ -398,11 +433,82 @@ const createWebRoutes = (models, options = {}) => {
   router.get('/licenses/:id/download', requireAuth, async (req, res, next) => {
     try {
       const blob = await getLicenseBlob(License, req.params.id);
+
+      await AuditLog.create({
+        actorName: req.session.userEmail,
+        action: 'license_download',
+        entityType: 'License',
+        entityId: req.params.id,
+      });
+
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', 'attachment; filename="license.json"');
       res.send(blob);
     } catch (error) {
       if (error.code === 'NOT_FOUND') return res.status(404).send('Лицензия не найдена');
+      next(error);
+    }
+  });
+
+  router.get('/licenses/export/registry.json', requireRole('admin'), async (req, res, next) => {
+    try {
+      const licenses = await License.findAll({
+        attributes: { exclude: ['licensePayload'] },
+        order: [['issuedAt', 'DESC']],
+        include: [
+          { model: Customer, as: 'customer', attributes: ['name'] },
+          { model: Plan, as: 'plan', attributes: ['name'] },
+        ],
+      });
+
+      const registry = licenses.map(l => ({
+        customer: l.customer ? l.customer.name : null,
+        plan: l.plan ? l.plan.name : null,
+        features: l.features || [],
+        expires: l.expiresAt ? l.expiresAt.toISOString().split('T')[0] : null,
+        algorithm: l.algorithm,
+        issuedAt: l.issuedAt ? l.issuedAt.toISOString() : null,
+        issuedBy: l.actorName || null,
+        payloadHash: l.payloadHash,
+        licenseHash: l.licenseHash,
+      }));
+
+      await AuditLog.create({
+        actorName: req.session.userEmail,
+        action: 'registry_export',
+        entityType: 'License',
+        details: { count: registry.length },
+      });
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="registry.json"');
+      res.json(registry);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/audit', requireRole('admin'), async (req, res, next) => {
+    try {
+      const logs = await AuditLog.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: 100,
+      });
+
+      res.render('audit', {
+        title: 'Аудит-лог',
+        csrf: res.locals.csrf,
+        logs: logs.map(l => ({
+          id: l.id,
+          timestamp: l.createdAt ? new Date(l.createdAt).toISOString().replace('T', ' ').substring(0, 19) : '—',
+          actorName: escapeHtml(l.actorName) || '—',
+          action: escapeHtml(l.action),
+          entityType: escapeHtml(l.entityType),
+          entityId: l.entityId ? l.entityId.substring(0, 8) + '…' : '—',
+          detailsSummary: escapeHtml(summarizeAuditDetails(l.details)),
+        })),
+      });
+    } catch (error) {
       next(error);
     }
   });

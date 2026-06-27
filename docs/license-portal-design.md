@@ -1032,6 +1032,23 @@ A  t/unit/portal/import_registry.js
   PORTAL_LICENSE_PUBLIC_KEY_FILE (обязательные), PORTAL_PORT, PORTAL_DB_STORAGE,
   PORTAL_SESSION_SECURE (опциональные).
 
+### Phase 2D-1 — статус реализации
+
+Реализовано:
+- **Аудит-лог страница**: `GET /audit` (admin only). Последние 100 записей,
+  newest first. Показывает timestamp, actorName, action, entityType, entityId,
+  details summary. Details escaped, no secrets in HTML.
+- **Registry export**: `GET /licenses/export/registry.json` (admin only).
+  Экспортирует безопасные метаданные: customer, plan, features, expires,
+  algorithm, issuedAt, issuedBy, payloadHash, licenseHash. Без licensePayload,
+  signature, private key, passwordHash.
+- **Audit events**: registry_export, license_download логируются в AuditLog.
+- **Navigation**: ссылка "Аудит" в nav для admin.
+- Тесты: 11 новых (audit access, export RBAC, export safety, audit logging).
+
+Это portal metadata only — не механизм отзыва. Клиентский рантайм остаётся
+офлайн и не обращается к порталу.
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow
