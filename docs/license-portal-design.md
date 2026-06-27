@@ -954,3 +954,30 @@ A  t/unit/portal/import_registry.js
 - Web UI (Phase 2B-3).
 - Docker deployment (Phase 2B-5).
 - KMS signing (Phase 2C).
+
+### Phase 2B-3 — статус реализации
+
+Реализовано:
+- **AdminUser модель**: email (unique), displayName, passwordHash (scrypt),
+  role (viewer/issuer/admin), isActive, lastLoginAt, failedLoginCount, lockedUntil.
+- **Password hashing**: scrypt через `lib/auth/password.js` (reuse), per-user salt,
+  timing-safe comparison. Без MD5 fallback для portal users.
+- **Session**: `express-session` с memory store (dev/test). Production —
+  persistent store перед развёртыванием.
+- **Auth endpoints**: `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`.
+- **Auth middleware**: `requireAuth`, `requireRole(...)`.
+- **Role-based access**:
+  - viewer: GET customers/plans/licenses
+  - issuer: всё из viewer + POST /licenses
+  - admin: всё из issuer + POST /customers
+- **Lockout**: 5 неудачных попыток → блокировка на 15 минут.
+- **Audit logging**: login_success, login_failed, logout, issue_license (actorName=email).
+- **Password safety**: passwordHash не возвращается ни из одного API endpoint.
+- Тесты: 47 тестов для signing, password, auth, roles, audit, safety.
+
+Не реализовано:
+- Web UI (Phase 2B-4).
+- SSO/VPN gating (Phase 2B-5).
+- Docker deployment (Phase 2B-5).
+- Persistent session store (Phase 2B-5).
+- KMS signing (Phase 2C).
