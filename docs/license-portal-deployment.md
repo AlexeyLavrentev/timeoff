@@ -22,6 +22,7 @@ node bin/license_portal.js
 | `PORTAL_PORT` | нет | Порт (по умолчанию 3001) |
 | `PORTAL_SESSION_SECRET` | в production | Секрет сессии (длинная случайная строка) |
 | `PORTAL_SESSION_SECURE` | нет | `true` если за HTTPS |
+| `PORTAL_SIGNING_PROVIDER` | нет | `file` (default), `vault`, `aws-kms`, `pkcs11`, `external` |
 | `PORTAL_DB_STORAGE` | нет | Путь к SQLite файлу (по умолчанию `data/portal.sqlite`) |
 | `PORTAL_LICENSE_PRIVATE_KEY_FILE` | в production | Путь к приватному ключу PEM |
 | `PORTAL_LICENSE_PRIVATE_KEY` | alt | Приватный ключ PEM через env (не рекомендуется) |
@@ -30,6 +31,22 @@ node bin/license_portal.js
 
 В production **все обязательные переменные должны быть установлены** — портал
 не запустится без них.
+
+## Провайдеры подписи
+
+| Провайдер | Статус | Описание |
+|-----------|--------|----------|
+| `file` | **Реализован** | Подпись через PEM-файл приватного ключа |
+| `vault` | Зарезервирован | HashiCorp Vault (будущее) |
+| `aws-kms` | Зарезервирован | AWS KMS (будущее) |
+| `pkcs11` | Зарезервирован | PKCS#11 / HSM (будущее) |
+| `external` | Зарезервирован | Внешний сервис подписи (будущее) |
+
+Провайдер выбирается через `PORTAL_SIGNING_PROVIDER` (по умолчанию `file`).
+Для `file`-провайдера обязательны `PORTAL_LICENSE_PRIVATE_KEY_FILE` и
+`PORTAL_LICENSE_PUBLIC_KEY_FILE`.
+
+Приватный ключ **никогда не хранится в БД** и не передаётся клиенту.
 
 ## Docker Compose
 

@@ -2,11 +2,10 @@
 
 'use strict';
 
-const path = require('path');
 const { getPortalConfig, validateProductionConfig, ensureDbDirectory } = require('../portal/config');
 const { loadPortalModels } = require('../portal/models');
 const { seedPlans } = require('../portal/seeders/seed_plans');
-const { FileSigningProvider } = require('../portal/signing/file_signing_provider');
+const { createSigningProvider } = require('../portal/signing/provider_factory');
 const { createPortalWebApp } = require('../portal/web/app');
 const { createPersistentStore } = require('../portal/auth/session_store');
 
@@ -25,12 +24,8 @@ const run = async () => {
   const seeded = await seedPlans(models.Plan);
   console.log('Plans seeded:', seeded.map(s => s.name).join(', '));
 
-  const signingProvider = new FileSigningProvider({
-    privateKeyPath: config.privateKeyPath,
-    privateKeyPem: config.privateKeyPem,
-    publicKeyPath: config.publicKeyPath,
-    publicKeyPem: config.publicKeyPem,
-  });
+  const signingProvider = createSigningProvider(config);
+  console.log('Signing provider: ' + signingProvider.getInfo().type);
 
   let sessionStore = null;
   if (config.isProduction) {
