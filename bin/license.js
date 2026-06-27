@@ -201,6 +201,7 @@ const handleGenerate = () => {
 
   if (argv.out) {
     const outPath = path.resolve(argv.out);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, licenseOutput + '\n');
     process.stderr.write('License written to ' + outPath + '\n');
   }
@@ -218,13 +219,18 @@ const appendRegistry = (licenseOutput, outFilePath) => {
   const registryPath = path.resolve(argv.registry);
   let registry = [];
 
+  fs.mkdirSync(path.dirname(registryPath), { recursive: true });
+
   if (fs.existsSync(registryPath)) {
     try {
       registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
-      if (!Array.isArray(registry)) registry = [];
+      if (!Array.isArray(registry)) {
+        process.stderr.write('Error: registry file is not a JSON array: ' + registryPath + '\n');
+        process.exit(1);
+      }
     } catch (e) {
-      process.stderr.write('Warning: registry file is corrupt, starting fresh.\n');
-      registry = [];
+      process.stderr.write('Error: registry file is corrupt (invalid JSON): ' + registryPath + '\n');
+      process.exit(1);
     }
   }
 

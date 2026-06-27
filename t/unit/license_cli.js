@@ -378,6 +378,96 @@ describe('License CLI', function() {
       expect(result.status).to.not.equal(0);
       expect(result.stderr).to.contain('not found');
     });
+
+    it('refuses to overwrite a corrupt registry file', function() {
+      const regFile = tmpFile('tmp_registry_corrupt.json');
+
+      try {
+        fs.writeFileSync(regFile, '{not valid json[');
+
+        const result = runCli('license.js', [
+          'generate',
+          '--customer', 'CorruptTest',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('corrupt');
+        expect(fs.readFileSync(regFile, 'utf8')).to.equal('{not valid json[');
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('refuses to overwrite a registry file that is not an array', function() {
+      const regFile = tmpFile('tmp_registry_notarray.json');
+
+      try {
+        fs.writeFileSync(regFile, '{"not":"an array"}');
+
+        const result = runCli('license.js', [
+          'generate',
+          '--customer', 'NotArrayTest',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('not a JSON array');
+        expect(JSON.parse(fs.readFileSync(regFile, 'utf8'))).to.deep.equal({ not: 'an array' });
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('creates parent directories for --out', function() {
+      const outDir = tmpFile('tmp_nested_out_' + Date.now());
+      const outFile = path.join(outDir, 'sub', 'license.json');
+
+      try {
+        const result = runCli('license.js', [
+          'generate',
+          '--customer', 'NestedOut',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--out', outFile,
+        ]);
+
+        expect(result.status).to.equal(0);
+        expect(fs.existsSync(outFile)).to.equal(true);
+
+        const envelope = JSON.parse(fs.readFileSync(outFile, 'utf8'));
+        expect(envelope.payload.customer).to.equal('NestedOut');
+      } finally {
+        fs.rmSync(outDir, { recursive: true, force: true });
+      }
+    });
+
+    it('creates parent directories for --registry', function() {
+      const regDir = tmpFile('tmp_nested_reg_' + Date.now());
+      const regFile = path.join(regDir, 'sub', 'registry.json');
+
+      try {
+        const result = runCli('license.js', [
+          'generate',
+          '--customer', 'NestedReg',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        expect(result.status).to.equal(0);
+        expect(fs.existsSync(regFile)).to.equal(true);
+
+        const registry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+        expect(registry[0].customer).to.equal('NestedReg');
+      } finally {
+        fs.rmSync(regDir, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('license.js inspect', function() {
