@@ -44,7 +44,14 @@ const createAuthRouter = (models) => {
       }
 
       if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-        return res.status(401).json({ error: 'Account temporarily locked. Try again later.' });
+        await models.AuditLog.create({
+          actorName: user.email,
+          action: 'login_failed',
+          entityType: 'AdminUser',
+          entityId: user.id,
+          details: { reason: 'account_locked' },
+        });
+        return res.status(401).json({ error: 'Invalid email or password' });
       }
 
       const valid = verifyPassword(password, user.passwordHash);

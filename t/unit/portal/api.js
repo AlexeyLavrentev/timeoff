@@ -608,10 +608,136 @@ describe('Portal API auth', function() {
     });
   });
 
+  describe('lockout', function() {
+    it('5 wrong password attempts set lockedUntil', async function() {
+      const user = await models.AdminUser.create({
+        email: 'locktest@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+      });
+
+      for (let i = 0; i < 5; i++) {
+        await httpPost('/auth/login', { email: 'locktest@test.com', password: 'wrong' });
+      }
+
+      await user.reload();
+      expect(user.lockedUntil).to.not.be.null;
+      expect(new Date(user.lockedUntil)).to.be.greaterThan(new Date());
+      expect(user.failedLoginCount).to.equal(5);
+    });
+
+    it('locked user cannot login even with correct password', async function() {
+      await models.AdminUser.create({
+        email: 'lockeduser@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      const res = await httpPost('/auth/login', { email: 'lockeduser@test.com', password: 'correct123' });
+      expect(res.status).to.equal(401);
+      expect(res.body.error).to.equal('Invalid email or password');
+    });
+
+    it('locked account audit log records reason', async function() {
+      await models.AdminUser.create({
+        email: 'lockaudit@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      await httpPost('/auth/login', { email: 'lockaudit@test.com', password: 'correct123' });
+
+      const logs = await models.AuditLog.findAll({
+        where: { action: 'login_failed' },
+        order: [['createdAt', 'DESC']],
+      });
+      const lockLog = logs.find(l => l.details && l.details.reason === 'account_locked');
+      expect(lockLog).to.not.be.undefined;
+      expect(lockLog.actorName).to.equal('lockaudit@test.com');
+    });
+
+    it('locked account response equals invalid-credentials response', async function() {
+      await models.AdminUser.create({
+        email: 'lockmsg@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        lockedUntil: new Date(Date.now() + 60000),
+        failedLoginCount: 5,
+      });
+
+      const lockedRes = await httpPost('/auth/login', { email: 'lockmsg@test.com', password: 'correct123' });
+      const wrongRes = await httpPost('/auth/login', { email: 'admin@test.com', password: 'wrong' });
+
+      expect(lockedRes.status).to.equal(wrongRes.status);
+      expect(lockedRes.body.error).to.equal(wrongRes.body.error);
+    });
+
+    it('failedLoginCount resets after successful login', async function() {
+      await models.AdminUser.create({
+        email: 'resetcount@test.com',
+        passwordHash: hashPassword('correct123'),
+        role: 'viewer',
+        failedLoginCount: 3,
+      });
+
+      const res = await httpPost('/auth/login', { email: 'resetcount@test.com', password: 'correct123' });
+      expect(res.status).to.equal(200);
+
+      const user = await models.AdminUser.findOne({ where: { email: 'resetcount@test.com' } });
+      expect(user.failedLoginCount).to.equal(0);
+      expect(user.lockedUntil).to.be.null;
+    });
+  });
+
+  describe('session cookie safety', function() {
+    it('Set-Cookie includes HttpOnly and SameSite=Lax', async function() {
+      const res = await httpPost('/auth/login', { email: 'admin@test.com', password: 'admin123' });
+      const setCookie = res.headers['set-cookie'];
+      const cookie = Array.isArray(setCookie) ? setCookie.join('; ') : (setCookie || '');
+      expect(cookie).to.contain('HttpOnly');
+      expect(cookie).to.contain('SameSite=Lax');
+    });
+  });
+
   describe('isolation', function() {
     it('portal router is not mounted in main app', function() {
       const mainApp = express();
       expect(mainApp._router).to.be.undefined;
     });
+  });
+});
+
+describe('Portal session module', function() {
+  it('throws in production without secret', function() {
+    expect(() => createSessionMiddleware({ nodeEnv: 'production' })).to.throw('PORTAL_SESSION_SECRET');
+  });
+
+  it('works in production with explicit secret', function() {
+    const mw = createSessionMiddleware({ nodeEnv: 'production', secret: 'prod-secret' });
+    expect(mw).to.be.a('function');
+  });
+
+  it('uses dev fallback in test environment', function() {
+    const mw = createSessionMiddleware({});
+    expect(mw).to.be.a('function');
+  });
+
+  it('uses PORTAL_SESSION_SECRET env when set', function() {
+    const orig = process.env.PORTAL_SESSION_SECRET;
+    process.env.PORTAL_SESSION_SECRET = 'env-secret';
+    try {
+      const mw = createSessionMiddleware({});
+      expect(mw).to.be.a('function');
+    } finally {
+      if (orig === undefined) {
+        delete process.env.PORTAL_SESSION_SECRET;
+      } else {
+        process.env.PORTAL_SESSION_SECRET = orig;
+      }
+    }
   });
 });
