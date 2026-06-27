@@ -280,6 +280,76 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('license list filtering', function() {
+    it('/licenses without filters still works', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Лицензии');
+    });
+
+    it('customer filter returns matching customer', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=WebCorp', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('WebCorp');
+    });
+
+    it('customer filter excludes non-matching', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=NonExistentCorp999', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('plan filter works', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?plan=pro', cookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('status=active includes non-expired and perpetual', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?status=active', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('filter form preserves selected values', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=WebCorp&plan=pro&status=active&q=test', cookie);
+      expect(res.body).to.contain('value="WebCorp"');
+      expect(res.body).to.contain('value="test"');
+    });
+
+    it('no filter results shows empty state', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=ZZZ_NONEXISTENT_ZZZ', cookie);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('all RBAC roles can access filtered list', async function() {
+      const viewer = await login(port, 'viewer@test.com', 'viewer123');
+      const issuer = await login(port, 'issuer@test.com', 'issuer123');
+      const admin = await login(port, 'admin@test.com', 'admin123');
+
+      const vRes = await get(port, '/licenses?status=active', viewer.cookie);
+      const iRes = await get(port, '/licenses?status=active', issuer.cookie);
+      const aRes = await get(port, '/licenses?status=active', admin.cookie);
+
+      expect(vRes.status).to.equal(200);
+      expect(iRes.status).to.equal(200);
+      expect(aRes.status).to.equal(200);
+    });
+
+    it('filtered list does not contain licensePayload', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=WebCorp', cookie);
+      expect(res.body).to.not.contain('licensePayload');
+      expect(res.body).to.not.contain('RSA-SHA256');
+    });
+  });
+
   describe('security', function() {
     it('no rendered HTML contains passwordHash', async function() {
       const { cookie } = await login(port, 'admin@test.com', 'admin123');
