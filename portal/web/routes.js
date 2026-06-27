@@ -123,19 +123,28 @@ const createWebRoutes = (models, options = {}) => {
 
       await user.update({ lastLoginAt: new Date(), failedLoginCount: 0, lockedUntil: null });
 
-      req.session.userId = user.id;
-      req.session.userEmail = user.email;
-      req.session.userRole = user.role;
+      const savedEmail = user.email;
+      const savedId = user.id;
+      const savedRole = user.role;
 
-      await AuditLog.create({
-        actorName: user.email,
-        action: 'login_success',
-        entityType: 'AdminUser',
-        entityId: user.id,
-        details: { role: user.role },
+      req.session.regenerate(async (err) => {
+        if (err) return next(err);
+
+        req.session.userId = savedId;
+        req.session.userEmail = savedEmail;
+        req.session.userRole = savedRole;
+        req.session.csrfToken = crypto.randomBytes(16).toString('hex');
+
+        await AuditLog.create({
+          actorName: savedEmail,
+          action: 'login_success',
+          entityType: 'AdminUser',
+          entityId: savedId,
+          details: { role: savedRole },
+        });
+
+        res.redirect('/');
       });
-
-      res.redirect('/');
     } catch (error) {
       next(error);
     }
