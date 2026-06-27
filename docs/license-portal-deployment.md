@@ -95,21 +95,30 @@ docker compose -f docker-compose.portal.yml logs -f portal
 
 ## Администрирование
 
+Пароли передаются через переменные окружения (`--password-env`), а не как
+аргументы командной строки (защита от shell history и process list).
+
 ```bash
-# Создать администратора
-node bin/portal_admin.js create-admin --email admin@example.com --password <pw> [--role admin]
+# Создать первого администратора
+PORTAL_ADMIN_PASSWORD=$(openssl rand -base64 16) node bin/portal_admin.js create \
+  --email admin@example.com --password-env PORTAL_ADMIN_PASSWORD
+
+# Создать с указанием роли
+PORTAL_ADMIN_PASSWORD=secret12345678 node bin/portal_admin.js create \
+  --email issuer@example.com --password-env PORTAL_ADMIN_PASSWORD --role issuer
 
 # Список администраторов
-node bin/portal_admin.js list-admins
+node bin/portal_admin.js list
 
 # Отключить администратора
-node bin/portal_admin.js disable-admin --email admin@example.com
+node bin/portal_admin.js disable --email admin@example.com
 
 # Сбросить пароль
-node bin/portal_admin.js reset-password --email admin@example.com --password <new-pw>
+NEW_PASSWORD=newsecret12345678 node bin/portal_admin.js reset-password \
+  --email admin@example.com --password-env NEW_PASSWORD
 ```
 
-Роли: `viewer`, `issuer`, `admin`.
+Роли: `viewer`, `issuer`, `admin`. Пароль: минимум 12 символов.
 
 ## Reverse proxy
 

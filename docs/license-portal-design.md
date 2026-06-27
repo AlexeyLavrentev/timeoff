@@ -1089,6 +1089,19 @@ Detail — operational metadata only, не влияет на рантайм.
 - **Docs**: обновлена `docs/license-portal-deployment.md` — backup script usage,
   restore procedure, warnings about private key and password hashes.
 
+### Phase 2D-5 — статус реализации
+
+Реализовано:
+- **Admin CLI hardened**: `bin/portal_admin.js` — `--password-env` вместо
+  `--password` (защита от shell history). Валидация: min 12 chars, пустая
+  пароль → fail, невалидный env → fail. Пароль/хэш никогда не печатаются.
+- **Команды**: `create`, `list`, `disable`, `reset-password`.
+- **Reset password**: очищает `failedLoginCount` и `lockedUntil`.
+- Тесты: 17 новых (create, list, disable, reset, error handling, safety).
+- Docs: обновлен `docs/license-portal-deployment.md` — password-env workflow.
+
+Нет public self-registration. Нет веб-bootstrap страницы.
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow
