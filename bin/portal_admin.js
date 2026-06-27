@@ -3,6 +3,7 @@
 'use strict';
 
 const argv = require('minimist')(process.argv.slice(2));
+const validator = require('validator');
 const { getPortalConfig, ensureDbDirectory } = require('../portal/config');
 const { loadPortalModels } = require('../portal/models');
 const { hashPassword } = require('../portal/auth/passwords');
@@ -10,6 +11,19 @@ const { VALID_ROLES } = require('../portal/models/admin_user');
 
 const subcommand = argv._[0];
 const MIN_PASSWORD_LENGTH = 12;
+
+const normalizeEmail = (raw) => {
+  const value = String(raw || '').toLowerCase().trim();
+  if (!value) {
+    process.stderr.write('Error: email is required and cannot be empty.\n');
+    process.exit(1);
+  }
+  if (!validator.isEmail(value)) {
+    process.stderr.write('Error: invalid email address: ' + value + '\n');
+    process.exit(1);
+  }
+  return value;
+};
 
 const printUsageAndExit = () => {
   process.stderr.write([
@@ -65,6 +79,7 @@ const handleCreate = async () => {
     process.exit(1);
   }
 
+  const email = normalizeEmail(argv.email);
   const password = getPasswordFromEnv();
   const role = argv.role || 'admin';
 
@@ -76,7 +91,6 @@ const handleCreate = async () => {
   const models = await getDb();
 
   try {
-    const email = argv.email.toLowerCase().trim();
     const existing = await models.AdminUser.findOne({ where: { email } });
     if (existing) {
       process.stderr.write('Error: user with email ' + email + ' already exists.\n');
@@ -130,10 +144,10 @@ const handleDisable = async () => {
     process.exit(1);
   }
 
+  const email = normalizeEmail(argv.email);
   const models = await getDb();
 
   try {
-    const email = argv.email.toLowerCase().trim();
     const user = await models.AdminUser.findOne({ where: { email } });
     if (!user) {
       process.stderr.write('Error: user not found: ' + email + '\n');
@@ -153,11 +167,11 @@ const handleResetPassword = async () => {
     process.exit(1);
   }
 
+  const email = normalizeEmail(argv.email);
   const password = getPasswordFromEnv();
   const models = await getDb();
 
   try {
-    const email = argv.email.toLowerCase().trim();
     const user = await models.AdminUser.findOne({ where: { email } });
     if (!user) {
       process.stderr.write('Error: user not found: ' + email + '\n');
