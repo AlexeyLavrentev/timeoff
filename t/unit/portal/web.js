@@ -276,6 +276,61 @@ describe('Portal Web UI', function() {
       expect(res.status).to.equal(200);
       expect(res.body).to.contain('Лицензий для этого клиента пока нет.');
     });
+
+    it('unauthenticated GET /customers/:id redirects to /login', async function() {
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`);
+        expect(res.status).to.equal(302);
+        expect(res.headers.location).to.equal('/login');
+      }
+    });
+
+    it('customer detail shows real total count, not just latest 20', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'CountCust_' + Date.now() });
+      const plan = await models.Plan.findOne({ where: { name: 'starter' } });
+
+      for (let i = 0; i < 25; i++) {
+        await models.License.create({
+          customerId: cust.id,
+          planId: plan.id,
+          features: ['ldap_authentication'],
+          algorithm: 'RSA-SHA256',
+          payloadHash: crypto.createHash('sha256').update('count-' + i + '-' + Date.now()).digest('hex'),
+          licenseHash: crypto.createHash('sha256').update('count-lic-' + i + '-' + Date.now()).digest('hex'),
+          licensePayload: JSON.stringify({ payload: { customer: 'CountCust' }, algorithm: 'RSA-SHA256', signature: 'x' }),
+          issuedAt: new Date(),
+        });
+      }
+
+      const res = await get(port, `/customers/${cust.id}`, cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('25');
+    });
+
+    it('customer detail renders payloadHash and licenseHash prefixes', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const license = await models.License.findOne();
+      if (license) {
+        const cust = await license.getCustomer();
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.contain('Payload Hash');
+        expect(res.body).to.contain('License Hash');
+        expect(res.body).to.contain(license.payloadHash.substring(0, 12));
+        expect(res.body).to.contain(license.licenseHash.substring(0, 12));
+      }
+    });
+
+    it('customer name with special characters produces safe filter link', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const specialCust = await models.Customer.create({ name: 'Sp & Corp <test>' });
+      const res = await get(port, `/customers/${specialCust.id}`, cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('/licenses?customer=Sp & Corp <test>');
+      expect(res.body).to.contain('/licenses?customer=');
+    });
   });
 
   describe('plans', function() {
