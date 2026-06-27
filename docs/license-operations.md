@@ -100,6 +100,60 @@ node bin/sign_license.js \
   --base64 > license.blob
 ```
 
+### Сохранение в файл (`--out`)
+
+```bash
+node bin/license.js generate \
+  --customer "ООО Ромашка" \
+  --plan pro \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --out licenses/romashka-pro-2027.json
+```
+
+Лицензия записывается в указанный файл вместо stdout. Путь выводится в stderr.
+
+### Регистр выданных лицензий (`--registry`)
+
+Регистр — локальный JSON-файл вендора для учёта выпущенных лицензий. Это
+прекурсор будущего License Portal MVP: пока без веб-UI и БД, только файл.
+
+```bash
+node bin/license.js generate \
+  --customer "ООО Ромашка" \
+  --plan enterprise \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --out licenses/romashka-enterprise.json \
+  --registry licenses/registry.json
+```
+
+Каждая запись в регистре содержит:
+
+| Поле          | Описание |
+|---------------|----------|
+| `customer`    | Имя клиента |
+| `plan`        | Тарифный план |
+| `features`    | Список фич |
+| `expires`     | Дата истечения |
+| `algorithm`   | Алгоритм подписи |
+| `issuedAt`    | ISO-дата выпуска |
+| `issuedBy`    | Имя системного пользователя |
+| `payloadHash` | SHA-256 канонического payload (hex) |
+| `licenseHash` | SHA-256 полного конверта (hex) |
+| `outputFile`  | Путь к файлу лицензии (если `--out`) |
+
+**Что НЕ хранится в регистре:** приватный ключ, подпись, полный blob лицензии.
+Регистр — только метаданные для отслеживания.
+
+```bash
+# Просмотр содержимого регистра
+node bin/license.js registry --registry licenses/registry.json
+```
+
+> **Важно:** файл регистра — операционная запись вендора. Никогда не передавайте
+> его клиенту и не коммитьте в репозиторий.
+
 ## Просмотр лицензии
 
 Не требует приватного ключа. Можно передать строку или путь к файлу:
@@ -229,6 +283,22 @@ docker compose logs app | grep -i license
 > - Передаваться через незашифрованные каналы
 >
 > Храните приватный ключ в защищённом хранилище (KMS, HSM, зашифрованный vault).
+
+## Регистр как прекурсор License Portal
+
+Текущий workflow с `--registry` — это ручная версия того, что в будущем станет
+License Portal MVP:
+
+| Сейчас (Phase 2B-0)           | Portal MVP (Phase 2B)            |
+|-------------------------------|----------------------------------|
+| JSON-файл на диске            | БД (SQLite/Postgres)             |
+| CLI generate + --registry     | Веб-форма + KMS-подпись          |
+| Ручной просмотр registry      | Веб-UI со списком и поиском      |
+| Локальный файл у вендора      | Сервис за SSO/VPN вендора        |
+| SHA-256 хэши для поиска       | Тот же формат + индексы          |
+
+Формат записей регистра совместим: при миграции на Portal достаточно
+импортировать существующий JSON в БД.
 
 ## Дополнительные материалы
 
