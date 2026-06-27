@@ -98,27 +98,43 @@ docker compose -f docker-compose.portal.yml logs -f portal
 Пароли передаются через переменные окружения (`--password-env`), а не как
 аргументы командной строки (защита от shell history и process list).
 
+Все команды `create`, `disable`, `reset-password` записываются в аудит-лог
+(portal AuditLog). Опциональный `--actor-email` указывает оператора; без
+него используется `portal-admin-cli`.
+
 ```bash
 # Создать первого администратора
 PORTAL_ADMIN_PASSWORD=$(openssl rand -base64 16) node bin/portal_admin.js create \
   --email admin@example.com --password-env PORTAL_ADMIN_PASSWORD
 
-# Создать с указанием роли
+# Создать с указанием роли и.actor
 PORTAL_ADMIN_PASSWORD=secret12345678 node bin/portal_admin.js create \
-  --email issuer@example.com --password-env PORTAL_ADMIN_PASSWORD --role issuer
+  --email issuer@example.com --password-env PORTAL_ADMIN_PASSWORD \
+  --role issuer --actor-email ops@example.com
 
 # Список администраторов
 node bin/portal_admin.js list
 
 # Отключить администратора
-node bin/portal_admin.js disable --email admin@example.com
+node bin/portal_admin.js disable --email admin@example.com --actor-email ops@example.com
 
 # Сбросить пароль
 NEW_PASSWORD=newsecret12345678 node bin/portal_admin.js reset-password \
-  --email admin@example.com --password-env NEW_PASSWORD
+  --email admin@example.com --password-env NEW_PASSWORD --actor-email ops@example.com
 ```
 
 Роли: `viewer`, `issuer`, `admin`. Пароль: минимум 12 символов.
+
+### Аудит
+
+| Команда | Действие в AuditLog | Детали |
+|---------|---------------------|--------|
+| `create` | `admin_user_create` | email, role, displayNamePresent |
+| `disable` | `admin_user_disable` | email, role |
+| `reset-password` | `admin_user_reset_password` | email, lockoutCleared |
+| `list` | (не логируется) | — |
+
+В деталях аудита **никогда** не хранятся пароли, хэши или токены.
 
 ## Reverse proxy
 
