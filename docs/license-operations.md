@@ -303,5 +303,6 @@ License Portal MVP:
 ## Дополнительные материалы
 
 - [Архитектура лицензирования](licensing-architecture.md) — ADR с обоснованием модели
+- [Проектирование License Portal MVP](license-portal-design.md) — архитектура и план реализации
 - [Premium-модуль](premium-module.md) — установка и конфигурация
 - [Docker Compose](docker-compose.md) — развёртывание
