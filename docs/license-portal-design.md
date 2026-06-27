@@ -928,3 +928,29 @@ A  t/unit/portal/import_registry.js
 - Web UI (Phase 2B-3).
 - API routes (Phase 2B-2).
 - Отдельные миграции Umzug (MVP использует sequelize.sync, миграции — Phase 2B-2).
+
+### Phase 2B-2 — статус реализации
+
+Реализовано:
+- **Signing Provider**: `FileSigningProvider` с интерфейсом `sign()` / `getPublicKeyPem()` /
+  `getInfo()`. Канонический JSON как в `lib/features.js`. Приватный ключ — из файла
+  или env, никогда не логируется и не сериализуется (`toJSON()`).
+- **License Service**: `issueLicense()` — формирует payload совместимый с `TIMEOFF_LICENSE`,
+  подписывает через провайдер, вычисляет `payloadHash`/`licenseHash`, сохраняет
+  `licensePayload` в БД, создаёт AuditLog.
+- **Customer/Plan Services**: `listCustomers`, `createCustomer`, `getCustomer`,
+  `listPlans`, `getPlan`.
+- **License query**: `listLicenses` (без blob), `getLicense` (без blob), `getLicenseBlob`.
+- **API Router**: Express router `/license-portal/` с endpoints:
+  - `GET /customers`, `POST /customers`
+  - `GET /plans`
+  - `GET /licenses`, `POST /licenses`, `GET /licenses/:id`, `GET /licenses/:id/download`
+  - Не смонтирован в `app.js` — изолирован для тестов и будущего сервиса.
+  - Нет auth middleware — TODO для будущих фаз.
+- Тесты: 31 тест для signing, services, API endpoints.
+
+Не реализовано:
+- AdminUser / auth / session (Phase 2B-3+).
+- Web UI (Phase 2B-3).
+- Docker deployment (Phase 2B-5).
+- KMS signing (Phase 2C).
