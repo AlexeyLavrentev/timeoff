@@ -321,13 +321,23 @@ const createWebRoutes = (models, options = {}) => {
       const customerWhere = {};
       const planWhere = {};
 
-      const customerFilter = req.query.customer || '';
-      const planFilter = req.query.plan || '';
-      const statusFilter = req.query.status || 'all';
-      const qFilter = req.query.q || '';
+      const singleValue = (v) => {
+        if (Array.isArray(v)) return (v[0] || '').trim().substring(0, 128);
+        return typeof v === 'string' ? v.trim().substring(0, 128) : '';
+      };
+
+      const sanitizeLike = (v) => v.replace(/[%_]/g, '');
+
+      const customerFilter = singleValue(req.query.customer);
+      const planFilter = singleValue(req.query.plan);
+      const qFilter = singleValue(req.query.q);
+
+      const VALID_STATUSES = ['all', 'active', 'expired'];
+      const rawStatus = singleValue(req.query.status);
+      const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
 
       if (customerFilter) {
-        customerWhere.name = { [Op.like]: '%' + customerFilter.replace(/%/g, '') + '%' };
+        customerWhere.name = { [Op.like]: '%' + sanitizeLike(customerFilter) + '%' };
       }
 
       if (planFilter) {
@@ -344,7 +354,7 @@ const createWebRoutes = (models, options = {}) => {
       }
 
       if (qFilter) {
-        const escaped = qFilter.replace(/%/g, '');
+        const escaped = sanitizeLike(qFilter);
         const qConditions = [
           { payloadHash: { [Op.like]: escaped + '%' } },
           { licenseHash: { [Op.like]: escaped + '%' } },

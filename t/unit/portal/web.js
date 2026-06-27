@@ -348,6 +348,67 @@ describe('Portal Web UI', function() {
       expect(res.body).to.not.contain('licensePayload');
       expect(res.body).to.not.contain('RSA-SHA256');
     });
+
+    it('repeated query params do not cause 500', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=A&customer=B', cookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('invalid status falls back to all', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?status=nonexistent', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Лицензии');
+    });
+
+    it('status=expired works with expired license', async function() {
+      const { cookie: adminCookie } = await login(port, 'admin@test.com', 'admin123');
+      const custList = await models.Customer.findAll();
+      const planList = await models.Plan.findAll();
+
+      await models.License.create({
+        customerId: custList[0].id,
+        planId: planList[0].id,
+        features: ['sso_authentication'],
+        expiresAt: '2000-01-01',
+        algorithm: 'RSA-SHA256',
+        payloadHash: crypto.createHash('sha256').update('expired-test-' + Date.now()).digest('hex'),
+        licenseHash: crypto.createHash('sha256').update('expired-lic-' + Date.now()).digest('hex'),
+        issuedAt: new Date(),
+      });
+
+      const res = await get(port, '/licenses?status=expired', adminCookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('q search by payloadHash prefix returns matching license', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const license = await models.License.findOne();
+      if (license) {
+        const prefix = license.payloadHash.substring(0, 10);
+        const res = await get(port, '/licenses?q=' + prefix, cookie);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.not.contain('Ничего не найдено');
+      }
+    });
+
+    it('q search by licenseHash prefix returns matching license', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const license = await models.License.findOne();
+      if (license) {
+        const prefix = license.licenseHash.substring(0, 10);
+        const res = await get(port, '/licenses?q=' + prefix, cookie);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.not.contain('Ничего не найдено');
+      }
+    });
+
+    it('wildcard input with % and _ does not cause 500', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=%25_%25', cookie);
+      expect(res.status).to.equal(200);
+    });
   });
 
   describe('security', function() {
