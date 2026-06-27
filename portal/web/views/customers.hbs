@@ -7,7 +7,7 @@
   <tbody>
     {{#each customers}}
     <tr>
-      <td>{{this.name}}</td>
+      <td><a href="/customers/{{this.id}}">{{this.name}}</a></td>
       <td>{{this.contactEmail}}</td>
       <td>{{this.createdAt}}</td>
     </tr>

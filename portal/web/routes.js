@@ -296,6 +296,66 @@ const createWebRoutes = (models, options = {}) => {
     }
   });
 
+  router.get('/customers/:id', requireAuth, async (req, res, next) => {
+    try {
+      const customer = await Customer.findByPk(req.params.id);
+      if (!customer) return res.status(404).send('Клиент не найден');
+
+      const [totalLicenseCount, licenses] = await Promise.all([
+        License.count({ where: { customerId: customer.id } }),
+        License.findAll({
+          attributes: { exclude: ['licensePayload'] },
+          where: { customerId: customer.id },
+          order: [['issuedAt', 'DESC']],
+          limit: 20,
+          include: [
+            { model: Plan, as: 'plan', attributes: ['name'] },
+          ],
+        }),
+      ]);
+
+      const now = new Date();
+      const filterValue = encodeURIComponent(customer.name);
+
+      res.render('customer-detail', {
+        title: escapeHtml(customer.name),
+        csrf: res.locals.csrf,
+        customer: {
+          id: customer.id,
+          name: escapeHtml(customer.name),
+          contactEmail: escapeHtml(customer.contactEmail),
+          contactName: escapeHtml(customer.contactName),
+          createdAt: formatDate(customer.createdAt),
+          licenseCount: totalLicenseCount,
+          latestIssuedAt: licenses.length > 0 ? formatDate(licenses[0].issuedAt) : null,
+          filterValue,
+        },
+        licenses: licenses.map(l => {
+          let statusDisplay = '—';
+          if (l.expiresAt) {
+            statusDisplay = l.expiresAt > now ? 'Активна' : 'Истекла';
+          } else {
+            statusDisplay = 'Бессрочная';
+          }
+          return {
+            id: l.id,
+            planName: l.plan ? escapeHtml(l.plan.name) : '—',
+            featuresShort: (l.features || []).slice(0, 3).join(', ') + (l.features && l.features.length > 3 ? '…' : ''),
+            expiresAtDisplay: formatDate(l.expiresAt),
+            statusDisplay,
+            issuedAtDisplay: formatDate(l.issuedAt),
+            actorName: escapeHtml(l.actorName) || '—',
+            payloadHashShort: l.payloadHash ? l.payloadHash.substring(0, 12) + '…' : '—',
+            licenseHashShort: l.licenseHash ? l.licenseHash.substring(0, 12) + '…' : '—',
+          };
+        }),
+        canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get('/plans', requireAuth, async (req, res, next) => {
     try {
       const plans = await listPlans(Plan);
