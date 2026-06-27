@@ -25,12 +25,15 @@ COPY config/plan_presets.json ./config/
 COPY lib/auth/password.js ./lib/auth/
 
 RUN groupadd --system --gid 1001 portaljs \
-  && useradd --system --uid 1001 --gid portaljs --create-home portaluser
+  && useradd --system --uid 1001 --gid portaljs --create-home portaluser \
+  && mkdir -p /app/data \
+  && chown portaluser:portaljs /app/data
 
 VOLUME /app/data
 VOLUME /run/secrets
 
 ENV NODE_ENV=production \
+    PORTAL_HOST=0.0.0.0 \
     PORTAL_PORT=3001 \
     PORTAL_DB_STORAGE=/app/data/portal.sqlite \
     PORTAL_LICENSE_PRIVATE_KEY_FILE=/run/secrets/license_private_key \

@@ -7,6 +7,7 @@ const getPortalConfig = () => {
   const isProduction = (process.env.NODE_ENV || '') === 'production';
 
   const config = {
+    host: process.env.PORTAL_HOST || '127.0.0.1',
     port: parseInt(process.env.PORTAL_PORT, 10) || 3001,
     nodeEnv: process.env.NODE_ENV || 'development',
     isProduction,
