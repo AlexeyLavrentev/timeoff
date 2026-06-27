@@ -14,7 +14,7 @@
 
 <div class="actions">
   <a href="/customers" class="btn btn-secondary">← К клиентам</a>
-  <a href="/licenses?customer={{customer.name}}" class="btn">Все лицензии</a>
+  <a href="/licenses?customer={{customer.filterValue}}" class="btn">Все лицензии</a>
   {{#if canIssue}}
   <a href="/licenses/new" class="btn">+ Выпустить лицензию</a>
   {{/if}}
@@ -32,6 +32,8 @@
       <th>Срок</th>
       <th>Выпущена</th>
       <th>Кем</th>
+      <th>Payload Hash</th>
+      <th>License Hash</th>
     </tr>
   </thead>
   <tbody>
@@ -43,6 +45,8 @@
       <td>{{this.expiresAtDisplay}}</td>
       <td>{{this.issuedAtDisplay}}</td>
       <td>{{this.actorName}}</td>
+      <td><code>{{this.payloadHashShort}}</code></td>
+      <td><code>{{this.licenseHashShort}}</code></td>
     </tr>
     {{/each}}
   </tbody>

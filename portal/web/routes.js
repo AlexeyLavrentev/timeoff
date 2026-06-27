@@ -301,17 +301,21 @@ const createWebRoutes = (models, options = {}) => {
       const customer = await Customer.findByPk(req.params.id);
       if (!customer) return res.status(404).send('Клиент не найден');
 
-      const licenses = await License.findAll({
-        attributes: { exclude: ['licensePayload'] },
-        where: { customerId: customer.id },
-        order: [['issuedAt', 'DESC']],
-        limit: 20,
-        include: [
-          { model: Plan, as: 'plan', attributes: ['name'] },
-        ],
-      });
+      const [totalLicenseCount, licenses] = await Promise.all([
+        License.count({ where: { customerId: customer.id } }),
+        License.findAll({
+          attributes: { exclude: ['licensePayload'] },
+          where: { customerId: customer.id },
+          order: [['issuedAt', 'DESC']],
+          limit: 20,
+          include: [
+            { model: Plan, as: 'plan', attributes: ['name'] },
+          ],
+        }),
+      ]);
 
       const now = new Date();
+      const filterValue = encodeURIComponent(customer.name);
 
       res.render('customer-detail', {
         title: escapeHtml(customer.name),
@@ -322,8 +326,9 @@ const createWebRoutes = (models, options = {}) => {
           contactEmail: escapeHtml(customer.contactEmail),
           contactName: escapeHtml(customer.contactName),
           createdAt: formatDate(customer.createdAt),
-          licenseCount: licenses.length,
+          licenseCount: totalLicenseCount,
           latestIssuedAt: licenses.length > 0 ? formatDate(licenses[0].issuedAt) : null,
+          filterValue,
         },
         licenses: licenses.map(l => {
           let statusDisplay = '—';
