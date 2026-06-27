@@ -17,8 +17,17 @@ const canonicalJson = value => JSON.stringify(canonicalize(value));
 const sha256hex = data => crypto.createHash('sha256').update(data).digest('hex');
 
 const issueLicense = async (models, signingProvider, options) => {
-  const { Customer, Plan, License, AuditLog } = models;
+  const { Customer, Plan, License, AuditLog, sequelize } = models;
   const { customerId, planId, expiresAt, features: featuresOverride, actorName = 'portal-api' } = options;
+
+  if (featuresOverride !== null && featuresOverride !== undefined) {
+    if (!Array.isArray(featuresOverride)) {
+      throw Object.assign(new Error('features must be an array'), { code: 'VALIDATION_ERROR' });
+    }
+    if (featuresOverride.some(f => typeof f !== 'string')) {
+      throw Object.assign(new Error('features must be an array of strings'), { code: 'VALIDATION_ERROR' });
+    }
+  }
 
   const customer = await Customer.findByPk(customerId);
   if (!customer) {
@@ -62,48 +71,62 @@ const issueLicense = async (models, signingProvider, options) => {
   const payloadHash = sha256hex(canonicalJson(payload));
   const licenseHash = sha256hex(JSON.stringify(envelope));
 
-  const license = await License.create({
-    customerId: customer.id,
-    planId: plan ? plan.id : null,
-    features,
-    expiresAt: expiresAt ? new Date(expiresAt) : null,
-    algorithm: envelope.algorithm,
-    payloadHash,
-    licenseHash,
-    licensePayload: JSON.stringify(envelope),
-    issuedAt: new Date(),
-    actorName,
-  });
+  const transaction = await sequelize.transaction();
 
-  await AuditLog.create({
-    actorName,
-    action: 'issue_license',
-    entityType: 'License',
-    entityId: license.id,
-    details: {
-      customer: customer.name,
-      plan: plan ? plan.name : null,
+  try {
+    const license = await License.create({
+      customerId: customer.id,
+      planId: plan ? plan.id : null,
       features,
-      expiresAt: expiresAt || null,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      algorithm: envelope.algorithm,
       payloadHash,
-    },
-  });
+      licenseHash,
+      licensePayload: JSON.stringify(envelope),
+      issuedAt: new Date(),
+      actorName,
+    }, { transaction });
 
-  return {
-    license: {
-      id: license.id,
-      customerId: license.customerId,
-      planId: license.planId,
-      features: license.features,
-      expiresAt: license.expiresAt,
-      algorithm: license.algorithm,
-      payloadHash: license.payloadHash,
-      licenseHash: license.licenseHash,
-      issuedAt: license.issuedAt,
-      actorName: license.actorName,
-    },
-    envelope,
-  };
+    await AuditLog.create({
+      actorName,
+      action: 'issue_license',
+      entityType: 'License',
+      entityId: license.id,
+      details: {
+        customer: customer.name,
+        plan: plan ? plan.name : null,
+        features,
+        expiresAt: expiresAt || null,
+        payloadHash,
+      },
+    }, { transaction });
+
+    await transaction.commit();
+
+    return {
+      license: {
+        id: license.id,
+        customerId: license.customerId,
+        planId: license.planId,
+        features: license.features,
+        expiresAt: license.expiresAt,
+        algorithm: license.algorithm,
+        payloadHash: license.payloadHash,
+        licenseHash: license.licenseHash,
+        issuedAt: license.issuedAt,
+        actorName: license.actorName,
+      },
+      envelope,
+    };
+  } catch (error) {
+    await transaction.rollback();
+
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      throw Object.assign(new Error('License with this payload already exists'), { code: 'DUPLICATE_LICENSE' });
+    }
+
+    throw error;
+  }
 };
 
 const listLicenses = async (License) => {

@@ -246,6 +246,88 @@ describe('Portal license service', function() {
     expect(blob).to.contain('RSA-SHA256');
     expect(blob).to.contain('BlobCorp');
   });
+
+  it('rolls back License if AuditLog creation fails', async function() {
+    const customer = await createCustomer(models.Customer, { name: 'RollbackCorp' });
+    const pro = await models.Plan.findOne({ where: { name: 'pro' } });
+
+    const originalCreate = models.AuditLog.create.bind(models.AuditLog);
+    models.AuditLog.create = async () => { throw new Error('audit boom'); };
+
+    try {
+      await issueLicense(models, signingProvider, {
+        customerId: customer.id,
+        planId: pro.id,
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error.message).to.equal('audit boom');
+    }
+
+    models.AuditLog.create = originalCreate;
+
+    const licenseCount = await models.License.count();
+    expect(licenseCount).to.equal(0);
+  });
+
+  it('throws DUPLICATE_LICENSE for same payloadHash', async function() {
+    const customer = await createCustomer(models.Customer, { name: 'DupeCorp' });
+    const pro = await models.Plan.findOne({ where: { name: 'pro' } });
+
+    await issueLicense(models, signingProvider, {
+      customerId: customer.id,
+      planId: pro.id,
+      expiresAt: '2027-12-31',
+    });
+
+    try {
+      await issueLicense(models, signingProvider, {
+        customerId: customer.id,
+        planId: pro.id,
+        expiresAt: '2027-12-31',
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error.code).to.equal('DUPLICATE_LICENSE');
+    }
+
+    const licenseCount = await models.License.count();
+    expect(licenseCount).to.equal(1);
+  });
+
+  it('throws VALIDATION_ERROR for non-array featuresOverride', async function() {
+    const customer = await createCustomer(models.Customer, { name: 'FeatCorp' });
+    const pro = await models.Plan.findOne({ where: { name: 'pro' } });
+
+    try {
+      await issueLicense(models, signingProvider, {
+        customerId: customer.id,
+        planId: pro.id,
+        features: 'not-an-array',
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error.code).to.equal('VALIDATION_ERROR');
+      expect(error.message).to.contain('array');
+    }
+  });
+
+  it('throws VALIDATION_ERROR for non-string features array', async function() {
+    const customer = await createCustomer(models.Customer, { name: 'FeatCorp2' });
+    const pro = await models.Plan.findOne({ where: { name: 'pro' } });
+
+    try {
+      await issueLicense(models, signingProvider, {
+        customerId: customer.id,
+        planId: pro.id,
+        features: [123, true],
+      });
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error.code).to.equal('VALIDATION_ERROR');
+      expect(error.message).to.contain('strings');
+    }
+  });
 });
 
 describe('Portal API router', function() {
@@ -421,6 +503,23 @@ describe('Portal API router', function() {
         features: 'not-array',
       });
       expect(res.status).to.equal(400);
+    });
+
+    it('returns 409 for duplicate license', async function() {
+      const custRes = await httpPost('/customers', { name: 'DupeAPICorp' });
+      const plans = (await httpGet('/plans')).body;
+      const payload = {
+        customerId: custRes.body.id,
+        planId: plans.find(p => p.name === 'pro').id,
+        expiresAt: '2027-12-31',
+      };
+
+      const first = await httpPost('/licenses', payload);
+      expect(first.status).to.equal(201);
+
+      const second = await httpPost('/licenses', payload);
+      expect(second.status).to.equal(409);
+      expect(second.body.error).to.contain('already exists');
     });
   });
 
