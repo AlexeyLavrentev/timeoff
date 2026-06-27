@@ -1,0 +1,16 @@
+<h1>Лицензия</h1>
+<table class="detail-table">
+  <tr><th>Клиент</th><td>{{license.customerName}}</td></tr>
+  <tr><th>План</th><td>{{license.planName}}</td></tr>
+  <tr><th>Фичи</th><td>{{license.featuresList}}</td></tr>
+  <tr><th>Срок</th><td>{{license.expiresAtDisplay}}</td></tr>
+  <tr><th>Алгоритм</th><td>{{license.algorithm}}</td></tr>
+  <tr><th>Выпущена</th><td>{{license.issuedAtDisplay}}</td></tr>
+  <tr><th>Кем</th><td>{{license.actorName}}</td></tr>
+  <tr><th>Payload Hash</th><td><code>{{license.payloadHash}}</code></td></tr>
+  <tr><th>License Hash</th><td><code>{{license.licenseHash}}</code></td></tr>
+</table>
+<div class="actions">
+  <a href="/licenses/{{license.id}}/download" class="btn">Скачать JSON</a>
+  <a href="/licenses" class="btn btn-secondary">Назад к списку</a>
+</div>

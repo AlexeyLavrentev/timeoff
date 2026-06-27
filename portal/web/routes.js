@@ -1,0 +1,413 @@
+'use strict';
+
+const crypto = require('crypto');
+const express = require('express');
+const { verifyPassword } = require('../auth/passwords');
+const { listCustomers, createCustomer } = require('../services/customer_service');
+const { listPlans } = require('../services/plan_service');
+const { issueLicense, listLicenses, getLicense, getLicenseBlob } = require('../services/license_service');
+
+const LOCKOUT_THRESHOLD = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+
+const csrfProtect = (req, res, next) => {
+  if (req.method === 'GET') return next();
+
+  const token = req.body && req.body._csrf;
+  const sessionToken = req.session && req.session.csrfToken;
+
+  if (!token || !sessionToken || token !== sessionToken) {
+    return res.status(403).send('CSRF token mismatch');
+  }
+
+  next();
+};
+
+const generateCsrfToken = (req) => {
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(16).toString('hex');
+  }
+  return req.session.csrfToken;
+};
+
+const formatDate = (d) => {
+  if (!d) return '—';
+  const date = new Date(d);
+  return Number.isNaN(date.getTime()) ? '—' : date.toISOString().split('T')[0];
+};
+
+const escapeHtml = (str) => String(str || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
+const createWebRoutes = (models, options = {}) => {
+  const router = express.Router();
+  const { AdminUser, Customer, Plan, License, AuditLog } = models;
+
+  router.use((req, res, next) => {
+    res.locals.user = req.session && req.session.userId
+      ? { id: req.session.userId, email: req.session.userEmail, role: req.session.userRole }
+      : null;
+    res.locals.csrf = generateCsrfToken(req);
+    next();
+  });
+
+  router.get('/login', (req, res) => {
+    if (res.locals.user) return res.redirect('/');
+    res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: null });
+  });
+
+  router.post('/login', csrfProtect, async (req, res, next) => {
+    try {
+      const { email, password } = req.body || {};
+
+      if (!email || !password) {
+        return res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: 'Email и пароль обязательны' });
+      }
+
+      const user = await AdminUser.findOne({ where: { email: email.toLowerCase().trim() } });
+
+      if (!user) {
+        await AuditLog.create({
+          action: 'login_failed',
+          entityType: 'AdminUser',
+          details: { email: email.toLowerCase().trim(), reason: 'invalid_credentials' },
+        });
+        return res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: 'Неверный email или пароль' });
+      }
+
+      if (!user.isActive) {
+        await AuditLog.create({
+          actorName: user.email,
+          action: 'login_failed',
+          entityType: 'AdminUser',
+          entityId: user.id,
+          details: { reason: 'account_inactive' },
+        });
+        return res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: 'Неверный email или пароль' });
+      }
+
+      if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+        await AuditLog.create({
+          actorName: user.email,
+          action: 'login_failed',
+          entityType: 'AdminUser',
+          entityId: user.id,
+          details: { reason: 'account_locked' },
+        });
+        return res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: 'Неверный email или пароль' });
+      }
+
+      const valid = verifyPassword(password, user.passwordHash);
+
+      if (!valid) {
+        const newCount = user.failedLoginCount + 1;
+        const updates = { failedLoginCount: newCount };
+        if (newCount >= LOCKOUT_THRESHOLD) {
+          updates.lockedUntil = new Date(Date.now() + LOCKOUT_DURATION_MS);
+        }
+        await user.update(updates);
+
+        await AuditLog.create({
+          actorName: user.email,
+          action: 'login_failed',
+          entityType: 'AdminUser',
+          entityId: user.id,
+          details: { reason: 'invalid_credentials' },
+        });
+
+        return res.render('login', { title: 'Вход', csrf: res.locals.csrf, error: 'Неверный email или пароль' });
+      }
+
+      await user.update({ lastLoginAt: new Date(), failedLoginCount: 0, lockedUntil: null });
+
+      const savedEmail = user.email;
+      const savedId = user.id;
+      const savedRole = user.role;
+
+      req.session.regenerate(async (err) => {
+        if (err) return next(err);
+
+        try {
+          req.session.userId = savedId;
+          req.session.userEmail = savedEmail;
+          req.session.userRole = savedRole;
+          req.session.csrfToken = crypto.randomBytes(16).toString('hex');
+
+          await AuditLog.create({
+            actorName: savedEmail,
+            action: 'login_success',
+            entityType: 'AdminUser',
+            entityId: savedId,
+            details: { role: savedRole },
+          });
+
+          res.redirect('/');
+        } catch (innerError) {
+          next(innerError);
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/logout', csrfProtect, async (req, res, next) => {
+    try {
+      if (req.session) {
+        await AuditLog.create({
+          actorName: req.session.userEmail,
+          action: 'logout',
+          entityType: 'AdminUser',
+        });
+        req.session.destroy((destroyErr) => {
+          if (destroyErr) return next(destroyErr);
+          res.redirect('/login');
+        });
+      } else {
+        res.redirect('/login');
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  const requireAuth = (req, res, next) => {
+    if (!req.session || !req.session.userId) return res.redirect('/login');
+    next();
+  };
+
+  const requireRole = (...roles) => (req, res, next) => {
+    if (!req.session || !req.session.userId) return res.redirect('/login');
+    if (!roles.includes(req.session.userRole)) return res.status(403).send('Доступ запрещён');
+    next();
+  };
+
+  router.get('/', requireAuth, async (req, res, next) => {
+    try {
+      const [customers, plans, licenses, recentLicensesRaw] = await Promise.all([
+        Customer.count(),
+        Plan.count(),
+        License.count(),
+        License.findAll({
+          attributes: { exclude: ['licensePayload'] },
+          order: [['issuedAt', 'DESC']],
+          limit: 5,
+          include: [
+            { model: Customer, as: 'customer', attributes: ['name'] },
+            { model: Plan, as: 'plan', attributes: ['name'] },
+          ],
+        }),
+      ]);
+
+      const recentLicenses = recentLicensesRaw.map(l => ({
+        id: l.id,
+        customerName: l.customer ? escapeHtml(l.customer.name) : '—',
+        planName: l.plan ? escapeHtml(l.plan.name) : '—',
+        expiresAt: formatDate(l.expiresAt),
+        issuedAt: formatDate(l.issuedAt),
+      }));
+
+      res.render('dashboard', {
+        title: 'Dashboard',
+        csrf: res.locals.csrf,
+        counts: { customers, plans, licenses },
+        recentLicenses,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/customers', requireAuth, async (req, res, next) => {
+    try {
+      const customers = await listCustomers(Customer);
+      res.render('customers', {
+        title: 'Клиенты',
+        csrf: res.locals.csrf,
+        customers: customers.map(c => ({
+          ...c.toJSON(),
+          name: escapeHtml(c.name),
+          contactEmail: escapeHtml(c.contactEmail),
+          createdAt: formatDate(c.createdAt),
+        })),
+        isAdmin: req.session.userRole === 'admin',
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/customers/new', requireRole('admin'), (req, res) => {
+    res.render('customer-new', { title: 'Новый клиент', csrf: res.locals.csrf, error: null, values: {} });
+  });
+
+  router.post('/customers', requireRole('admin'), csrfProtect, async (req, res, next) => {
+    try {
+      const customer = await createCustomer(Customer, req.body || {});
+      res.redirect('/customers');
+    } catch (error) {
+      if (error.code === 'VALIDATION_ERROR' || error.code === 'DUPLICATE') {
+        return res.render('customer-new', {
+          title: 'Новый клиент',
+          csrf: res.locals.csrf,
+          error: error.message,
+          values: req.body || {},
+        });
+      }
+      next(error);
+    }
+  });
+
+  router.get('/plans', requireAuth, async (req, res, next) => {
+    try {
+      const plans = await listPlans(Plan);
+      res.render('plans', {
+        title: 'Планы',
+        csrf: res.locals.csrf,
+        plans: plans.map(p => ({
+          ...p.toJSON(),
+          name: escapeHtml(p.name),
+          description: escapeHtml(p.description),
+          featuresList: (p.features || []).join(', '),
+        })),
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/licenses', requireAuth, async (req, res, next) => {
+    try {
+      const licenses = await License.findAll({
+        attributes: { exclude: ['licensePayload'] },
+        order: [['issuedAt', 'DESC']],
+        include: [
+          { model: Customer, as: 'customer', attributes: ['name'] },
+          { model: Plan, as: 'plan', attributes: ['name'] },
+        ],
+      });
+
+      res.render('licenses', {
+        title: 'Лицензии',
+        csrf: res.locals.csrf,
+        licenses: licenses.map(l => ({
+          id: l.id,
+          customerName: l.customer ? escapeHtml(l.customer.name) : '—',
+          planName: l.plan ? escapeHtml(l.plan.name) : '—',
+          featuresShort: (l.features || []).slice(0, 3).join(', ') + (l.features && l.features.length > 3 ? '…' : ''),
+          expiresAtDisplay: formatDate(l.expiresAt),
+          issuedAtDisplay: formatDate(l.issuedAt),
+        })),
+        canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/licenses/new', requireRole('issuer', 'admin'), async (req, res, next) => {
+    try {
+      const [customers, plans] = await Promise.all([
+        listCustomers(Customer),
+        listPlans(Plan),
+      ]);
+      res.render('license-new', {
+        title: 'Выпустить лицензию',
+        csrf: res.locals.csrf,
+        error: null,
+        values: {},
+        customers: customers.map(c => ({ id: c.id, name: escapeHtml(c.name) })),
+        plans: plans.map(p => ({ id: p.id, name: escapeHtml(p.name) })),
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/licenses', requireRole('issuer', 'admin'), csrfProtect, async (req, res, next) => {
+    try {
+      const body = req.body || {};
+      const features = body.features && body.features.trim()
+        ? body.features.split('\n').map(f => f.trim()).filter(Boolean)
+        : null;
+
+      await issueLicense(models, options.signingProvider, {
+        customerId: body.customerId,
+        planId: body.planId,
+        expiresAt: body.expiresAt || null,
+        features,
+        actorName: req.session.userEmail,
+      });
+
+      res.redirect('/licenses');
+    } catch (error) {
+      if (error.code === 'NOT_FOUND' || error.code === 'VALIDATION_ERROR' || error.code === 'DUPLICATE_LICENSE') {
+        const [customers, plans] = await Promise.all([
+          listCustomers(Customer),
+          listPlans(Plan),
+        ]);
+        return res.render('license-new', {
+          title: 'Выпустить лицензию',
+          csrf: res.locals.csrf,
+          error: error.message,
+          values: req.body || {},
+          customers: customers.map(c => ({ id: c.id, name: escapeHtml(c.name) })),
+          plans: plans.map(p => ({ id: p.id, name: escapeHtml(p.name) })),
+        });
+      }
+      next(error);
+    }
+  });
+
+  router.get('/licenses/:id', requireAuth, async (req, res, next) => {
+    try {
+      const license = await License.findByPk(req.params.id, {
+        attributes: { exclude: ['licensePayload'] },
+        include: [
+          { model: Customer, as: 'customer', attributes: ['name'] },
+          { model: Plan, as: 'plan', attributes: ['name'] },
+        ],
+      });
+
+      if (!license) return res.status(404).send('Лицензия не найдена');
+
+      res.render('license-detail', {
+        title: 'Лицензия',
+        csrf: res.locals.csrf,
+        license: {
+          id: license.id,
+          customerName: license.customer ? escapeHtml(license.customer.name) : '—',
+          planName: license.plan ? escapeHtml(license.plan.name) : '—',
+          featuresList: (license.features || []).join(', '),
+          expiresAtDisplay: formatDate(license.expiresAt),
+          algorithm: license.algorithm,
+          issuedAtDisplay: formatDate(license.issuedAt),
+          actorName: escapeHtml(license.actorName),
+          payloadHash: license.payloadHash,
+          licenseHash: license.licenseHash,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/licenses/:id/download', requireAuth, async (req, res, next) => {
+    try {
+      const blob = await getLicenseBlob(License, req.params.id);
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="license.json"');
+      res.send(blob);
+    } catch (error) {
+      if (error.code === 'NOT_FOUND') return res.status(404).send('Лицензия не найдена');
+      next(error);
+    }
+  });
+
+  return router;
+};
+
+module.exports = { createWebRoutes };
