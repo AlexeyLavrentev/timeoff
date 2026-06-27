@@ -67,6 +67,30 @@ describe('Portal session store', function() {
     const store = createPersistentStore(models.sequelize);
     expect(store.sync).to.be.a('function');
     await store.sync();
+    if (store.stopExpiringSessions) store.stopExpiringSessions();
+    await models.sequelize.close();
+  });
+
+  it('calling createPersistentStore twice does not fail', async function() {
+    const models = makeModels();
+    await models.sequelize.sync();
+    const store1 = createPersistentStore(models.sequelize);
+    await store1.sync();
+    const store2 = createPersistentStore(models.sequelize);
+    await store2.sync();
+    if (store1.stopExpiringSessions) store1.stopExpiringSessions();
+    if (store2.stopExpiringSessions) store2.stopExpiringSessions();
+    await models.sequelize.close();
+  });
+
+  it('store.sync creates the portal_sessions table', async function() {
+    const models = makeModels();
+    await models.sequelize.sync();
+    const store = createPersistentStore(models.sequelize);
+    await store.sync();
+    const tables = await models.sequelize.getQueryInterface().showAllTables();
+    expect(tables).to.include('portal_sessions');
+    if (store.stopExpiringSessions) store.stopExpiringSessions();
     await models.sequelize.close();
   });
 });

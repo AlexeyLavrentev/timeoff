@@ -52,10 +52,9 @@ const run = async () => {
   const healthRoute = require('../portal/web/health');
   app.get('/healthz', healthRoute(models));
 
-  app.listen(config.port, '127.0.0.1', () => {
-    console.log(`License Portal listening on http://127.0.0.1:${config.port}`);
+  app.listen(config.port, config.host, () => {
+    console.log(`License Portal listening on http://${config.host}:${config.port}`);
     console.log(`Environment: ${config.nodeEnv}`);
-    console.log(`DB: ${config.dbStorage}`);
     console.log('WARNING: Do not expose this service to the public internet.');
   });
 };
