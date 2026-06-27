@@ -77,6 +77,7 @@ describe('Portal Web UI', function() {
   let signingProvider;
   let server;
   let port;
+  let testLicenseId;
 
   before(async function() {
     const keyPair = generateKeyPair();
@@ -91,6 +92,20 @@ describe('Portal Web UI', function() {
     await models.AdminUser.create({ email: 'admin@test.com', displayName: 'Admin', passwordHash: hashPassword('admin123'), role: 'admin' });
     await models.AdminUser.create({ email: 'issuer@test.com', displayName: 'Issuer', passwordHash: hashPassword('issuer123'), role: 'issuer' });
     await models.AdminUser.create({ email: 'viewer@test.com', displayName: 'Viewer', passwordHash: hashPassword('viewer123'), role: 'viewer' });
+
+    const testCustomer = await models.Customer.create({ name: 'WebCorp' });
+    const testPlan = await models.Plan.findOne({ where: { name: 'pro' } });
+    const testLicense = await models.License.create({
+      customerId: testCustomer.id,
+      planId: testPlan.id,
+      features: ['sso_authentication'],
+      algorithm: 'RSA-SHA256',
+      payloadHash: crypto.createHash('sha256').update('seed-license-' + Date.now()).digest('hex'),
+      licenseHash: crypto.createHash('sha256').update('seed-lic-' + Date.now()).digest('hex'),
+      licensePayload: JSON.stringify({ payload: { customer: 'WebCorp', features: ['sso_authentication'] }, algorithm: 'RSA-SHA256', signature: 'seed' }),
+      issuedAt: new Date(),
+    });
+    testLicenseId = testLicense.id;
 
     const app = createPortalWebApp({ models, signingProvider, sessionSecret: 'test-web-secret' });
     server = app.listen(0);
@@ -178,17 +193,88 @@ describe('Portal Web UI', function() {
       const { cookie } = await login(port, 'admin@test.com', 'admin123');
       const newPage = await get(port, '/customers/new', cookie);
       const csrf = extractCsrf(newPage.body);
-      const res = await post(port, '/customers', { name: 'WebCorp', _csrf: csrf }, cookie);
+      const res = await post(port, '/customers', { name: 'AdminCorp_' + Date.now(), _csrf: csrf }, cookie);
       expect(res.status).to.equal(302);
-
-      const list = await get(port, '/customers', cookie);
-      expect(list.body).to.contain('WebCorp');
     });
 
     it('issuer cannot create customer', async function() {
       const { cookie } = await login(port, 'issuer@test.com', 'issuer123');
       const res = await get(port, '/customers/new', cookie);
       expect(res.status).to.equal(403);
+    });
+
+    it('customers list links to detail page', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/customers', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('/customers/');
+      expect(res.body).to.contain('WebCorp');
+    });
+
+    it('viewer can open customer detail', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const list = await get(port, '/customers', cookie);
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.contain(cust.name);
+      }
+    });
+
+    it('issuer can open customer detail', async function() {
+      const { cookie } = await login(port, 'issuer@test.com', 'issuer123');
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.status).to.equal(200);
+      }
+    });
+
+    it('admin can open customer detail', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.status).to.equal(200);
+      }
+    });
+
+    it('unknown customer returns 404', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/customers/00000000-0000-0000-0000-000000000000', cookie);
+      expect(res.status).to.equal(404);
+    });
+
+    it('customer detail shows license metadata', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.status).to.equal(200);
+        expect(res.body).to.contain('Лицензий');
+      }
+    });
+
+    it('customer detail does not expose licensePayload or signature', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const cust = await models.Customer.findOne();
+      if (cust) {
+        const res = await get(port, `/customers/${cust.id}`, cookie);
+        expect(res.body).to.not.contain('licensePayload');
+        expect(res.body).to.not.contain('RSA-SHA256');
+        expect(res.body).to.not.contain('signature');
+        expect(res.body).to.not.contain('PRIVATE');
+        expect(res.body).to.not.contain('passwordHash');
+      }
+    });
+
+    it('customer detail shows empty state when no licenses', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const newCust = await models.Customer.create({ name: 'EmptyCust_' + Date.now() });
+      const res = await get(port, `/customers/${newCust.id}`, cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Лицензий для этого клиента пока нет.');
     });
   });
 
@@ -221,11 +307,11 @@ describe('Portal Web UI', function() {
       const newPage = await get(port, '/licenses/new', cookie);
       const csrf = extractCsrf(newPage.body);
 
-      const customers = await models.Customer.findAll();
+      const webCorp = await models.Customer.findOne({ where: { name: 'WebCorp' } });
       const plans = await models.Plan.findAll();
 
       const res = await post(port, '/licenses', {
-        customerId: customers[0].id,
+        customerId: webCorp.id,
         planId: plans.find(p => p.name === 'pro').id,
         expiresAt: '2027-12-31',
         _csrf: csrf,

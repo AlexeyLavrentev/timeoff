@@ -1062,6 +1062,21 @@ A  t/unit/portal/import_registry.js
 Фильтры — portal metadata/search only, не влияют на валидность лицензий
 и не обращаются к клиентскому рантайму.
 
+### Phase 2D-3 — статус реализации
+
+Реализовано:
+- **Customer detail**: `GET /customers/:id` (viewer/issuer/admin). Показывает
+  name, email, contact, createdAt, licenseCount, latestIssuedAt + список
+  последних 20 лицензий (plan, features, status, expires, issuedBy, hashes).
+- **Empty state**: "Лицензий для этого клиента пока нет."
+- **Customers list**: имена клиентов теперь кликабельны → detail.
+- **Navigation**: back to customers, link to licenses filtered by customer.
+- Тесты: 12 новых (detail access, 404, metadata, no leak, empty state).
+- Route ordering fixed: `/customers/new` и POST `/customers` определены
+  ДО `/customers/:id`, чтобы `new` не перехватывался как `:id`.
+
+Detail — operational metadata only, не влияет на рантайм.
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow

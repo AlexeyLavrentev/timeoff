@@ -35,6 +35,7 @@ button[type="submit"]:hover { background: #2a2a4e; }
 .flash--error { background: #fee; color: #a00; border: 1px solid #fcc; }
 .flash--success { background: #efe; color: #060; border: 1px solid #cfc; }
 .detail-table th { width: 160px; }
+.detail-table-wrap { margin-bottom: 1rem; }
 .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
 code { font-size: 0.8rem; background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 2px; }
 a { color: #1a1a2e; }
