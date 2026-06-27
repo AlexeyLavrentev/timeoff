@@ -62,6 +62,26 @@ describe('Portal storage', function() {
 
       await models.sequelize.close();
     });
+
+    it('creates parent directories for nested DB path', async function() {
+      const tmpDir = path.join(__dirname, 'tmp_nested_db_' + Date.now());
+      const dbPath = path.join(tmpDir, 'deep', 'nested', 'portal.sqlite');
+
+      try {
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+
+        expect(fs.existsSync(dbPath)).to.equal(true);
+
+        await models.Customer.create({ name: 'NestedTest' });
+        const count = await models.Customer.count();
+        expect(count).to.equal(1);
+
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
   });
 
   describe('plan seed', function() {
@@ -369,6 +389,76 @@ describe('Portal storage', function() {
 
       await models.sequelize.close();
     });
+
+    it('dry-run details reflect actual decisions for DB duplicates', async function() {
+      const models = makeModels();
+      await models.sequelize.sync();
+      await seedPlans(models.Plan);
+
+      const hash = sha256hex('existing-in-db');
+      await models.License.create({
+        customerId: (await models.Customer.create({ name: 'Pre' })).id,
+        features: ['sso_authentication'],
+        payloadHash: hash,
+      });
+
+      const registry = [
+        makeRegistryEntry({ customer: 'New', payloadHash: sha256hex('new') }),
+        makeRegistryEntry({ customer: 'Dup', payloadHash: hash }),
+      ];
+
+      const result = await importRegistry(registry, models, { dryRun: true });
+
+      expect(result.importedCount).to.equal(1);
+      expect(result.skippedCount).to.equal(1);
+      expect(result.details[0].status).to.equal('would_import');
+      expect(result.details[1].status).to.equal('would_skip');
+      expect(result.details[1].reason).to.contain('in DB');
+
+      await models.sequelize.close();
+    });
+
+    it('dry-run details detect duplicates within the same file', async function() {
+      const models = makeModels();
+      await models.sequelize.sync();
+      await seedPlans(models.Plan);
+
+      const hash = sha256hex('in-file-dup');
+      const registry = [
+        makeRegistryEntry({ customer: 'First', payloadHash: hash }),
+        makeRegistryEntry({ customer: 'Second', payloadHash: hash }),
+      ];
+
+      const result = await importRegistry(registry, models, { dryRun: true });
+
+      expect(result.importedCount).to.equal(1);
+      expect(result.skippedCount).to.equal(1);
+      expect(result.details[0].status).to.equal('would_import');
+      expect(result.details[1].status).to.equal('would_skip');
+      expect(result.details[1].reason).to.contain('in file');
+
+      await models.sequelize.close();
+    });
+
+    it('real import detects duplicates within the same file', async function() {
+      const models = makeModels();
+      await models.sequelize.sync();
+      await seedPlans(models.Plan);
+
+      const hash = sha256hex('in-file-dup-real');
+      const registry = [
+        makeRegistryEntry({ customer: 'First', payloadHash: hash }),
+        makeRegistryEntry({ customer: 'Second', payloadHash: hash }),
+      ];
+
+      const result = await importRegistry(registry, models);
+
+      expect(result.importedCount).to.equal(1);
+      expect(result.skippedCount).to.equal(1);
+      expect(result.details[1].reason).to.contain('in file');
+
+      await models.sequelize.close();
+    });
   });
 
   describe('validateEntry', function() {
@@ -396,6 +486,82 @@ describe('Portal storage', function() {
       const result = validateEntry(entry, 1);
       expect(result.valid).to.equal(false);
       expect(result.errors[0]).to.contain('array');
+    });
+
+    it('fails on invalid payloadHash (not 64-char hex)', function() {
+      const entry = makeRegistryEntry({ payloadHash: 'short' });
+      const result = validateEntry(entry, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors[0]).to.contain('payloadHash');
+      expect(result.errors[0]).to.contain('64-character hex');
+    });
+
+    it('fails on invalid licenseHash (not 64-char hex)', function() {
+      const entry = makeRegistryEntry({ licenseHash: 'zzzz' });
+      const result = validateEntry(entry, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors[0]).to.contain('licenseHash');
+    });
+
+    it('fails on invalid expires date', function() {
+      const entry = makeRegistryEntry({ expires: 'not-a-date' });
+      const result = validateEntry(entry, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors[0]).to.contain('expires');
+      expect(result.errors[0]).to.contain('valid date');
+    });
+
+    it('fails on invalid issuedAt date', function() {
+      const entry = makeRegistryEntry({ issuedAt: '2026-13-99' });
+      const result = validateEntry(entry, 1);
+      expect(result.valid).to.equal(false);
+      expect(result.errors[0]).to.contain('issuedAt');
+    });
+
+    it('passes with null expires and issuedAt', function() {
+      const entry = makeRegistryEntry({ expires: null, issuedAt: null });
+      const result = validateEntry(entry, 1);
+      expect(result.valid).to.equal(true);
+    });
+
+    it('rejects import with invalid payloadHash (no DB write)', async function() {
+      const models = makeModels();
+      await models.sequelize.sync();
+      await seedPlans(models.Plan);
+
+      const registry = [
+        makeRegistryEntry({ payloadHash: 'bad' }),
+      ];
+
+      const result = await importRegistry(registry, models);
+
+      expect(result.success).to.equal(false);
+      expect(result.errors[0]).to.contain('payloadHash');
+
+      const count = await models.License.count();
+      expect(count).to.equal(0);
+
+      await models.sequelize.close();
+    });
+
+    it('rejects import with invalid expires (no DB write)', async function() {
+      const models = makeModels();
+      await models.sequelize.sync();
+      await seedPlans(models.Plan);
+
+      const registry = [
+        makeRegistryEntry({ expires: 'garbage' }),
+      ];
+
+      const result = await importRegistry(registry, models);
+
+      expect(result.success).to.equal(false);
+      expect(result.errors[0]).to.contain('expires');
+
+      const count = await models.License.count();
+      expect(count).to.equal(0);
+
+      await models.sequelize.close();
     });
   });
 });

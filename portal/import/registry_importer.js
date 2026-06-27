@@ -4,6 +4,7 @@ const crypto = require('crypto');
 
 const REQUIRED_FIELDS = ['customer', 'features', 'payloadHash'];
 const MAX_ENTRY_LENGTH = 10000;
+const HEX64_RE = /^[0-9a-f]{64}$/i;
 
 const validateEntry = (entry, index) => {
   const errors = [];
@@ -22,8 +23,28 @@ const validateEntry = (entry, index) => {
     errors.push('entry at index ' + index + ': "features" must be an array');
   }
 
-  if (entry.payloadHash && typeof entry.payloadHash !== 'string') {
-    errors.push('entry at index ' + index + ': "payloadHash" must be a string');
+  if (entry.payloadHash) {
+    if (typeof entry.payloadHash !== 'string' || !HEX64_RE.test(entry.payloadHash)) {
+      errors.push('entry at index ' + index + ': "payloadHash" must be a 64-character hex string');
+    }
+  }
+
+  if (entry.licenseHash) {
+    if (typeof entry.licenseHash !== 'string' || !HEX64_RE.test(entry.licenseHash)) {
+      errors.push('entry at index ' + index + ': "licenseHash" must be a 64-character hex string');
+    }
+  }
+
+  if (entry.expires) {
+    if (Number.isNaN(Date.parse(entry.expires))) {
+      errors.push('entry at index ' + index + ': "expires" is not a valid date');
+    }
+  }
+
+  if (entry.issuedAt) {
+    if (Number.isNaN(Date.parse(entry.issuedAt))) {
+      errors.push('entry at index ' + index + ': "issuedAt" is not a valid date');
+    }
   }
 
   return { valid: errors.length === 0, errors };
@@ -61,13 +82,27 @@ const importRegistry = async (registryData, models, options = {}) => {
   if (dryRun) {
     let wouldImport = 0;
     let wouldSkip = 0;
+    const seenHashes = new Set();
+    const details = [];
 
-    for (const entry of registryData) {
+    for (let i = 0; i < registryData.length; i++) {
+      const entry = registryData[i];
+
+      if (seenHashes.has(entry.payloadHash)) {
+        wouldSkip++;
+        details.push({ index: i + 1, customer: entry.customer, status: 'would_skip', reason: 'duplicate payloadHash (in file)' });
+        continue;
+      }
+
+      seenHashes.add(entry.payloadHash);
+
       const existing = await License.findOne({ where: { payloadHash: entry.payloadHash } });
       if (existing) {
         wouldSkip++;
+        details.push({ index: i + 1, customer: entry.customer, status: 'would_skip', reason: 'duplicate payloadHash (in DB)' });
       } else {
         wouldImport++;
+        details.push({ index: i + 1, customer: entry.customer, status: 'would_import' });
       }
     }
 
@@ -78,11 +113,7 @@ const importRegistry = async (registryData, models, options = {}) => {
       importedCount: wouldImport,
       skippedCount: wouldSkip,
       errorCount: 0,
-      details: registryData.map((entry, i) => ({
-        index: i + 1,
-        customer: entry.customer,
-        status: 'would_import',
-      })),
+      details,
     };
   }
 
@@ -102,8 +133,18 @@ const importRegistry = async (registryData, models, options = {}) => {
       actorName,
     }, { transaction });
 
+    const seenHashes = new Set();
+
     for (let i = 0; i < registryData.length; i++) {
       const entry = registryData[i];
+
+      if (seenHashes.has(entry.payloadHash)) {
+        skippedCount++;
+        details.push({ index: i + 1, customer: entry.customer, status: 'skipped', reason: 'duplicate payloadHash (in file)' });
+        continue;
+      }
+
+      seenHashes.add(entry.payloadHash);
 
       const existing = await License.findOne({
         where: { payloadHash: entry.payloadHash },
@@ -112,7 +153,7 @@ const importRegistry = async (registryData, models, options = {}) => {
 
       if (existing) {
         skippedCount++;
-        details.push({ index: i + 1, customer: entry.customer, status: 'skipped', reason: 'duplicate payloadHash' });
+        details.push({ index: i + 1, customer: entry.customer, status: 'skipped', reason: 'duplicate payloadHash (in DB)' });
         continue;
       }
 
