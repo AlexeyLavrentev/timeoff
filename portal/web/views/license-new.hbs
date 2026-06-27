@@ -1,0 +1,35 @@
+<h1>Выпустить лицензию</h1>
+{{#if error}}
+<div class="flash flash--error">{{error}}</div>
+{{/if}}
+<form method="POST" action="/licenses">
+  <input type="hidden" name="_csrf" value="{{csrf}}">
+  <div class="form-group">
+    <label for="customerId">Клиент *</label>
+    <select id="customerId" name="customerId" required>
+      <option value="">— выберите клиента —</option>
+      {{#each customers}}
+      <option value="{{this.id}}" {{#if (eq this.id ../values.customerId)}}selected{{/if}}>{{this.name}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="planId">План *</label>
+    <select id="planId" name="planId" required>
+      <option value="">— выберите план —</option>
+      {{#each plans}}
+      <option value="{{this.id}}" {{#if (eq this.id ../values.planId)}}selected{{/if}}>{{this.name}}</option>
+      {{/each}}
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="expiresAt">Дата истечения</label>
+    <input type="date" id="expiresAt" name="expiresAt" value="{{values.expiresAt}}">
+  </div>
+  <div class="form-group">
+    <label for="features">Переопределение фич (опционально, по одной на строку)</label>
+    <textarea id="features" name="features" placeholder="sso_authentication&#10;integration_api">{{values.featuresText}}</textarea>
+  </div>
+  <button type="submit">Выпустить</button>
+  <a href="/licenses" class="btn btn-secondary">Отмена</a>
+</form>

@@ -981,3 +981,32 @@ A  t/unit/portal/import_registry.js
 - Docker deployment (Phase 2B-5).
 - Persistent session store (Phase 2B-5).
 - KMS signing (Phase 2C).
+
+### Phase 2B-4 — статус реализации
+
+Реализовано:
+- **Portal Web App**: `createPortalWebApp({ models, signingProvider, sessionSecret })`.
+  Изолированный Express app, не монтируется в customer runtime.
+- **Templating**: Handlebars (уже в проекте).
+- **Страницы**:
+  - `GET /login`, `POST /login` — форма входа, generic error, CSRF.
+  - `GET /` — dashboard: counts customers/plans/licenses, recent licenses.
+  - `GET /customers`, `GET /customers/new`, `POST /customers` (admin).
+  - `GET /plans` — список планов с фичами.
+  - `GET /licenses`, `GET /licenses/new`, `POST /licenses` (issuer/admin).
+  - `GET /licenses/:id` — детали (без licensePayload).
+  - `GET /licenses/:id/download` — скачивание JSON blob.
+  - `POST /logout`.
+- **RBAC**: viewer (просмотр), issuer (+выпуск), admin (+создание клиентов).
+  Кнопки скрыты для неразрешённых ролей, backend проверяет дополнительно.
+- **CSRF**: session-backed token на всех POST endpoints.
+- **Security**: passwordHash/Private key не в HTML, escapeHtml для user input,
+  HttpOnly + SameSite=Lax cookies.
+- Тесты: 27 тестов (login, RBAC, security, CSRF, isolation).
+
+Блокеры перед production deploy:
+- Persistent session store (Redis/DB) вместо memory.
+- SSO/VPN gating.
+- TLS/reverse proxy.
+- Docker deployment.
+- Backup portal DB.

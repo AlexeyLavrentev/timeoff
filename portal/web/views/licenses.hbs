@@ -1,0 +1,20 @@
+<h1>Лицензии</h1>
+{{#if canIssue}}
+<a href="/licenses/new" class="btn">+ Выпустить лицензию</a>
+{{/if}}
+<table>
+  <thead><tr><th>Клиент</th><th>План</th><th>Фичи</th><th>Срок</th><th>Выпущена</th></tr></thead>
+  <tbody>
+    {{#each licenses}}
+    <tr>
+      <td><a href="/licenses/{{this.id}}">{{this.customerName}}</a></td>
+      <td>{{this.planName}}</td>
+      <td class="features-cell">{{this.featuresShort}}</td>
+      <td>{{this.expiresAtDisplay}}</td>
+      <td>{{this.issuedAtDisplay}}</td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">Лицензий пока нет.</td></tr>
+    {{/each}}
+  </tbody>
+</table>
