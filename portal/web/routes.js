@@ -316,12 +316,63 @@ const createWebRoutes = (models, options = {}) => {
 
   router.get('/licenses', requireAuth, async (req, res, next) => {
     try {
+      const { Op } = models.Sequelize;
+      const where = {};
+      const customerWhere = {};
+      const planWhere = {};
+
+      const customerFilter = req.query.customer || '';
+      const planFilter = req.query.plan || '';
+      const statusFilter = req.query.status || 'all';
+      const qFilter = req.query.q || '';
+
+      if (customerFilter) {
+        customerWhere.name = { [Op.like]: '%' + customerFilter.replace(/%/g, '') + '%' };
+      }
+
+      if (planFilter) {
+        planWhere.name = planFilter;
+      }
+
+      if (statusFilter === 'active') {
+        where[Op.or] = [
+          { expiresAt: { [Op.is]: null } },
+          { expiresAt: { [Op.gte]: new Date() } },
+        ];
+      } else if (statusFilter === 'expired') {
+        where.expiresAt = { [Op.lt]: new Date() };
+      }
+
+      if (qFilter) {
+        const escaped = qFilter.replace(/%/g, '');
+        const qConditions = [
+          { payloadHash: { [Op.like]: escaped + '%' } },
+          { licenseHash: { [Op.like]: escaped + '%' } },
+          { '$customer.name$': { [Op.like]: '%' + escaped + '%' } },
+          { '$plan.name$': { [Op.like]: '%' + escaped + '%' } },
+        ];
+
+        if (where[Op.or]) {
+          where[Op.and] = [
+            { [Op.or]: where[Op.or] },
+            { [Op.or]: qConditions },
+          ];
+          delete where[Op.or];
+        } else {
+          where[Op.or] = qConditions;
+        }
+      }
+
+      const allPlans = await listPlans(Plan);
+
       const licenses = await License.findAll({
         attributes: { exclude: ['licensePayload'] },
+        where,
         order: [['issuedAt', 'DESC']],
+        limit: 100,
         include: [
-          { model: Customer, as: 'customer', attributes: ['name'] },
-          { model: Plan, as: 'plan', attributes: ['name'] },
+          { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
+          { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
         ],
       });
 
@@ -337,6 +388,14 @@ const createWebRoutes = (models, options = {}) => {
           issuedAtDisplay: formatDate(l.issuedAt),
         })),
         canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+        filters: {
+          customer: escapeHtml(customerFilter),
+          plan: escapeHtml(planFilter),
+          status: statusFilter,
+          q: escapeHtml(qFilter),
+        },
+        plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
+        hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter),
       });
     } catch (error) {
       next(error);

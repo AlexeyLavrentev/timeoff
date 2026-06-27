@@ -40,3 +40,9 @@ code { font-size: 0.8rem; background: #f0f0f0; padding: 0.1rem 0.3rem; border-ra
 a { color: #1a1a2e; }
 .muted { color: #888; font-size: 0.85rem; }
 .details-cell { font-size: 0.8rem; max-width: 250px; word-break: break-all; }
+.filter-form { background: #fff; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
+.filter-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: 0.2rem; }
+.filter-group label { font-size: 0.8rem; font-weight: 600; }
+.filter-group input, .filter-group select { padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; font-size: 0.85rem; min-width: 140px; }
+.filter-actions { display: flex; gap: 0.5rem; align-items: flex-end; }
