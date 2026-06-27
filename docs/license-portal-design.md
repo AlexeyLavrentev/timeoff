@@ -1091,8 +1091,6 @@ Detail — operational metadata only, не влияет на рантайм.
 
 ## Связанные материалы
 
-## Связанные материалы
-
 - [Операции с лицензиями](license-operations.md) — CLI workflow
 - [Развёртывание портала](license-portal-deployment.md) — Docker, admin CLI, backup
 - [Premium-модуль](premium-module.md) — установка и конфигурация
