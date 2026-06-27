@@ -140,4 +140,7 @@ projects → редакции/продукт; licenses → лицензии кл
 - Рантайм-проверка лицензии: `lib/features.js`,
   `lib/edition/premium_loader.js`.
 - Выпуск лицензии (вендор): `bin/sign_license.js`.
+- CLI для проверки/просмотра: `bin/license.js`.
+- Тарифные планы: `config/plan_presets.json`.
+- Операции с лицензиями: `docs/license-operations.md`.
 - Переменные окружения: `TIMEOFF_LICENSE`, `TIMEOFF_LICENSE_PUBLIC_KEY`.

@@ -1,0 +1,31 @@
+{
+  "starter": {
+    "description": "Core leave management",
+    "features": []
+  },
+  "pro": {
+    "description": "SSO + API + groups + calendars",
+    "features": [
+      "sso_authentication",
+      "integration_api",
+      "employee_groups",
+      "work_calendars"
+    ]
+  },
+  "enterprise": {
+    "description": "All features including reminders and premium modules",
+    "features": [
+      "sso_authentication",
+      "integration_api",
+      "employee_groups",
+      "work_calendars",
+      "leave_start_reminders",
+      "time_balance",
+      "vacation_planning",
+      "cis_leave_presets",
+      "production_calendar",
+      "leave_orders",
+      "telegram_notifications"
+    ]
+  }
+}
