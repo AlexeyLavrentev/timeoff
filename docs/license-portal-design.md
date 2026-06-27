@@ -909,3 +909,22 @@ A  bin/import-registry.js
 A  t/unit/portal/models.js
 A  t/unit/portal/import_registry.js
 ```
+
+### Phase 2B-1 — статус реализации
+
+Реализовано:
+- Модели: Customer, Plan, License, ImportBatch, AuditLog, SigningKeyReference
+  (AdminUser отложен до Phase 2B-2 auth).
+- Хранилище: SQLite через Sequelize, in-memory для тестов.
+- Seed планов из `config/plan_presets.json` (идемпотентный).
+- CLI импорт `bin/import-registry.js` с `--dry-run`, детекцией дубликатов,
+  валидацией, аудит-логом.
+- `actorName` (строка) вместо `actorId` (FK) до реализации AdminUser.
+- SigningKeyReference — только метаданные, без приватного ключа.
+- Тесты: 23 теста для моделей, seed, импорта.
+
+Не реализовано в этом PR:
+- AdminUser/login/auth (Phase 2B-2).
+- Web UI (Phase 2B-3).
+- API routes (Phase 2B-2).
+- Отдельные миграции Umzug (MVP использует sequelize.sync, миграции — Phase 2B-2).
