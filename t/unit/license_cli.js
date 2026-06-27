@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const fs = require('fs');
 const expect = require('chai').expect;
 const { spawnSync } = require('child_process');
 const path = require('path');
@@ -19,6 +20,14 @@ const runCli = (script, args, envOverrides) => {
     stderr: (result.stderr || '').trim(),
     status: result.status,
   };
+};
+
+const tmpFile = name => path.join(__dirname, name);
+
+const cleanup = paths => {
+  paths.forEach(p => {
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  });
 };
 
 describe('License CLI', function() {
@@ -126,6 +135,251 @@ describe('License CLI', function() {
     });
   });
 
+  describe('license.js generate', function() {
+    it('fails without --customer', function() {
+      const result = runCli('license.js', [
+        'generate',
+        '--plan', 'pro',
+        '--private-key', privateKey,
+      ]);
+
+      expect(result.status).to.not.equal(0);
+      expect(result.stderr).to.contain('--customer is required');
+    });
+
+    it('writes license to --out file', function() {
+      const outFile = tmpFile('tmp_out_license.json');
+
+      try {
+        const result = runCli('license.js', [
+          'generate',
+          '--customer', 'OutTest',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--out', outFile,
+        ]);
+
+        expect(result.status).to.equal(0);
+        expect(fs.existsSync(outFile)).to.equal(true);
+
+        const content = fs.readFileSync(outFile, 'utf8');
+        const envelope = JSON.parse(content);
+        expect(envelope.payload.customer).to.equal('OutTest');
+      } finally {
+        cleanup([outFile]);
+      }
+    });
+
+    it('generated --out file verifies with public key', function() {
+      const outFile = tmpFile('tmp_verify_out.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'VerifyOut',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--expires', '2028-12-31',
+          '--out', outFile,
+        ]);
+
+        const verifyResult = runCli('license.js', [
+          'verify', outFile,
+          '--public-key', publicKey,
+        ]);
+
+        expect(verifyResult.status).to.equal(0);
+
+        const result = JSON.parse(verifyResult.stdout);
+        expect(result.valid).to.equal(true);
+        expect(result.customer).to.equal('VerifyOut');
+      } finally {
+        cleanup([outFile]);
+      }
+    });
+  });
+
+  describe('license.js registry', function() {
+    it('creates registry and appends entries', function() {
+      const regFile = tmpFile('tmp_registry.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'RegCorp',
+          '--plan', 'pro',
+          '--private-key', privateKey,
+          '--expires', '2027-06-01',
+          '--registry', regFile,
+        ]);
+
+        expect(fs.existsSync(regFile)).to.equal(true);
+
+        const registry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+        expect(registry).to.be.an('array');
+        expect(registry.length).to.equal(1);
+
+        const entry = registry[0];
+        expect(entry.customer).to.equal('RegCorp');
+        expect(entry.plan).to.equal('pro');
+        expect(entry.features).to.include('sso_authentication');
+        expect(entry.expires).to.equal('2027-06-01');
+        expect(entry.algorithm).to.equal('RSA-SHA256');
+        expect(entry.issuedAt).to.be.a('string');
+        expect(entry.payloadHash).to.be.a('string');
+        expect(entry.payloadHash).to.have.length(64);
+        expect(entry.licenseHash).to.be.a('string');
+        expect(entry.licenseHash).to.have.length(64);
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('appends to existing registry', function() {
+      const regFile = tmpFile('tmp_registry_append.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'First',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        runCli('license.js', [
+          'generate',
+          '--customer', 'Second',
+          '--features', 'integration_api',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        const registry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+        expect(registry.length).to.equal(2);
+        expect(registry[0].customer).to.equal('First');
+        expect(registry[1].customer).to.equal('Second');
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('registry entry does not contain private key material', function() {
+      const regFile = tmpFile('tmp_registry_safe.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'SafeCorp',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        const content = fs.readFileSync(regFile, 'utf8');
+        expect(content).to.not.contain('PRIVATE');
+        expect(content).to.not.contain('-----BEGIN');
+        expect(content).to.not.contain(privateKey.substring(0, 30));
+
+        const registry = JSON.parse(content);
+        const entry = registry[0];
+        expect(entry.signature).to.equal(undefined);
+        expect(entry.privateKey).to.equal(undefined);
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('registry entry does not contain raw license blob', function() {
+      const regFile = tmpFile('tmp_registry_noblob.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'NoBlobCorp',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--registry', regFile,
+        ]);
+
+        const registry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+        const entry = registry[0];
+        expect(entry.license).to.equal(undefined);
+        expect(entry.envelope).to.equal(undefined);
+        expect(entry.licenseBlob).to.equal(undefined);
+        expect(entry.payloadHash).to.be.a('string');
+        expect(entry.licenseHash).to.be.a('string');
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('registry with --out stores output file path', function() {
+      const regFile = tmpFile('tmp_registry_with_out.json');
+      const licFile = tmpFile('tmp_registry_lic.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'OutRegCorp',
+          '--features', 'sso_authentication',
+          '--private-key', privateKey,
+          '--out', licFile,
+          '--registry', regFile,
+        ]);
+
+        const registry = JSON.parse(fs.readFileSync(regFile, 'utf8'));
+        expect(registry[0].outputFile).to.be.a('string');
+        expect(registry[0].outputFile).to.contain('tmp_registry_lic.json');
+      } finally {
+        cleanup([regFile, licFile]);
+      }
+    });
+
+    it('registry subcommand lists entries', function() {
+      const regFile = tmpFile('tmp_registry_list.json');
+
+      try {
+        runCli('license.js', [
+          'generate',
+          '--customer', 'ListCorp',
+          '--plan', 'enterprise',
+          '--private-key', privateKey,
+          '--expires', '2028-01-01',
+          '--registry', regFile,
+        ]);
+
+        const result = runCli('license.js', ['registry', '--registry', regFile]);
+
+        expect(result.status).to.equal(0);
+        expect(result.stdout).to.contain('ListCorp');
+        expect(result.stdout).to.contain('enterprise');
+        expect(result.stdout).to.contain('2028-01-01');
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('registry subcommand handles empty registry', function() {
+      const regFile = tmpFile('tmp_registry_empty.json');
+      fs.writeFileSync(regFile, '[]');
+
+      try {
+        const result = runCli('license.js', ['registry', '--registry', regFile]);
+        expect(result.status).to.equal(0);
+        expect(result.stdout).to.contain('empty');
+      } finally {
+        cleanup([regFile]);
+      }
+    });
+
+    it('registry subcommand fails on missing file', function() {
+      const result = runCli('license.js', ['registry', '--registry', '/nonexistent/path.json']);
+      expect(result.status).to.not.equal(0);
+      expect(result.stderr).to.contain('not found');
+    });
+  });
+
   describe('license.js inspect', function() {
     it('inspects a license without needing private key', function() {
       const generateResult = runCli('sign_license.js', [
@@ -179,8 +433,7 @@ describe('License CLI', function() {
     });
 
     it('reads license from file', function() {
-      const fs = require('fs');
-      const tmpFile = path.join(__dirname, 'tmp_test_license.json');
+      const testFile = tmpFile('tmp_test_license.json');
 
       try {
         const generateResult = runCli('sign_license.js', [
@@ -189,16 +442,16 @@ describe('License CLI', function() {
           '--private-key', privateKey,
         ]);
 
-        fs.writeFileSync(tmpFile, generateResult.stdout);
+        fs.writeFileSync(testFile, generateResult.stdout);
 
-        const inspectResult = runCli('license.js', ['inspect', tmpFile]);
+        const inspectResult = runCli('license.js', ['inspect', testFile]);
 
         expect(inspectResult.status).to.equal(0);
 
         const view = JSON.parse(inspectResult.stdout);
         expect(view.customer).to.equal('FileTest');
       } finally {
-        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+        cleanup([testFile]);
       }
     });
 
