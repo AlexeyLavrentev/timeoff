@@ -1049,6 +1049,19 @@ A  t/unit/portal/import_registry.js
 Это portal metadata only — не механизм отзыва. Клиентский рантайм остаётся
 офлайн и не обращается к порталу.
 
+### Phase 2D-2 — статус реализации
+
+Реализовано:
+- **Фильтры на /licenses**: customer (substring), plan (exact), status
+  (active/expired/all), q (поиск по hash/customer/plan).
+- **UI**: компактная форма фильтров, сохранение выбранных значений, кнопка
+  "Сбросить", "Ничего не найдено" при пустом результате.
+- **Лимит**: 100 новейших записей (отображается в UI).
+- Тесты: 9 новых (filters, RBAC, empty state, no licensePayload).
+
+Фильтры — portal metadata/search only, не влияют на валидность лицензий
+и не обращаются к клиентскому рантайму.
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow

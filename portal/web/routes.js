@@ -316,12 +316,79 @@ const createWebRoutes = (models, options = {}) => {
 
   router.get('/licenses', requireAuth, async (req, res, next) => {
     try {
+      const { Op } = models.Sequelize;
+      const where = {};
+      const customerWhere = {};
+      const planWhere = {};
+
+      const singleValue = (v) => {
+        if (Array.isArray(v)) return (v[0] || '').trim().substring(0, 128);
+        return typeof v === 'string' ? v.trim().substring(0, 128) : '';
+      };
+
+      const sanitizeLike = (v) => v.replace(/[%_]/g, '');
+
+      const customerFilter = singleValue(req.query.customer);
+      const planFilter = singleValue(req.query.plan);
+      const qFilter = singleValue(req.query.q);
+
+      const VALID_STATUSES = ['all', 'active', 'expired'];
+      const rawStatus = singleValue(req.query.status);
+      const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
+
+      const customerLike = sanitizeLike(customerFilter);
+      const qLike = sanitizeLike(qFilter);
+
+      if (customerFilter && customerLike) {
+        customerWhere.name = { [Op.like]: '%' + customerLike + '%' };
+      } else if (customerFilter && !customerLike) {
+        customerWhere.id = { [Op.in]: [] };
+      }
+
+      if (planFilter) {
+        planWhere.name = planFilter;
+      }
+
+      if (statusFilter === 'active') {
+        where[Op.or] = [
+          { expiresAt: { [Op.is]: null } },
+          { expiresAt: { [Op.gte]: new Date() } },
+        ];
+      } else if (statusFilter === 'expired') {
+        where.expiresAt = { [Op.lt]: new Date() };
+      }
+
+      if (qFilter && qLike) {
+        const qConditions = [
+          { payloadHash: { [Op.like]: qLike + '%' } },
+          { licenseHash: { [Op.like]: qLike + '%' } },
+          { '$customer.name$': { [Op.like]: '%' + qLike + '%' } },
+          { '$plan.name$': { [Op.like]: '%' + qLike + '%' } },
+        ];
+
+        if (where[Op.or]) {
+          where[Op.and] = [
+            { [Op.or]: where[Op.or] },
+            { [Op.or]: qConditions },
+          ];
+          delete where[Op.or];
+        } else {
+          where[Op.or] = qConditions;
+        }
+      } else if (qFilter && !qLike) {
+        where.id = { [Op.in]: [] };
+      }
+
+      const allPlans = await listPlans(Plan);
+
       const licenses = await License.findAll({
         attributes: { exclude: ['licensePayload'] },
+        where,
         order: [['issuedAt', 'DESC']],
+        limit: 100,
         include: [
-          { model: Customer, as: 'customer', attributes: ['name'] },
-          { model: Plan, as: 'plan', attributes: ['name'] },
+          { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
+          { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
         ],
       });
 
@@ -337,6 +404,14 @@ const createWebRoutes = (models, options = {}) => {
           issuedAtDisplay: formatDate(l.issuedAt),
         })),
         canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+        filters: {
+          customer: escapeHtml(customerFilter),
+          plan: escapeHtml(planFilter),
+          status: statusFilter,
+          q: escapeHtml(qFilter),
+        },
+        plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
+        hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter),
       });
     } catch (error) {
       next(error);
