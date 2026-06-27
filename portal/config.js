@@ -17,6 +17,7 @@ const getPortalConfig = () => {
 
     dbStorage: process.env.PORTAL_DB_STORAGE || path.join(process.cwd(), 'data', 'portal.sqlite'),
 
+    signingProvider: process.env.PORTAL_SIGNING_PROVIDER || 'file',
     privateKeyPath: process.env.PORTAL_LICENSE_PRIVATE_KEY_FILE || null,
     privateKeyPem: process.env.PORTAL_LICENSE_PRIVATE_KEY || null,
     publicKeyPath: process.env.PORTAL_LICENSE_PUBLIC_KEY_FILE || null,
@@ -26,6 +27,8 @@ const getPortalConfig = () => {
   return config;
 };
 
+const { SUPPORTED_PROVIDERS, RESERVED_PROVIDERS } = require('./signing/provider_factory');
+
 const validateProductionConfig = (config) => {
   const errors = [];
 
@@ -33,12 +36,22 @@ const validateProductionConfig = (config) => {
     errors.push('PORTAL_SESSION_SECRET is required in production');
   }
 
-  if (!config.privateKeyPath && !config.privateKeyPem) {
-    errors.push('PORTAL_LICENSE_PRIVATE_KEY_FILE or PORTAL_LICENSE_PRIVATE_KEY is required');
+  const provider = (config.signingProvider || 'file').toLowerCase();
+
+  if (RESERVED_PROVIDERS.includes(provider)) {
+    errors.push('Signing provider "' + provider + '" is not implemented yet');
+  } else if (!SUPPORTED_PROVIDERS.includes(provider)) {
+    errors.push('Unknown signing provider: "' + provider + '"');
   }
 
-  if (!config.publicKeyPath && !config.publicKeyPem) {
-    errors.push('PORTAL_LICENSE_PUBLIC_KEY_FILE or PORTAL_LICENSE_PUBLIC_KEY is required');
+  if (provider === 'file') {
+    if (!config.privateKeyPath && !config.privateKeyPem) {
+      errors.push('PORTAL_LICENSE_PRIVATE_KEY_FILE or PORTAL_LICENSE_PRIVATE_KEY is required');
+    }
+
+    if (!config.publicKeyPath && !config.publicKeyPem) {
+      errors.push('PORTAL_LICENSE_PUBLIC_KEY_FILE or PORTAL_LICENSE_PUBLIC_KEY is required');
+    }
   }
 
   if (errors.length > 0) {

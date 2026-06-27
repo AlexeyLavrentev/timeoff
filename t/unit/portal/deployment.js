@@ -6,6 +6,7 @@ const path = require('path');
 const http = require('http');
 const expect = require('chai').expect;
 const { getPortalConfig, validateProductionConfig, ensureDbDirectory } = require('../../../portal/config');
+const { createSigningProvider, SUPPORTED_PROVIDERS, RESERVED_PROVIDERS } = require('../../../portal/signing/provider_factory');
 const { createPersistentStore } = require('../../../portal/auth/session_store');
 const { hashPassword, verifyPassword } = require('../../../portal/auth/passwords');
 const { loadPortalModels } = require('../../../portal/models');
@@ -57,6 +58,74 @@ describe('Portal config', function() {
   it('passes with all required production vars', function() {
     const config = { isProduction: true, sessionSecret: 's', privateKeyPath: '/k', publicKeyPath: '/p' };
     expect(() => validateProductionConfig(config)).to.not.throw();
+  });
+});
+
+describe('Portal signing provider factory', function() {
+  it('default provider is file', function() {
+    const { privateKey } = generateKeyPair();
+    const provider = createSigningProvider({ privateKeyPem: privateKey });
+    expect(provider.getInfo().type).to.equal('file');
+  });
+
+  it('file provider signs and returns public key', async function() {
+    const { privateKey, publicKey } = generateKeyPair();
+    const provider = createSigningProvider({ privateKeyPem: privateKey, publicKeyPem: publicKey });
+    const envelope = await provider.sign({ customer: 'Test', features: [] });
+    expect(envelope.algorithm).to.equal('RSA-SHA256');
+    expect(envelope.signature).to.be.a('string');
+    const pub = await provider.getPublicKeyPem();
+    expect(pub).to.equal(publicKey);
+  });
+
+  it('fails for unsupported provider', function() {
+    expect(() => createSigningProvider({ signingProvider: 'nonexistent' })).to.throw('Unknown signing provider');
+  });
+
+  it('fails for reserved provider aws-kms', function() {
+    expect(() => createSigningProvider({ signingProvider: 'aws-kms' })).to.throw('not implemented yet');
+  });
+
+  it('fails for reserved provider vault', function() {
+    expect(() => createSigningProvider({ signingProvider: 'vault' })).to.throw('not implemented yet');
+  });
+
+  it('fails for reserved provider pkcs11', function() {
+    expect(() => createSigningProvider({ signingProvider: 'pkcs11' })).to.throw('not implemented yet');
+  });
+
+  it('fails for reserved provider external', function() {
+    expect(() => createSigningProvider({ signingProvider: 'external' })).to.throw('not implemented yet');
+  });
+
+  it('error messages do not contain private key contents', function() {
+    const { privateKey } = generateKeyPair();
+    try {
+      createSigningProvider({ signingProvider: 'aws-kms', privateKeyPem: privateKey });
+    } catch (error) {
+      expect(error.message).to.not.contain('PRIVATE');
+      expect(error.message).to.not.contain(privateKey.substring(0, 30));
+    }
+  });
+
+  it('file provider fails without key in production', function() {
+    expect(() => createSigningProvider({ signingProvider: 'file' })).to.throw('private key');
+  });
+
+  it('validateProductionConfig rejects reserved provider', function() {
+    const config = { isProduction: true, sessionSecret: 's', signingProvider: 'aws-kms' };
+    expect(() => validateProductionConfig(config)).to.throw('not implemented yet');
+  });
+
+  it('validateProductionConfig skips key check for non-file provider', function() {
+    const config = { isProduction: true, sessionSecret: 's', signingProvider: 'vault' };
+    expect(() => validateProductionConfig(config)).to.throw('not implemented yet');
+  });
+
+  it('SUPPORTED_PROVIDERS and RESERVED_PROVIDERS are exported', function() {
+    expect(SUPPORTED_PROVIDERS).to.include('file');
+    expect(RESERVED_PROVIDERS).to.include('aws-kms');
+    expect(RESERVED_PROVIDERS).to.include('vault');
   });
 });
 
