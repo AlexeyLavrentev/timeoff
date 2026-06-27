@@ -799,6 +799,46 @@ describe('Portal Web UI', function() {
       expect(res.body).to.contain('payloadHash');
       expect(res.body).to.contain('abc123def456abc1');
     });
+
+    it('audit page renders admin CLI create entry safely', async function() {
+      await models.AuditLog.create({
+        actorName: 'ops@test.com',
+        action: 'admin_user_create',
+        entityType: 'AdminUser',
+        details: {
+          email: 'newuser@test.com',
+          role: 'admin',
+          displayNamePresent: true,
+        },
+      });
+
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.body).to.contain('newuser@test.com');
+      expect(res.body).to.contain('admin');
+      expect(res.body).to.not.contain('passwordHash');
+      expect(res.body).to.not.contain('scrypt$');
+      expect(res.body).to.not.contain('token');
+      expect(res.body).to.not.contain('secret');
+    });
+
+    it('audit page renders reset-password entry with lockoutCleared', async function() {
+      await models.AuditLog.create({
+        actorName: 'ops@test.com',
+        action: 'admin_user_reset_password',
+        entityType: 'AdminUser',
+        details: {
+          email: 'reset@test.com',
+          lockoutCleared: true,
+        },
+      });
+
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.body).to.contain('reset@test.com');
+      expect(res.body).to.not.contain('passwordHash');
+      expect(res.body).to.not.contain('scrypt$');
+    });
   });
 
   describe('registry export', function() {
