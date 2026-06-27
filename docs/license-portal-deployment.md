@@ -194,3 +194,15 @@ docker compose -f docker-compose.portal.yml start portal
 - [ ] Секреты не в git
 - [ ] Логи не содержат секретов
 - [ ] `/healthz` возвращает `ok: true`
+
+## CI
+
+GitHub Actions (`core-ci.yml`) проверяет:
+
+- `docker compose -f docker-compose.portal.yml config --quiet` — валидность compose файла
+- `docker build -f Dockerfile.portal -t leavepilot-portal:ci .` — сборка образа
+
+CI использует сгенерированные временные ключи и фейковые секреты. Настоящие
+ключи и пароли в CI не передаются.
+
+Для production развёртывания требуются настоящие секреты и HTTPS reverse proxy.
