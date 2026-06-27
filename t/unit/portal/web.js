@@ -452,6 +452,153 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('audit log page', function() {
+    it('admin can access /audit', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Аудит-лог');
+    });
+
+    it('viewer cannot access /audit', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.status).to.equal(403);
+    });
+
+    it('issuer cannot access /audit', async function() {
+      const { cookie } = await login(port, 'issuer@test.com', 'issuer123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.status).to.equal(403);
+    });
+
+    it('audit page does not expose secrets', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+      expect(res.body).to.not.contain('passwordHash');
+      expect(res.body).to.not.contain('scrypt$');
+      expect(res.body).to.not.contain('PRIVATE');
+    });
+
+    it('audit page filters unsafe detail keys', async function() {
+      await models.AuditLog.create({
+        actorName: 'test@example.com',
+        action: 'test_unsafe',
+        entityType: 'Test',
+        details: {
+          licensePayload: '{"payload":{},"signature":"secret-sig"}',
+          signature: 'base64signaturevalue',
+          privateKey: '-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----',
+          passwordHash: 'scrypt$16384$8$1$abc$def',
+          token: 'session-token-12345',
+          secret: 'my-secret-value',
+          reason: 'invalid_credentials',
+          count: 5,
+          payloadHash: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
+        },
+      });
+
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/audit', cookie);
+
+      expect(res.body).to.not.contain('secret-sig');
+      expect(res.body).to.not.contain('base64signaturevalue');
+      expect(res.body).to.not.contain('RSA PRIVATE KEY');
+      expect(res.body).to.not.contain('scrypt$');
+      expect(res.body).to.not.contain('session-token-12345');
+      expect(res.body).to.not.contain('my-secret-value');
+      expect(res.body).to.contain('reason');
+      expect(res.body).to.contain('invalid_credentials');
+      expect(res.body).to.contain('count');
+      expect(res.body).to.contain('payloadHash');
+      expect(res.body).to.contain('abc123def456abc1');
+    });
+  });
+
+  describe('registry export', function() {
+    it('admin can export registry.json', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/licenses/export/registry.json', cookie);
+      expect(res.status).to.equal(200);
+      const data = JSON.parse(res.body);
+      expect(data).to.be.an('array');
+    });
+
+    it('viewer cannot export registry', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses/export/registry.json', cookie);
+      expect(res.status).to.equal(403);
+    });
+
+    it('issuer cannot export registry', async function() {
+      const { cookie } = await login(port, 'issuer@test.com', 'issuer123');
+      const res = await get(port, '/licenses/export/registry.json', cookie);
+      expect(res.status).to.equal(403);
+    });
+
+    it('registry export includes safe metadata only', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/licenses/export/registry.json', cookie);
+      const data = JSON.parse(res.body);
+      if (data.length > 0) {
+        const entry = data[0];
+        expect(entry.customer).to.be.a('string');
+        expect(entry.payloadHash).to.have.length(64);
+        expect(entry.licenseHash).to.be.a('string');
+      }
+    });
+
+    it('registry export excludes licensePayload and signature', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const res = await get(port, '/licenses/export/registry.json', cookie);
+      const data = JSON.parse(res.body);
+      const json = res.body;
+      expect(json).to.not.contain('licensePayload');
+      expect(json).to.not.contain('signature');
+      expect(json).to.not.contain('PRIVATE');
+      expect(json).to.not.contain('passwordHash');
+
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        expect(keys).to.not.include('licensePayload');
+        expect(keys).to.not.include('signature');
+        expect(keys).to.not.include('privateKey');
+        expect(keys).to.not.include('passwordHash');
+      }
+    });
+
+    it('registry export creates audit log entry', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      await get(port, '/licenses/export/registry.json', cookie);
+      const logs = await models.AuditLog.findAll({ where: { action: 'registry_export' } });
+      expect(logs.length).to.be.greaterThan(0);
+    });
+  });
+
+  describe('license download audit', function() {
+    it('license download creates audit log entry', async function() {
+      const { cookie: adminCookie } = await login(port, 'admin@test.com', 'admin123');
+      const custRes = await post(port, '/customers', { name: 'DLCorp', _csrf: extractCsrf((await get(port, '/customers/new', adminCookie)).body) }, adminCookie);
+      const plans = (await get(port, '/plans', adminCookie)).body;
+      const newPage = await get(port, '/licenses/new', adminCookie);
+      const csrf = extractCsrf(newPage.body);
+      const custList = await models.Customer.findAll();
+      const planList = await models.Plan.findAll();
+      await post(port, '/licenses', {
+        customerId: custList[custList.length - 1].id,
+        planId: planList.find(p => p.name === 'pro').id,
+        _csrf: csrf,
+      }, adminCookie);
+
+      const licenses = await models.License.findAll();
+      const licId = licenses[licenses.length - 1].id;
+      await get(port, `/licenses/${licId}/download`, adminCookie);
+
+      const logs = await models.AuditLog.findAll({ where: { action: 'license_download' } });
+      expect(logs.length).to.be.greaterThan(0);
+    });
+  });
+
   describe('isolation', function() {
     it('portal web app is not mounted in customer runtime', function() {
       const mainApp = require('express')();

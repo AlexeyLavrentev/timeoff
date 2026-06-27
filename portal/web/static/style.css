@@ -38,3 +38,5 @@ button[type="submit"]:hover { background: #2a2a4e; }
 .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
 code { font-size: 0.8rem; background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 2px; }
 a { color: #1a1a2e; }
+.muted { color: #888; font-size: 0.85rem; }
+.details-cell { font-size: 0.8rem; max-width: 250px; word-break: break-all; }
