@@ -2,6 +2,43 @@
 {{#if canIssue}}
 <a href="/licenses/new" class="btn">+ Выпустить лицензию</a>
 {{/if}}
+
+<form method="GET" action="/licenses" class="filter-form">
+  <div class="filter-row">
+    <div class="filter-group">
+      <label for="customer">Клиент</label>
+      <input type="text" id="customer" name="customer" value="{{filters.customer}}" placeholder="Поиск по имени…">
+    </div>
+    <div class="filter-group">
+      <label for="plan">План</label>
+      <select id="plan" name="plan">
+        <option value="">Все планы</option>
+        {{#each plans}}
+        <option value="{{this.name}}" {{#if (eq this.name ../filters.plan)}}selected{{/if}}>{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="status">Статус</label>
+      <select id="status" name="status">
+        <option value="all" {{#if (eq filters.status "all")}}selected{{/if}}>Все</option>
+        <option value="active" {{#if (eq filters.status "active")}}selected{{/if}}>Активные</option>
+        <option value="expired" {{#if (eq filters.status "expired")}}selected{{/if}}>Истекшие</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="q">Поиск</label>
+      <input type="text" id="q" name="q" value="{{filters.q}}" placeholder="Hash, клиент, план…">
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn">Фильтровать</button>
+      {{#if hasActiveFilters}}
+      <a href="/licenses" class="btn btn-secondary">Сбросить</a>
+      {{/if}}
+    </div>
+  </div>
+</form>
+
 <table>
   <thead><tr><th>Клиент</th><th>План</th><th>Фичи</th><th>Срок</th><th>Выпущена</th></tr></thead>
   <tbody>
@@ -14,7 +51,8 @@
       <td>{{this.issuedAtDisplay}}</td>
     </tr>
     {{else}}
-    <tr><td colspan="5">Лицензий пока нет.</td></tr>
+    <tr><td colspan="5">Ничего не найдено.</td></tr>
     {{/each}}
   </tbody>
 </table>
+<p class="muted">Показано до 100 новейших записей.</p>
