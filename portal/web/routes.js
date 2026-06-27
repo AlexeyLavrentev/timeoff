@@ -45,6 +45,7 @@ const escapeHtml = (str) => String(str || '')
 const SAFE_DETAIL_KEYS = new Set([
   'reason', 'role', 'email', 'customer', 'plan', 'features',
   'expiresAt', 'payloadHash', 'licenseHash', 'count', 'source',
+  'displayNamePresent', 'lockoutCleared',
 ]);
 
 const BLOCKED_KEY_PATTERNS = [

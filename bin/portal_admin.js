@@ -81,16 +81,6 @@ const getDb = async () => {
   return models;
 };
 
-const audit = async (models, entry) => {
-  await models.AuditLog.create({
-    actorName: entry.actorName,
-    action: entry.action,
-    entityType: entry.entityType,
-    entityId: entry.entityId,
-    details: entry.details || {},
-  });
-};
-
 const handleCreate = async () => {
   if (!argv.email) {
     process.stderr.write('Error: --email is required.\n');
