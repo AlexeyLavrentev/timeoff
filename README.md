@@ -526,6 +526,7 @@ AES-256-GCM (authenticated encryption). Сейчас это **OIDC client secret
 - [FAQ для пользователей и администраторов](docs/faq.md)
 - [Redis как хранилище сессий](docs/SessionStoreInRedis.md)
 - [SSO через Keycloak](docs/sso-keycloak.md)
+- [Архитектура лицензирования](docs/licensing-architecture.md)
 
 ## Обратная связь
 
