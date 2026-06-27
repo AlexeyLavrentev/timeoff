@@ -1077,6 +1077,20 @@ A  t/unit/portal/import_registry.js
 
 Detail — operational metadata only, не влияет на рантайм.
 
+### Phase 2D-4 — статус реализации
+
+Реализовано:
+- **Backup script**: `bin/license_portal_backup.js` — копирует SQLite файл
+  с таймстемпом, создаёт parent dirs, отказывается перезаписывать, не
+  печатает секреты.
+- **Backup/restore smoke test**: `t/unit/portal/backup_restore.js` — 6 тестов:
+  backup creation, data count preservation, no private key in backup,
+  fail on missing/in-memory DB, mkdir behavior.
+- **Docs**: обновлена `docs/license-portal-deployment.md` — backup script usage,
+  restore procedure, warnings about private key and password hashes.
+
+## Связанные материалы
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow

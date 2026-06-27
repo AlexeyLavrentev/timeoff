@@ -176,8 +176,11 @@ curl http://127.0.0.1:3001/healthz
 # 1. Остановить портал (для консистентности SQLite)
 docker compose -f docker-compose.portal.yml stop portal
 
-# 2. Скопировать БД
-cp data/portal.sqlite backups/portal-$(date +%Y%m%d).sqlite
+# 2. Создать бэкап через скрипт
+node bin/license_portal_backup.js --out-dir ./backups
+
+# Или вручную
+cp data/portal.sqlite backups/portal-$(date +%Y%m%d-%H%M%S).sqlite
 
 # 3. Скопировать ключи
 cp secrets/license_private.pem backups/
@@ -187,15 +190,26 @@ cp secrets/license_public_key.pem backups/
 docker compose -f docker-compose.portal.yml start portal
 ```
 
+**Скрипт бэкапа** (`bin/license_portal_backup.js`):
+- Копирует SQLite файл с таймстемпом в имени.
+- Создаёт родительскую директорию если её нет.
+- Отказывается перезаписывать существующий файл.
+- Не печатает секреты, ключи или пароли.
+- Предупреждает, что бэкап содержит пароли и blobs.
+
 ### Процедура восстановления
 
-1. Развернуть БД из бэкапа в `data/portal.sqlite`.
-2. Восстановить ключи в `secrets/`.
-3. Установить переменные окружения.
-4. Запустить портал.
-5. Проверить `/healthz`.
-6. Войти как администратор.
-7. Выпустить тестовую лицензию и проверить её через `bin/license.js verify`.
+1. Остановить портал.
+2. Скопировать бэкап БД в `data/portal.sqlite`:
+   ```bash
+   cp backups/portal-YYYYMMDD-HHMMSS.sqlite data/portal.sqlite
+   ```
+3. Восстановить ключи в `secrets/`.
+4. Установить переменные окружения.
+5. Запустить портал.
+6. Проверить `/healthz`.
+7. Войти как администратор.
+8. Выпустить тестовую лицензию и проверить её через `bin/license.js verify`.
 
 ## Production checklist
 
