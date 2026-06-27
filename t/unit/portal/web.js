@@ -1101,6 +1101,47 @@ describe('Portal Web UI', function() {
       expect(payload.payload).to.not.have.property('seats');
       expect(payload.payload).to.not.have.property('metadata');
     });
+
+    it('too-long externalCustomerId returns error and preserves form', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        externalCustomerId: 'x'.repeat(129),
+        expiresAt: '2029-10-01',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('externalCustomerId');
+      expect(res.body).to.contain('128');
+      expect(res.body).to.not.contain('129');
+    });
+
+    it('invalid metadata does not create license', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const beforeCount = await models.License.count();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '-5',
+        expiresAt: '2029-11-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const afterCount = await models.License.count();
+      expect(afterCount).to.equal(beforeCount);
+    });
   });
 
   describe('isolation', function() {

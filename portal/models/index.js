@@ -9,8 +9,10 @@ const loadPortalModels = (sequelizeOptions = {}) => {
   const models = {};
   const modelsDir = __dirname;
 
+  const EXCLUDE_FILES = ['schema_maintenance.js'];
+
   fs.readdirSync(modelsDir)
-    .filter(file => file.indexOf('.') !== 0 && file !== 'index.js' && file.endsWith('.js'))
+    .filter(file => file.indexOf('.') !== 0 && file !== 'index.js' && !EXCLUDE_FILES.includes(file) && file.endsWith('.js'))
     .forEach(file => {
       const modelFactory = require(path.join(modelsDir, file));
       const model = modelFactory(sequelize);

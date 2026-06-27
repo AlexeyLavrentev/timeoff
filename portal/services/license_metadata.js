@@ -53,14 +53,25 @@ const validateDomains = (raw) => {
 
 const validateExternalCustomerId = (value) => {
   if (!value) return { value: null, error: null };
-  const trimmed = String(value).trim().substring(0, MAX_EXTERNAL_ID_LENGTH);
-  return { value: trimmed || null, error: null };
+  const trimmed = String(value).trim();
+  if (!trimmed) return { value: null, error: null };
+  if (trimmed.length > MAX_EXTERNAL_ID_LENGTH) {
+    return { value: null, error: 'externalCustomerId must be at most ' + MAX_EXTERNAL_ID_LENGTH + ' characters' };
+  }
+  if (/[<>]/.test(trimmed)) {
+    return { value: null, error: 'externalCustomerId must not contain < or > characters' };
+  }
+  return { value: trimmed, error: null };
 };
 
 const validateOperatorNotes = (value) => {
   if (!value) return { value: null, error: null };
-  const trimmed = String(value).trim().substring(0, MAX_NOTES_LENGTH);
-  return { value: trimmed || null, error: null };
+  const trimmed = String(value).trim();
+  if (!trimmed) return { value: null, error: null };
+  if (trimmed.length > MAX_NOTES_LENGTH) {
+    return { value: null, error: 'operatorNotes must be at most ' + MAX_NOTES_LENGTH + ' characters' };
+  }
+  return { value: trimmed, error: null };
 };
 
 const validateMetadata = (input) => {
@@ -82,13 +93,15 @@ const validateMetadata = (input) => {
   }
 
   if (input.externalCustomerId) {
-    const { value } = validateExternalCustomerId(input.externalCustomerId);
-    if (value) metadata.externalCustomerId = value;
+    const { value, error } = validateExternalCustomerId(input.externalCustomerId);
+    if (error) errors.push(error);
+    else if (value) metadata.externalCustomerId = value;
   }
 
   if (input.operatorNotes) {
-    const { value } = validateOperatorNotes(input.operatorNotes);
-    if (value) metadata.operatorNotes = value;
+    const { value, error } = validateOperatorNotes(input.operatorNotes);
+    if (error) errors.push(error);
+    else if (value) metadata.operatorNotes = value;
   }
 
   return {
