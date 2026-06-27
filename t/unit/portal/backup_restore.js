@@ -62,6 +62,11 @@ describe('Portal backup/restore', function() {
       await models.sequelize.sync();
       await seedPlans(models.Plan);
 
+      await models.AdminUser.create({
+        email: 'backup@test.com',
+        passwordHash: hashPassword('backup123'),
+        role: 'admin',
+      });
       const cust = await models.Customer.create({ name: 'BackupTest' });
       const plan = await models.Plan.findOne({ where: { name: 'pro' } });
       await models.License.create({
@@ -85,13 +90,15 @@ describe('Portal backup/restore', function() {
       };
       await models.sequelize.close();
 
-      spawnSync(node, [
+      const result = spawnSync(node, [
         path.join(binDir, 'license_portal_backup.js'),
         '--out-dir', backupDir,
       ], {
         encoding: 'utf8',
         env: Object.assign({}, process.env, { PORTAL_DB_STORAGE: dbPath }),
       });
+
+      expect(result.status).to.equal(0);
 
       const backupFile = path.join(backupDir, fs.readdirSync(backupDir)[0]);
       const restoredPath = path.join(dir, 'restored.sqlite');
@@ -109,6 +116,7 @@ describe('Portal backup/restore', function() {
       };
 
       expect(countsAfter).to.deep.equal(countsBefore);
+      expect(countsAfter.adminUsers).to.be.greaterThan(0);
 
       const license = await restored.License.findOne();
       expect(license.payloadHash).to.equal(sha256hex('backup-payload'));
@@ -130,13 +138,15 @@ describe('Portal backup/restore', function() {
       await models.sequelize.sync();
       await models.sequelize.close();
 
-      spawnSync(node, [
+      const result = spawnSync(node, [
         path.join(binDir, 'license_portal_backup.js'),
         '--out-dir', backupDir,
       ], {
         encoding: 'utf8',
         env: Object.assign({}, process.env, { PORTAL_DB_STORAGE: dbPath }),
       });
+
+      expect(result.status).to.equal(0);
 
       const backupFile = path.join(backupDir, fs.readdirSync(backupDir)[0]);
       const content = fs.readFileSync(backupFile, 'utf8');
