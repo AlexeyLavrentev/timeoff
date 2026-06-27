@@ -130,20 +130,24 @@ const createWebRoutes = (models, options = {}) => {
       req.session.regenerate(async (err) => {
         if (err) return next(err);
 
-        req.session.userId = savedId;
-        req.session.userEmail = savedEmail;
-        req.session.userRole = savedRole;
-        req.session.csrfToken = crypto.randomBytes(16).toString('hex');
+        try {
+          req.session.userId = savedId;
+          req.session.userEmail = savedEmail;
+          req.session.userRole = savedRole;
+          req.session.csrfToken = crypto.randomBytes(16).toString('hex');
 
-        await AuditLog.create({
-          actorName: savedEmail,
-          action: 'login_success',
-          entityType: 'AdminUser',
-          entityId: savedId,
-          details: { role: savedRole },
-        });
+          await AuditLog.create({
+            actorName: savedEmail,
+            action: 'login_success',
+            entityType: 'AdminUser',
+            entityId: savedId,
+            details: { role: savedRole },
+          });
 
-        res.redirect('/');
+          res.redirect('/');
+        } catch (innerError) {
+          next(innerError);
+        }
       });
     } catch (error) {
       next(error);
@@ -158,7 +162,10 @@ const createWebRoutes = (models, options = {}) => {
           action: 'logout',
           entityType: 'AdminUser',
         });
-        req.session.destroy(() => res.redirect('/login'));
+        req.session.destroy((destroyErr) => {
+          if (destroyErr) return next(destroyErr);
+          res.redirect('/login');
+        });
       } else {
         res.redirect('/login');
       }
