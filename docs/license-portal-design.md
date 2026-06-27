@@ -1102,6 +1102,24 @@ Detail — operational metadata only, не влияет на рантайм.
 
 Нет public self-registration. Нет веб-bootstrap страницы.
 
+### Phase 3A — статус реализации
+
+Реализовано:
+- **License metadata**: JSON-поле `metadata` на модели License. Поля:
+  `seats` (int 1..1M), `customerDomains` (массив доменов, нормализация,
+  дедупликация), `externalCustomerId` (строка), `operatorNotes` (строка).
+- **Валидация**: `portal/services/license_metadata.js` — проверка типов,
+  длин, форматов, доменных паттернов. Валидация перед записью в БД.
+- **Issue flow**: форма выпуска лицензии с опциональными metadata полями.
+  Metadata хранится на License, но НЕ входит в payload/signature.
+- **License detail**: показывает seats, domains, externalCustomerId,
+  operatorNotes (escaped). operatorNotes не экспортируется.
+- **Registry export**: включает seats, customerDomains, externalCustomerId.
+  Исключает operatorNotes, licensePayload, signature.
+- **Audit**: `seats`, `domainCount`, `externalCustomerIdPresent`,
+  operatorNotesPresent. operatorNotes значение не в деталях.
+- Тесты: 8 новых (metadata storage, detail, export, audit, safety).
+
 ### Phase 2D-6 — статус реализации
 
 Реализовано:

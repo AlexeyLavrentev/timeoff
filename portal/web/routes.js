@@ -46,6 +46,7 @@ const SAFE_DETAIL_KEYS = new Set([
   'reason', 'role', 'email', 'customer', 'plan', 'features',
   'expiresAt', 'payloadHash', 'licenseHash', 'count', 'source',
   'displayNamePresent', 'lockoutCleared',
+  'seats', 'domainCount', 'externalCustomerIdPresent', 'operatorNotesPresent',
 ]);
 
 const BLOCKED_KEY_PATTERNS = [
@@ -500,10 +501,27 @@ const createWebRoutes = (models, options = {}) => {
 
   router.post('/licenses', requireRole('issuer', 'admin'), csrfProtect, async (req, res, next) => {
     try {
+      const { validateMetadata } = require('../services/license_metadata');
       const body = req.body || {};
       const features = body.features && body.features.trim()
         ? body.features.split('\n').map(f => f.trim()).filter(Boolean)
         : null;
+
+      const { metadata, errors: metaErrors } = validateMetadata(body);
+      if (metaErrors.length > 0) {
+        const [customers, plans] = await Promise.all([
+          listCustomers(Customer),
+          listPlans(Plan),
+        ]);
+        return res.render('license-new', {
+          title: 'Выпустить лицензию',
+          csrf: res.locals.csrf,
+          error: metaErrors.join('; '),
+          values: body,
+          customers: customers.map(c => ({ id: c.id, name: escapeHtml(c.name) })),
+          plans: plans.map(p => ({ id: p.id, name: escapeHtml(p.name) })),
+        });
+      }
 
       await issueLicense(models, options.signingProvider, {
         customerId: body.customerId,
@@ -511,6 +529,7 @@ const createWebRoutes = (models, options = {}) => {
         expiresAt: body.expiresAt || null,
         features,
         actorName: req.session.userEmail,
+        metadata,
       });
 
       res.redirect('/licenses');
@@ -545,6 +564,8 @@ const createWebRoutes = (models, options = {}) => {
 
       if (!license) return res.status(404).send('Лицензия не найдена');
 
+      const m = license.metadata || {};
+
       res.render('license-detail', {
         title: 'Лицензия',
         csrf: res.locals.csrf,
@@ -559,6 +580,10 @@ const createWebRoutes = (models, options = {}) => {
           actorName: escapeHtml(license.actorName),
           payloadHash: license.payloadHash,
           licenseHash: license.licenseHash,
+          seats: m.seats || null,
+          customerDomainsList: m.customerDomains ? m.customerDomains.join(', ') : null,
+          externalCustomerId: escapeHtml(m.externalCustomerId) || null,
+          operatorNotes: escapeHtml(m.operatorNotes) || null,
         },
       });
     } catch (error) {
@@ -597,17 +622,24 @@ const createWebRoutes = (models, options = {}) => {
         ],
       });
 
-      const registry = licenses.map(l => ({
-        customer: l.customer ? l.customer.name : null,
-        plan: l.plan ? l.plan.name : null,
-        features: l.features || [],
-        expires: l.expiresAt ? l.expiresAt.toISOString().split('T')[0] : null,
-        algorithm: l.algorithm,
-        issuedAt: l.issuedAt ? l.issuedAt.toISOString() : null,
-        issuedBy: l.actorName || null,
-        payloadHash: l.payloadHash,
-        licenseHash: l.licenseHash,
-      }));
+      const registry = licenses.map(l => {
+        const m = l.metadata || {};
+        const entry = {
+          customer: l.customer ? l.customer.name : null,
+          plan: l.plan ? l.plan.name : null,
+          features: l.features || [],
+          expires: l.expiresAt ? l.expiresAt.toISOString().split('T')[0] : null,
+          algorithm: l.algorithm,
+          issuedAt: l.issuedAt ? l.issuedAt.toISOString() : null,
+          issuedBy: l.actorName || null,
+          payloadHash: l.payloadHash,
+          licenseHash: l.licenseHash,
+        };
+        if (m.seats) entry.seats = m.seats;
+        if (m.customerDomains) entry.customerDomains = m.customerDomains;
+        if (m.externalCustomerId) entry.externalCustomerId = m.externalCustomerId;
+        return entry;
+      });
 
       await AuditLog.create({
         actorName: req.session.userEmail,
