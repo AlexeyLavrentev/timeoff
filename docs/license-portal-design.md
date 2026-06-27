@@ -1010,3 +1010,31 @@ A  t/unit/portal/import_registry.js
 - TLS/reverse proxy.
 - Docker deployment.
 - Backup portal DB.
+
+### Phase 2B-5 — статус реализации
+
+Реализовано:
+- **Portal entrypoint**: `bin/license_portal.js` — загружает конфиг, валидирует
+  production env, инициализирует БД, seed планов, запускает HTTP на `PORTAL_PORT`.
+- **Persistent session store**: `connect-session-sequelize` для production,
+  memory store только для dev/test. Production не запустится без store.
+- **Config**: `portal/config.js` — `getPortalConfig()`, `validateProductionConfig()`,
+  `ensureDbDirectory()`. Fail-fast на отсутствующие production переменные.
+- **Admin CLI**: `bin/portal_admin.js` — `create-admin`, `list-admins`,
+  `disable-admin`, `reset-password`. Пароли хранятся в scrypt.
+- **Health endpoint**: `GET /healthz` — `{ok, service, db}`. Без секретов.
+- **Docker**: `Dockerfile.portal`, `docker-compose.portal.yml`. Приватный ключ
+  через Docker secrets, БД через volume, порт только на 127.0.0.1.
+- **Docs**: `docs/license-portal-deployment.md` — quick start, Docker Compose,
+  admin CLI, reverse proxy (Caddy/nginx), backup/restore, production checklist.
+- Тесты: 18 тестов для config, session store, health, admin CLI, isolation.
+- **Production env vars**: PORTAL_SESSION_SECRET, PORTAL_LICENSE_PRIVATE_KEY_FILE,
+  PORTAL_LICENSE_PUBLIC_KEY_FILE (обязательные), PORTAL_PORT, PORTAL_DB_STORAGE,
+  PORTAL_SESSION_SECURE (опциональные).
+
+## Связанные материалы
+
+- [Операции с лицензиями](license-operations.md) — CLI workflow
+- [Развёртывание портала](license-portal-deployment.md) — Docker, admin CLI, backup
+- [Premium-модуль](premium-module.md) — установка и конфигурация
+- [Docker Compose](docker-compose.md) — развёртывание

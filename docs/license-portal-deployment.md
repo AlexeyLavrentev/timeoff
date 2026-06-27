@@ -1,0 +1,196 @@
+# Развёртывание License Portal
+
+Руководство по запуску License Portal как отдельного внутреннего сервиса вендора.
+
+## Быстрый старт (development)
+
+```bash
+# Создать первого администратора
+node bin/portal_admin.js create-admin --email admin@example.com --password secret123
+
+# Запустить портал
+node bin/license_portal.js
+```
+
+Откройте http://127.0.0.1:3001 и войдите.
+
+## Переменные окружения
+
+| Переменная | Обязательна | Описание |
+|-----------|-------------|----------|
+| `NODE_ENV` | нет | `production` для продакшена |
+| `PORTAL_PORT` | нет | Порт (по умолчанию 3001) |
+| `PORTAL_SESSION_SECRET` | в production | Секрет сессии (длинная случайная строка) |
+| `PORTAL_SESSION_SECURE` | нет | `true` если за HTTPS |
+| `PORTAL_DB_STORAGE` | нет | Путь к SQLite файлу (по умолчанию `data/portal.sqlite`) |
+| `PORTAL_LICENSE_PRIVATE_KEY_FILE` | в production | Путь к приватному ключу PEM |
+| `PORTAL_LICENSE_PRIVATE_KEY` | alt | Приватный ключ PEM через env (не рекомендуется) |
+| `PORTAL_LICENSE_PUBLIC_KEY_FILE` | в production | Путь к публичному ключу PEM |
+| `PORTAL_LICENSE_PUBLIC_KEY` | alt | Публичный ключ PEM через env |
+
+В production **все обязательные переменные должны быть установлены** — портал
+не запустится без них.
+
+## Docker Compose
+
+### 1. Подготовка секретов
+
+```bash
+mkdir -p secrets
+
+# Генерация ключей (один раз)
+openssl genpkey -algorithm RSA -out secrets/license_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -in secrets/license_private.pem -pubout -out secrets/license_public_key.pem
+
+# Права доступа
+chmod 600 secrets/license_private.pem
+chmod 644 secrets/license_public_key.pem
+```
+
+### 2. Файл окружения
+
+Создайте `.env.portal` (НЕ коммитить):
+
+```env
+PORTAL_SESSION_SECRET=<длинная-случайная-строка-минимум-32-символа>
+PORTAL_PRIVATE_KEY_FILE=./secrets/license_private.pem
+PORTAL_PUBLIC_KEY_FILE=./secrets/license_public_key.pem
+PORTAL_PORT=3001
+PORTAL_SESSION_SECURE=false
+```
+
+### 3. Запуск
+
+```bash
+# Создать администратора (первый раз)
+docker compose -f docker-compose.portal.yml run --rm portal \
+  node bin/portal_admin.js create-admin --email admin@example.com --password <password>
+
+# Запустить сервис
+docker compose -f docker-compose.portal.yml --env-file .env.portal up -d
+
+# Проверить здоровье
+curl http://127.0.0.1:3001/healthz
+
+# Логи
+docker compose -f docker-compose.portal.yml logs -f portal
+```
+
+## Администрирование
+
+```bash
+# Создать администратора
+node bin/portal_admin.js create-admin --email admin@example.com --password <pw> [--role admin]
+
+# Список администраторов
+node bin/portal_admin.js list-admins
+
+# Отключить администратора
+node bin/portal_admin.js disable-admin --email admin@example.com
+
+# Сбросить пароль
+node bin/portal_admin.js reset-password --email admin@example.com --password <new-pw>
+```
+
+Роли: `viewer`, `issuer`, `admin`.
+
+## Reverse proxy
+
+### Caddy
+
+```
+portal.internal {
+    reverse_proxy 127.0.0.1:3001
+}
+```
+
+### nginx
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name portal.internal;
+
+    ssl_certificate /etc/ssl/portal.crt;
+    ssl_certificate_key /etc/ssl/portal.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+При использовании HTTPS установите `PORTAL_SESSION_SECURE=true`.
+
+**Важно:** портал должен быть доступен только через VPN или внутреннюю сеть.
+Никогда не экспонируйте его в публичный интернет.
+
+## Healthcheck
+
+```bash
+curl http://127.0.0.1:3001/healthz
+```
+
+Ответ:
+
+```json
+{"ok": true, "service": "license-portal", "db": true}
+```
+
+Не содержит секретов, ключей, путей или данных лицензий.
+
+## Резервное копирование
+
+### Что бэкапить
+
+| Компонент | Путь | Критичность |
+|-----------|------|-------------|
+| Portal DB | `data/portal.sqlite` | Критично |
+| Приватный ключ | `secrets/license_private.pem` | Критично |
+| Публичный ключ | `secrets/license_public_key.pem` | Важно |
+| .env файл | `.env.portal` (без секретов в git) | Важно |
+
+### Процедура бэкапа
+
+```bash
+# 1. Остановить портал (для консистентности SQLite)
+docker compose -f docker-compose.portal.yml stop portal
+
+# 2. Скопировать БД
+cp data/portal.sqlite backups/portal-$(date +%Y%m%d).sqlite
+
+# 3. Скопировать ключи
+cp secrets/license_private.pem backups/
+cp secrets/license_public_key.pem backups/
+
+# 4. Запустить портал
+docker compose -f docker-compose.portal.yml start portal
+```
+
+### Процедура восстановления
+
+1. Развернуть БД из бэкапа в `data/portal.sqlite`.
+2. Восстановить ключи в `secrets/`.
+3. Установить переменные окружения.
+4. Запустить портал.
+5. Проверить `/healthz`.
+6. Войти как администратор.
+7. Выпустить тестовую лицензию и проверить её через `bin/license.js verify`.
+
+## Production checklist
+
+- [ ] `PORTAL_SESSION_SECRET` установлен (длинная случайная строка)
+- [ ] `NODE_ENV=production`
+- [ ] Persistent session store активен (автоматически в production)
+- [ ] Приватный ключ смонтирован read-only
+- [ ] Портал не экспонирован в публичный интернет
+- [ ] HTTPS/reverse proxy настроен
+- [ ] `PORTAL_SESSION_SECURE=true` если за HTTPS
+- [ ] Бэкап протестирован
+- [ ] Администратор создан
+- [ ] Секреты не в git
+- [ ] Логи не содержат секретов
+- [ ] `/healthz` возвращает `ok: true`
