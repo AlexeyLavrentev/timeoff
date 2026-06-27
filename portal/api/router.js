@@ -100,6 +100,9 @@ const createPortalRouter = (models, signingProvider) => {
       if (error.code === 'VALIDATION_ERROR') {
         return res.status(400).json({ error: error.message });
       }
+      if (error.code === 'DUPLICATE_LICENSE') {
+        return res.status(409).json({ error: error.message });
+      }
       next(error);
     }
   });
