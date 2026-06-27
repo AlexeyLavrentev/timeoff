@@ -372,4 +372,202 @@ describe('Portal admin CLI', function() {
       }
     });
   });
+
+  describe('audit logging', function() {
+    it('create writes AuditLog with action admin_user_create', async function() {
+      const { dir, dbPath } = makeTempDb('auditcreate');
+      try {
+        const result = runAdmin([
+          'create', '--email', 'audit@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+        expect(result.status).to.equal(0);
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_create' } });
+        expect(logs.length).to.equal(1);
+        expect(logs[0].actorName).to.equal('portal-admin-cli');
+        expect(logs[0].entityType).to.equal('AdminUser');
+        expect(logs[0].details.email).to.equal('audit@test.com');
+        expect(logs[0].details.role).to.equal('admin');
+        expect(logs[0].details.displayNamePresent).to.equal(false);
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('create audit does not contain password or hash', async function() {
+      const { dir, dbPath } = makeTempDb('auditnopw');
+      try {
+        runAdmin([
+          'create', '--email', 'nopw@test.com', '--password-env', 'TEST_PW',
+          '--display-name', 'Test',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_create' } });
+        expect(logs.length).to.equal(1);
+
+        const json = JSON.stringify(logs[0].details);
+        expect(json).to.not.contain('secure-password-1234');
+        expect(json).to.not.contain('scrypt$');
+        expect(json).to.not.contain('passwordHash');
+        expect(logs[0].details.displayNamePresent).to.equal(true);
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('create with --actor-email stores actor', async function() {
+      const { dir, dbPath } = makeTempDb('auditactor');
+      try {
+        runAdmin([
+          'create', '--email', 'actor@test.com', '--password-env', 'TEST_PW',
+          '--actor-email', 'ops@test.com',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_create' } });
+        expect(logs.length).to.equal(1);
+        expect(logs[0].actorName).to.equal('ops@test.com');
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('create without --actor-email uses fallback', async function() {
+      const { dir, dbPath } = makeTempDb('auditfallback');
+      try {
+        runAdmin([
+          'create', '--email', 'fallback@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_create' } });
+        expect(logs.length).to.equal(1);
+        expect(logs[0].actorName).to.equal('portal-admin-cli');
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('disable writes AuditLog', async function() {
+      const { dir, dbPath } = makeTempDb('auditdisable');
+      try {
+        runAdmin([
+          'create', '--email', 'disaud@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        runAdmin([
+          'disable', '--email', 'disaud@test.com', '--actor-email', 'ops@test.com',
+        ], { PORTAL_DB_STORAGE: dbPath });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_disable' } });
+        expect(logs.length).to.equal(1);
+        expect(logs[0].actorName).to.equal('ops@test.com');
+        expect(logs[0].details.email).to.equal('disaud@test.com');
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('reset-password writes AuditLog with lockoutCleared', async function() {
+      const { dir, dbPath } = makeTempDb('auditreset');
+      try {
+        runAdmin([
+          'create', '--email', 'rzaud@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        await models.AdminUser.update(
+          { lockedUntil: new Date(Date.now() + 60000) },
+          { where: { email: 'rzaud@test.com' } }
+        );
+        await models.sequelize.close();
+
+        runAdmin([
+          'reset-password', '--email', 'rzaud@test.com', '--password-env', 'NEW_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, NEW_PW: 'new-secure-pw-9876' });
+
+        const models2 = loadPortalModels({ storage: dbPath });
+        await models2.sequelize.sync();
+        const logs = await models2.AuditLog.findAll({ where: { action: 'admin_user_reset_password' } });
+        expect(logs.length).to.equal(1);
+        expect(logs[0].details.lockoutCleared).to.equal(true);
+        const json = JSON.stringify(logs[0].details);
+        expect(json).to.not.contain('new-secure-pw-9876');
+        expect(json).to.not.contain('scrypt$');
+        await models2.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('list does not create audit record', async function() {
+      const { dir, dbPath } = makeTempDb('auditlist');
+      try {
+        runAdmin([
+          'create', '--email', 'listaud@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        runAdmin(['list'], { PORTAL_DB_STORAGE: dbPath });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll();
+        const listLogs = logs.filter(l => l.action && l.action.includes('list'));
+        expect(listLogs.length).to.equal(0);
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('invalid --actor-email fails safely', function() {
+      const { dir, dbPath } = makeTempDb('auditinvalidactor');
+      try {
+        const result = runAdmin([
+          'create', '--email', 'actor@test.com', '--password-env', 'TEST_PW',
+          '--actor-email', 'bad@@actor',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        expect(result.status).to.not.equal(0);
+        expect(result.stderr).to.contain('invalid email');
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('failed create does not create success audit event', async function() {
+      const { dir, dbPath } = makeTempDb('auditfailcreate');
+      try {
+        runAdmin([
+          'create', '--email', 'dup@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        runAdmin([
+          'create', '--email', 'dup@test.com', '--password-env', 'TEST_PW',
+        ], { PORTAL_DB_STORAGE: dbPath, TEST_PW: 'secure-password-1234' });
+
+        const models = loadPortalModels({ storage: dbPath });
+        await models.sequelize.sync();
+        const logs = await models.AuditLog.findAll({ where: { action: 'admin_user_create' } });
+        expect(logs.length).to.equal(1);
+        await models.sequelize.close();
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  });
 });

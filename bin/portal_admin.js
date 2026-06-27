@@ -11,6 +11,7 @@ const { VALID_ROLES } = require('../portal/models/admin_user');
 
 const subcommand = argv._[0];
 const MIN_PASSWORD_LENGTH = 12;
+const DEFAULT_ACTOR = 'portal-admin-cli';
 
 const normalizeEmail = (raw) => {
   const value = String(raw || '').toLowerCase().trim();
@@ -25,15 +26,22 @@ const normalizeEmail = (raw) => {
   return value;
 };
 
+const getActorEmail = () => {
+  if (argv['actor-email']) {
+    return normalizeEmail(argv['actor-email']);
+  }
+  return DEFAULT_ACTOR;
+};
+
 const printUsageAndExit = () => {
   process.stderr.write([
     'LeavePilot Portal Admin CLI',
     '',
     'Usage:',
-    '  node bin/portal_admin.js create --email <email> --password-env <ENV_VAR> [--display-name "..."] [--role admin]',
+    '  node bin/portal_admin.js create --email <email> --password-env <ENV_VAR> [--display-name "..."] [--role admin] [--actor-email <email>]',
     '  node bin/portal_admin.js list',
-    '  node bin/portal_admin.js disable --email <email>',
-    '  node bin/portal_admin.js reset-password --email <email> --password-env <ENV_VAR>',
+    '  node bin/portal_admin.js disable --email <email> [--actor-email <email>]',
+    '  node bin/portal_admin.js reset-password --email <email> --password-env <ENV_VAR> [--actor-email <email>]',
     '',
     'Password is read from the environment variable specified by --password-env.',
     'Do NOT pass passwords as command-line arguments.',
@@ -82,6 +90,7 @@ const handleCreate = async () => {
   const email = normalizeEmail(argv.email);
   const password = getPasswordFromEnv();
   const role = argv.role || 'admin';
+  const actorName = getActorEmail();
 
   if (!VALID_ROLES.includes(role)) {
     process.stderr.write('Error: --role must be one of: ' + VALID_ROLES.join(', ') + '\n');
@@ -97,17 +106,33 @@ const handleCreate = async () => {
       process.exit(1);
     }
 
-    const user = await models.AdminUser.create({
-      email,
-      displayName: argv['display-name'] || null,
-      passwordHash: hashPassword(password),
-      role,
+    const result = await models.sequelize.transaction(async (t) => {
+      const user = await models.AdminUser.create({
+        email,
+        displayName: argv['display-name'] || null,
+        passwordHash: hashPassword(password),
+        role,
+      }, { transaction: t });
+
+      await models.AuditLog.create({
+        actorName,
+        action: 'admin_user_create',
+        entityType: 'AdminUser',
+        entityId: user.id,
+        details: {
+          email: user.email,
+          role: user.role,
+          displayNamePresent: !!argv['display-name'],
+        },
+      }, { transaction: t });
+
+      return user;
     });
 
     console.log('Admin user created:');
-    console.log('  email: ' + user.email);
-    console.log('  role: ' + user.role);
-    console.log('  id: ' + user.id);
+    console.log('  email: ' + result.email);
+    console.log('  role: ' + result.role);
+    console.log('  id: ' + result.id);
   } finally {
     await models.sequelize.close();
   }
@@ -145,6 +170,7 @@ const handleDisable = async () => {
   }
 
   const email = normalizeEmail(argv.email);
+  const actorName = getActorEmail();
   const models = await getDb();
 
   try {
@@ -154,7 +180,21 @@ const handleDisable = async () => {
       process.exit(1);
     }
 
-    await user.update({ isActive: false });
+    await models.sequelize.transaction(async (t) => {
+      await user.update({ isActive: false }, { transaction: t });
+
+      await models.AuditLog.create({
+        actorName,
+        action: 'admin_user_disable',
+        entityType: 'AdminUser',
+        entityId: user.id,
+        details: {
+          email: user.email,
+          role: user.role,
+        },
+      }, { transaction: t });
+    });
+
     console.log('User disabled: ' + user.email);
   } finally {
     await models.sequelize.close();
@@ -169,6 +209,7 @@ const handleResetPassword = async () => {
 
   const email = normalizeEmail(argv.email);
   const password = getPasswordFromEnv();
+  const actorName = getActorEmail();
   const models = await getDb();
 
   try {
@@ -178,10 +219,25 @@ const handleResetPassword = async () => {
       process.exit(1);
     }
 
-    await user.update({
-      passwordHash: hashPassword(password),
-      failedLoginCount: 0,
-      lockedUntil: null,
+    const wasLocked = user.lockedUntil && new Date(user.lockedUntil) > new Date();
+
+    await models.sequelize.transaction(async (t) => {
+      await user.update({
+        passwordHash: hashPassword(password),
+        failedLoginCount: 0,
+        lockedUntil: null,
+      }, { transaction: t });
+
+      await models.AuditLog.create({
+        actorName,
+        action: 'admin_user_reset_password',
+        entityType: 'AdminUser',
+        entityId: user.id,
+        details: {
+          email: user.email,
+          lockoutCleared: wasLocked,
+        },
+      }, { transaction: t });
     });
 
     console.log('Password reset for: ' + user.email);
