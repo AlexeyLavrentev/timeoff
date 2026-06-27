@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const expect = require('chai').expect;
 const { validateMetadata, validateSeats, validateDomains } = require('../../../portal/services/license_metadata');
 
@@ -112,5 +113,125 @@ describe('License metadata validation', function() {
       expect(result.errors.length).to.equal(1);
       expect(result.errors[0]).to.contain('invalid');
     });
+  });
+
+  describe('externalCustomerId', function() {
+    it('accepts up to 128 characters', function() {
+      const long = 'a'.repeat(128);
+      const result = validateMetadata({ externalCustomerId: long });
+      expect(result.errors).to.deep.equal([]);
+      expect(result.metadata.externalCustomerId).to.equal(long);
+    });
+
+    it('rejects 129 characters', function() {
+      const tooLong = 'a'.repeat(129);
+      const result = validateMetadata({ externalCustomerId: tooLong });
+      expect(result.errors.length).to.equal(1);
+      expect(result.errors[0]).to.contain('128');
+    });
+
+    it('rejects HTML-like values', function() {
+      const result = validateMetadata({ externalCustomerId: '<script>alert(1)</script>' });
+      expect(result.errors.length).to.equal(1);
+      expect(result.errors[0]).to.contain('< or >');
+    });
+
+    it('trims whitespace', function() {
+      const result = validateMetadata({ externalCustomerId: '  CRM-1  ' });
+      expect(result.errors).to.deep.equal([]);
+      expect(result.metadata.externalCustomerId).to.equal('CRM-1');
+    });
+
+    it('empty after trim returns null', function() {
+      const result = validateMetadata({ externalCustomerId: '   ' });
+      expect(result.errors).to.deep.equal([]);
+      expect(result.metadata).to.be.null;
+    });
+  });
+
+  describe('operatorNotes', function() {
+    it('accepts up to 1000 characters', function() {
+      const long = 'a'.repeat(1000);
+      const result = validateMetadata({ operatorNotes: long });
+      expect(result.errors).to.deep.equal([]);
+      expect(result.metadata.operatorNotes).to.equal(long);
+    });
+
+    it('rejects 1001 characters', function() {
+      const tooLong = 'a'.repeat(1001);
+      const result = validateMetadata({ operatorNotes: tooLong });
+      expect(result.errors.length).to.equal(1);
+      expect(result.errors[0]).to.contain('1000');
+    });
+
+    it('trims whitespace', function() {
+      const result = validateMetadata({ operatorNotes: '  note  ' });
+      expect(result.errors).to.deep.equal([]);
+      expect(result.metadata.operatorNotes).to.equal('note');
+    });
+  });
+});
+
+describe('Schema maintenance', function() {
+  const { loadPortalModels } = require('../../../portal/models');
+  const { runSchemaMaintenance } = require('../../../portal/models/schema_maintenance');
+
+  it('adds metadata column to old schema', async function() {
+    const models = loadPortalModels({ storage: ':memory:' });
+    await models.sequelize.sync();
+
+    await models.sequelize.getQueryInterface().removeColumn('licenses', 'metadata');
+
+    const result = await runSchemaMaintenance(models.sequelize);
+    expect(result.metadataColumnAdded).to.equal(true);
+
+    const desc = await models.sequelize.getQueryInterface().describeTable('licenses');
+    expect(desc.metadata).to.not.be.undefined;
+
+    await models.sequelize.close();
+  });
+
+  it('is idempotent on second run', async function() {
+    const models = loadPortalModels({ storage: ':memory:' });
+    await models.sequelize.sync();
+
+    const r1 = await runSchemaMaintenance(models.sequelize);
+    const r2 = await runSchemaMaintenance(models.sequelize);
+    expect(r1.metadataColumnAdded).to.equal(false);
+    expect(r2.metadataColumnAdded).to.equal(false);
+
+    await models.sequelize.close();
+  });
+
+  it('issue license with metadata succeeds on upgraded DB', async function() {
+    const models = loadPortalModels({ storage: ':memory:' });
+    await models.sequelize.sync();
+    await models.sequelize.getQueryInterface().removeColumn('licenses', 'metadata');
+    await runSchemaMaintenance(models.sequelize);
+
+    const { seedPlans } = require('../../../portal/seeders/seed_plans');
+    const { FileSigningProvider } = require('../../../portal/signing/file_signing_provider');
+    const { issueLicense } = require('../../../portal/services/license_service');
+    const kp = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const sp = new FileSigningProvider({
+      privateKeyPem: kp.privateKey.export({ type: 'pkcs1', format: 'pem' }),
+      publicKeyPem: kp.publicKey.export({ type: 'pkcs1', format: 'pem' }),
+    });
+
+    await seedPlans(models.Plan);
+    const c = await models.Customer.create({ name: 'UpgradeTest' });
+    const p = await models.Plan.findOne({ where: { name: 'pro' } });
+
+    const result = await issueLicense(models, sp, {
+      customerId: c.id,
+      planId: p.id,
+      actorName: 'test',
+      metadata: { seats: 42 },
+    });
+
+    const lic = await models.License.findByPk(result.license.id);
+    expect(lic.metadata).to.deep.equal({ seats: 42 });
+
+    await models.sequelize.close();
   });
 });
