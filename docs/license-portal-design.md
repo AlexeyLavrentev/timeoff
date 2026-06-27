@@ -1102,6 +1102,18 @@ Detail — operational metadata only, не влияет на рантайм.
 
 Нет public self-registration. Нет веб-bootstrap страницы.
 
+### Phase 2D-6 — статус реализации
+
+Реализовано:
+- **CLI audit logging**: create/disable/reset-password записывают AuditLog
+  в транзакции (user + audit в одной транзакции).
+- **CLI actor**: `--actor-email` для указания оператора; fallback
+  `portal-admin-cli`. Валидация через `normalizeEmail()`.
+- **Audit actions**: `admin_user_create`, `admin_user_disable`,
+  `admin_user_reset_password`. Без паролей, хэшей, токенов в деталях.
+- Тесты: 9 новых (audit create/disable/reset, actor, fallback,
+  failed create, list no audit, invalid actor-email).
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow
