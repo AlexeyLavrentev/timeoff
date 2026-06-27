@@ -61,6 +61,10 @@ module.exports = sequelize => {
       allowNull: true,
       references: { model: 'import_batches', key: 'id' },
     },
+    metadata: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
   }, {
     tableName: 'licenses',
     timestamps: true,

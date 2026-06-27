@@ -18,7 +18,7 @@ const sha256hex = data => crypto.createHash('sha256').update(data).digest('hex')
 
 const issueLicense = async (models, signingProvider, options) => {
   const { Customer, Plan, License, AuditLog, sequelize } = models;
-  const { customerId, planId, expiresAt, features: featuresOverride, actorName = 'portal-api' } = options;
+  const { customerId, planId, expiresAt, features: featuresOverride, actorName = 'portal-api', metadata } = options;
 
   if (featuresOverride !== null && featuresOverride !== undefined) {
     if (!Array.isArray(featuresOverride)) {
@@ -85,7 +85,16 @@ const issueLicense = async (models, signingProvider, options) => {
       licensePayload: JSON.stringify(envelope),
       issuedAt: new Date(),
       actorName,
+      metadata: metadata || null,
     }, { transaction });
+
+    const auditMeta = {};
+    if (metadata) {
+      if (metadata.seats !== undefined) auditMeta.seats = metadata.seats;
+      if (metadata.customerDomains) auditMeta.domainCount = metadata.customerDomains.length;
+      if (metadata.externalCustomerId) auditMeta.externalCustomerIdPresent = true;
+      if (metadata.operatorNotes) auditMeta.operatorNotesPresent = true;
+    }
 
     await AuditLog.create({
       actorName,
@@ -98,6 +107,7 @@ const issueLicense = async (models, signingProvider, options) => {
         features,
         expiresAt: expiresAt || null,
         payloadHash,
+        ...auditMeta,
       },
     }, { transaction });
 

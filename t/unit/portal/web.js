@@ -925,6 +925,184 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('license metadata', function() {
+    it('issue license with metadata stores it', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '25',
+        customerDomains: 'example.com\nsub.example.org',
+        externalCustomerId: 'CRM-12345',
+        operatorNotes: 'Internal note',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(302);
+
+      const licenses = await models.License.findAll({ order: [['createdAt', 'DESC']] });
+      const lic = licenses[0];
+      expect(lic.metadata).to.be.an('object');
+      expect(lic.metadata.seats).to.equal(25);
+      expect(lic.metadata.customerDomains).to.deep.equal(['example.com', 'sub.example.org']);
+      expect(lic.metadata.externalCustomerId).to.equal('CRM-12345');
+      expect(lic.metadata.operatorNotes).to.equal('Internal note');
+    });
+
+    it('license detail shows metadata', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const beforeCount = await models.License.count();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '10',
+        customerDomains: 'detail-test.com',
+        externalCustomerId: 'JIRA-999',
+        expiresAt: '2029-06-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const afterCount = await models.License.count();
+      expect(afterCount).to.be.greaterThan(beforeCount);
+      const licenses = await models.License.findAll();
+      const created = licenses.find(l => l.metadata && l.metadata.seats === 10);
+      expect(created.metadata).to.not.be.null;
+      expect(created.metadata.seats).to.equal(10);
+
+      const detail = await get(port, `/licenses/${created.id}`, cookie);
+      expect(detail.status).to.equal(200);
+      expect(detail.body).to.contain('10');
+      expect(detail.body).to.contain('detail-test.com');
+      expect(detail.body).to.contain('JIRA-999');
+    });
+
+    it('license detail does not expose licensePayload', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licenses = await models.License.findAll();
+      if (licenses.length > 0) {
+        const detail = await get(port, `/licenses/${licenses[0].id}`, cookie);
+        expect(detail.body).to.not.contain('licensePayload');
+        expect(detail.body).to.not.contain('signature');
+        expect(detail.body).to.not.contain('PRIVATE');
+      }
+    });
+
+    it('metadata is optional', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        expiresAt: '2028-01-01',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(302);
+    });
+
+    it('registry export includes safe metadata', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+      const beforeCount = await models.License.count();
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '77',
+        customerDomains: 'exporttest.com',
+        externalCustomerId: 'EXT-77',
+        operatorNotes: 'secret internal',
+        expiresAt: '2029-07-01',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(await models.License.count()).to.be.greaterThan(beforeCount);
+
+      const exportRes = await get(port, '/licenses/export/registry.json', cookie);
+      const data = JSON.parse(exportRes.body);
+      const matchingEntries = data.filter(e => e.seats === 77);
+      expect(matchingEntries.length).to.be.greaterThan(0);
+      const entry = matchingEntries[matchingEntries.length - 1];
+      expect(entry.customerDomains).to.deep.equal(['exporttest.com']);
+      expect(entry.externalCustomerId).to.equal('EXT-77');
+      expect(JSON.stringify(entry)).to.not.contain('operatorNotes');
+      expect(JSON.stringify(entry)).to.not.contain('secret internal');
+    });
+
+    it('audit includes safe metadata summary', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+      const beforeLogs = await models.AuditLog.count({ where: { action: 'issue_license' } });
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '15',
+        customerDomains: 'a.com,b.com',
+        externalCustomerId: 'CRM-X',
+        operatorNotes: 'confidential',
+        expiresAt: '2029-08-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const afterLogs = await models.AuditLog.count({ where: { action: 'issue_license' } });
+      expect(afterLogs).to.be.greaterThan(beforeLogs);
+
+      const logs = await models.AuditLog.findAll({
+        where: { action: 'issue_license' },
+      });
+      const latest = logs.find(l => l.details && l.details.seats === 15);
+      expect(latest).to.not.be.undefined;
+      expect(latest.details.domainCount).to.equal(2);
+      expect(latest.details.externalCustomerIdPresent).to.equal(true);
+      expect(latest.details.operatorNotesPresent).to.equal(true);
+      expect(JSON.stringify(latest.details)).to.not.contain('confidential');
+      expect(latest.details.operatorNotes).to.equal(undefined);
+    });
+
+    it('licensePayload not in generated payload', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '5',
+        expiresAt: '2029-09-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const licenses = await models.License.findAll({ order: [['createdAt', 'DESC']] });
+      const lic = licenses[0];
+      const payload = JSON.parse(lic.licensePayload);
+      expect(payload.payload).to.not.have.property('seats');
+      expect(payload.payload).to.not.have.property('metadata');
+    });
+  });
+
   describe('isolation', function() {
     it('portal web app is not mounted in customer runtime', function() {
       const mainApp = require('express')();
