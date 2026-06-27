@@ -17,6 +17,7 @@
         <a href="/plans">Планы</a>
         <a href="/licenses">Лицензии</a>
         {{#if (eq user.role "admin")}}
+        <a href="/audit">Аудит</a>
         {{/if}}
         <span class="nav-user">{{user.email}} ({{user.role}})</span>
         <form method="POST" action="/logout" class="nav-logout">
