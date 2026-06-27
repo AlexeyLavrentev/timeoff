@@ -7,6 +7,18 @@
   <tr><th>Алгоритм</th><td>{{license.algorithm}}</td></tr>
   <tr><th>Выпущена</th><td>{{license.issuedAtDisplay}}</td></tr>
   <tr><th>Кем</th><td>{{license.actorName}}</td></tr>
+  {{#if license.seats}}
+  <tr><th>Мест</th><td>{{license.seats}}</td></tr>
+  {{/if}}
+  {{#if license.customerDomainsList}}
+  <tr><th>Домены</th><td>{{license.customerDomainsList}}</td></tr>
+  {{/if}}
+  {{#if license.externalCustomerId}}
+  <tr><th>Внешний ID</th><td>{{license.externalCustomerId}}</td></tr>
+  {{/if}}
+  {{#if license.operatorNotes}}
+  <tr><th>Заметки</th><td>{{license.operatorNotes}}</td></tr>
+  {{/if}}
   <tr><th>Payload Hash</th><td><code>{{license.payloadHash}}</code></td></tr>
   <tr><th>License Hash</th><td><code>{{license.licenseHash}}</code></td></tr>
 </table>

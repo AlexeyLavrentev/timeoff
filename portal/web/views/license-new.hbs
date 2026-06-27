@@ -30,6 +30,27 @@
     <label for="features">Переопределение фич (опционально, по одной на строку)</label>
     <textarea id="features" name="features" placeholder="sso_authentication&#10;integration_api">{{values.features}}</textarea>
   </div>
+
+  <fieldset class="metadata-section">
+    <legend>Метаданные (опционально)</legend>
+    <div class="form-group">
+      <label for="seats">Мест (seats)</label>
+      <input type="number" id="seats" name="seats" min="1" max="1000000" value="{{values.seats}}" placeholder="Например: 25">
+    </div>
+    <div class="form-group">
+      <label for="customerDomains">Домены клиента (по одному на строку или через запятую)</label>
+      <textarea id="customerDomains" name="customerDomains" placeholder="example.com&#10;sub.example.org">{{values.customerDomains}}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="externalCustomerId">Внешний ID (CRM/Jira)</label>
+      <input type="text" id="externalCustomerId" name="externalCustomerId" maxlength="128" value="{{values.externalCustomerId}}" placeholder="CRM-12345">
+    </div>
+    <div class="form-group">
+      <label for="operatorNotes">Заметки оператора (не экспортируются)</label>
+      <textarea id="operatorNotes" name="operatorNotes" maxlength="1000" placeholder="Внутренняя заметка...">{{values.operatorNotes}}</textarea>
+    </div>
+  </fieldset>
+
   <button type="submit">Выпустить</button>
   <a href="/licenses" class="btn btn-secondary">Отмена</a>
 </form>
