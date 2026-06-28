@@ -32,6 +32,30 @@
   </div>
 
   <fieldset class="metadata-section">
+    <legend>Жизненный цикл (опционально)</legend>
+    <div class="form-group">
+      <label for="issueReason">Причина выпуска</label>
+      <select id="issueReason" name="issueReason">
+        <option value="" {{#if (eq values.issueReason "")}}selected{{/if}}>— не указана —</option>
+        <option value="new" {{#if (eq values.issueReason "new")}}selected{{/if}}>Новая</option>
+        <option value="renewal" {{#if (eq values.issueReason "renewal")}}selected{{/if}}>Продление</option>
+        <option value="replacement" {{#if (eq values.issueReason "replacement")}}selected{{/if}}>Замена</option>
+        <option value="correction" {{#if (eq values.issueReason "correction")}}selected{{/if}}>Коррекция</option>
+        <option value="trial" {{#if (eq values.issueReason "trial")}}selected{{/if}}>Пробная</option>
+        <option value="other" {{#if (eq values.issueReason "other")}}selected{{/if}}>Другое</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="replacementOfLicenseId">Заменяет лицензию (UUID, если reason=replacement)</label>
+      <input type="text" id="replacementOfLicenseId" name="replacementOfLicenseId" value="{{values.replacementOfLicenseId}}" placeholder="UUID лицензии для замены">
+    </div>
+    <div class="form-group">
+      <label for="lifecycleNote">Примечание к выпуску (не экспортируется)</label>
+      <textarea id="lifecycleNote" name="lifecycleNote" maxlength="500" placeholder="Причина выпуска/замены...">{{values.lifecycleNote}}</textarea>
+    </div>
+  </fieldset>
+
+  <fieldset class="metadata-section">
     <legend>Метаданные (опционально)</legend>
     <div class="form-group">
       <label for="seats">Мест (seats)</label>

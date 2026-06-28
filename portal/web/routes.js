@@ -47,6 +47,7 @@ const SAFE_DETAIL_KEYS = new Set([
   'expiresAt', 'payloadHash', 'licenseHash', 'count', 'source',
   'displayNamePresent', 'lockoutCleared',
   'seats', 'domainCount', 'externalCustomerIdPresent', 'operatorNotesPresent',
+  'issueReason', 'replacementOfLicenseIdPresent', 'lifecycleNotePresent',
 ]);
 
 const BLOCKED_KEY_PATTERNS = [
@@ -443,6 +444,7 @@ const createWebRoutes = (models, options = {}) => {
         if (singleValue(req.query.domain)) params.set('domain', singleValue(req.query.domain));
         if (singleValue(req.query.minSeats)) params.set('minSeats', singleValue(req.query.minSeats));
         if (singleValue(req.query.maxSeats)) params.set('maxSeats', singleValue(req.query.maxSeats));
+        if (singleValue(req.query.issueReason)) params.set('issueReason', singleValue(req.query.issueReason));
         params.set('page', String(page));
         params.set('perPage', String(pagination.perPage));
         return '/licenses?' + params.toString();
@@ -469,6 +471,7 @@ const createWebRoutes = (models, options = {}) => {
           domain: escapeHtml(singleValue(req.query.domain)),
           minSeats: singleValue(req.query.minSeats),
           maxSeats: singleValue(req.query.maxSeats),
+          issueReason: singleValue(req.query.issueReason),
         },
         plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
         hasActiveFilters: filters.hasActiveFilters,
@@ -514,7 +517,17 @@ const createWebRoutes = (models, options = {}) => {
         ? body.features.split('\n').map(f => f.trim()).filter(Boolean)
         : null;
 
+      if (!body.issueReason) body.issueReason = 'new';
       const { metadata, errors: metaErrors } = validateMetadata(body);
+
+      if (body.issueReason === 'replacement' && (!metadata || !metadata.replacementOfLicenseId)) {
+        metaErrors.push('replacementOfLicenseId is required when issueReason is "replacement"');
+      }
+
+      if (body.replacementOfLicenseId && (!metadata || !metadata.issueReason || metadata.issueReason !== 'replacement')) {
+        metaErrors.push('issueReason must be "replacement" when replacementOfLicenseId is provided');
+      }
+
       if (metaErrors.length > 0) {
         const [customers, plans] = await Promise.all([
           listCustomers(Customer),
@@ -528,6 +541,35 @@ const createWebRoutes = (models, options = {}) => {
           customers: customers.map(c => ({ id: c.id, name: escapeHtml(c.name) })),
           plans: plans.map(p => ({ id: p.id, name: escapeHtml(p.name) })),
         });
+      }
+
+      if (metadata && metadata.replacementOfLicenseId) {
+        const targetLicense = await License.findByPk(metadata.replacementOfLicenseId);
+        if (!targetLicense) {
+          metaErrors.push('replacement target license not found');
+        } else if (targetLicense.id === metadata.replacementOfLicenseId) {
+          // same license — already checked
+        }
+        if (targetLicense && body.customerId && targetLicense.customerId !== body.customerId) {
+          metaErrors.push('replacement target belongs to a different customer');
+        }
+        if (targetLicense && targetLicense.id && metadata.replacementOfLicenseId === targetLicense.id) {
+          // self-replacement check is redundant since we only set it from body
+        }
+        if (metaErrors.length > 0) {
+          const [customers, plans] = await Promise.all([
+            listCustomers(Customer),
+            listPlans(Plan),
+          ]);
+          return res.render('license-new', {
+            title: 'Выпустить лицензию',
+            csrf: res.locals.csrf,
+            error: metaErrors.join('; '),
+            values: body,
+            customers: customers.map(c => ({ id: c.id, name: escapeHtml(c.name) })),
+            plans: plans.map(p => ({ id: p.id, name: escapeHtml(p.name) })),
+          });
+        }
       }
 
       await issueLicense(models, options.signingProvider, {
@@ -573,6 +615,17 @@ const createWebRoutes = (models, options = {}) => {
 
       const m = license.metadata || {};
 
+      const allWithMeta = await License.findAll({
+        where: { metadata: { [models.Sequelize.Op.ne]: null } },
+        attributes: ['id', 'metadata'],
+      });
+      const replacedByLinks = allWithMeta
+        .filter(l => {
+          const lm = l.metadata || {};
+          return lm.replacementOfLicenseId === license.id;
+        })
+        .map(l => ({ id: l.id.substring(0, 8) + '…', url: '/licenses/' + l.id }));
+
       res.render('license-detail', {
         title: 'Лицензия',
         csrf: res.locals.csrf,
@@ -591,6 +644,11 @@ const createWebRoutes = (models, options = {}) => {
           customerDomainsList: m.customerDomains ? m.customerDomains.join(', ') : null,
           externalCustomerId: escapeHtml(m.externalCustomerId) || null,
           operatorNotes: escapeHtml(m.operatorNotes) || null,
+          issueReason: m.issueReason || null,
+          replacementOfLicenseId: m.replacementOfLicenseId || null,
+          replacementOfLicenseLink: m.replacementOfLicenseId ? '/licenses/' + m.replacementOfLicenseId : null,
+          replacedByLinks,
+          lifecycleNote: escapeHtml(m.lifecycleNote) || null,
         },
       });
     } catch (error) {
@@ -645,6 +703,8 @@ const createWebRoutes = (models, options = {}) => {
         if (m.seats) entry.seats = m.seats;
         if (m.customerDomains) entry.customerDomains = m.customerDomains;
         if (m.externalCustomerId) entry.externalCustomerId = m.externalCustomerId;
+        if (m.issueReason) entry.issueReason = m.issueReason;
+        if (m.replacementOfLicenseId) entry.replacementOfLicenseId = m.replacementOfLicenseId;
         return entry;
       });
 

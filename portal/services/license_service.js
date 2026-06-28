@@ -94,6 +94,9 @@ const issueLicense = async (models, signingProvider, options) => {
       if (metadata.customerDomains) auditMeta.domainCount = metadata.customerDomains.length;
       if (metadata.externalCustomerId) auditMeta.externalCustomerIdPresent = true;
       if (metadata.operatorNotes) auditMeta.operatorNotesPresent = true;
+      if (metadata.issueReason) auditMeta.issueReason = metadata.issueReason;
+      if (metadata.replacementOfLicenseId) auditMeta.replacementOfLicenseIdPresent = true;
+      if (metadata.lifecycleNote) auditMeta.lifecycleNotePresent = true;
     }
 
     await AuditLog.create({
