@@ -867,6 +867,77 @@ describe('Portal Web UI', function() {
       const res = await get(port, '/licenses?minSeats=1&page=1&perPage=5', cookie);
       expect(res.status).to.equal(200);
     });
+
+    it('metadata pagination applies offset', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+
+      for (let i = 0; i < 3; i++) {
+        const newPage = await get(port, '/licenses/new', cookie);
+        const csrf = extractCsrf(newPage.body);
+        await post(port, '/licenses', {
+          customerId: customers[0].id,
+          planId: plans.find(p => p.name === 'pro').id,
+          seats: String(10 + i),
+          externalCustomerId: 'SEAT' + (10 + i),
+          expiresAt: '2031-0' + (1 + i) + '-01',
+          _csrf: csrf,
+        }, cookie);
+      }
+
+      const page1 = await get(port, '/licenses?externalCustomerId=SEAT&page=1&perPage=1', cookie);
+      const page2 = await get(port, '/licenses?externalCustomerId=SEAT&page=2&perPage=1', cookie);
+
+      expect(page1.status).to.equal(200);
+      expect(page2.status).to.equal(200);
+
+      const p1Links = (page1.body.match(/\/licenses\/[a-f0-9-]+/g) || []);
+      const p2Links = (page2.body.match(/\/licenses\/[a-f0-9-]+/g) || []);
+      const p1Ids = p1Links.map(l => l.replace('/licenses/', ''));
+      const p2Ids = p2Links.map(l => l.replace('/licenses/', ''));
+      const overlap = p1Ids.filter(id => p2Ids.includes(id));
+      expect(overlap.length).to.equal(0);
+    });
+
+    it('metadata Next link preserves perPage', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+
+      for (let i = 0; i < 3; i++) {
+        const newPage = await get(port, '/licenses/new', cookie);
+        const csrf = extractCsrf(newPage.body);
+        await post(port, '/licenses', {
+          customerId: customers[0].id,
+          planId: plans.find(p => p.name === 'pro').id,
+          seats: String(20 + i),
+          expiresAt: '2031-1' + (i + 1) + '-01',
+          _csrf: csrf,
+        }, cookie);
+      }
+
+      const res = await get(port, '/licenses?minSeats=1&page=1&perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('perPage=1');
+      expect(res.body).to.contain('Далее');
+    });
+
+    it('metadata Previous link preserves perPage', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=1&page=2&perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('perPage=1');
+      expect(res.body).to.contain('Назад');
+    });
+
+    it('pagination links preserve non-metadata filters and perPage', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?customer=WebCorp&page=1&perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('customer=WebCorp');
+      expect(res.body).to.contain('perPage=1');
+    });
   });
 
   describe('security', function() {
@@ -1268,7 +1339,7 @@ describe('Portal Web UI', function() {
       const res = await post(port, '/licenses', {
         customerId: customers[0].id,
         planId: plans.find(p => p.name === 'pro').id,
-        seats: '10',
+        seats: '88',
         customerDomains: 'detail-test.com',
         externalCustomerId: 'JIRA-999',
         expiresAt: '2029-06-01',
@@ -1278,13 +1349,13 @@ describe('Portal Web UI', function() {
       const afterCount = await models.License.count();
       expect(afterCount).to.be.greaterThan(beforeCount);
       const licenses = await models.License.findAll();
-      const created = licenses.find(l => l.metadata && l.metadata.seats === 10);
+      const created = licenses.find(l => l.metadata && l.metadata.seats === 88);
       expect(created.metadata).to.not.be.null;
-      expect(created.metadata.seats).to.equal(10);
+      expect(created.metadata.seats).to.equal(88);
 
       const detail = await get(port, `/licenses/${created.id}`, cookie);
       expect(detail.status).to.equal(200);
-      expect(detail.body).to.contain('10');
+      expect(detail.body).to.contain('88');
       expect(detail.body).to.contain('detail-test.com');
       expect(detail.body).to.contain('JIRA-999');
     });
