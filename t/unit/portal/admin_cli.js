@@ -197,7 +197,7 @@ describe('Portal admin CLI', function() {
   });
 
   describe('disable', function() {
-    it('disables a user', function() {
+    it('disables a user and increments auth revision', async function() {
       const { dir, dbPath } = makeTempDb('disable');
       try {
         runAdmin([
@@ -210,6 +210,12 @@ describe('Portal admin CLI', function() {
 
         expect(result.status).to.equal(0);
         expect(result.stdout).to.contain('disabled');
+
+        const models = loadPortalModels({ storage: dbPath });
+        const user = await models.AdminUser.findOne({ where: { email: 'dis@test.com' } });
+        expect(user.isActive).to.equal(false);
+        expect(user.authRevision).to.equal(1);
+        await models.sequelize.close();
       } finally {
         fs.rmSync(dir, { recursive: true, force: true });
       }
@@ -247,6 +253,7 @@ describe('Portal admin CLI', function() {
         );
         const oldUser = await models.AdminUser.findOne({ where: { email: 'reset@test.com' } });
         const oldHash = oldUser.passwordHash;
+        const oldRevision = oldUser.authRevision;
         await models.sequelize.close();
 
         const result = runAdmin([
@@ -265,6 +272,7 @@ describe('Portal admin CLI', function() {
         expect(verifyPassword('secure-password-1234', updatedUser.passwordHash)).to.equal(false);
         expect(updatedUser.failedLoginCount).to.equal(0);
         expect(updatedUser.lockedUntil).to.be.null;
+        expect(updatedUser.authRevision).to.equal(oldRevision + 1);
         await models2.sequelize.close();
       } finally {
         fs.rmSync(dir, { recursive: true, force: true });

@@ -172,9 +172,9 @@ describe('License metadata validation', function() {
   });
 });
 
-describe('Schema maintenance', function() {
+describe('Portal metadata migration', function() {
   const { loadPortalModels } = require('../../../portal/models');
-  const { runSchemaMaintenance } = require('../../../portal/models/schema_maintenance');
+  const { runPortalMigrations } = require('../../../portal/migrator');
 
   it('adds metadata column to old schema', async function() {
     const models = loadPortalModels({ storage: ':memory:' });
@@ -182,8 +182,8 @@ describe('Schema maintenance', function() {
 
     await models.sequelize.getQueryInterface().removeColumn('licenses', 'metadata');
 
-    const result = await runSchemaMaintenance(models.sequelize);
-    expect(result.metadataColumnAdded).to.equal(true);
+    const result = await runPortalMigrations(models);
+    expect(result).to.include('002-license-metadata.js');
 
     const desc = await models.sequelize.getQueryInterface().describeTable('licenses');
     expect(desc.metadata).to.not.be.undefined;
@@ -195,10 +195,10 @@ describe('Schema maintenance', function() {
     const models = loadPortalModels({ storage: ':memory:' });
     await models.sequelize.sync();
 
-    const r1 = await runSchemaMaintenance(models.sequelize);
-    const r2 = await runSchemaMaintenance(models.sequelize);
-    expect(r1.metadataColumnAdded).to.equal(false);
-    expect(r2.metadataColumnAdded).to.equal(false);
+    const r1 = await runPortalMigrations(models);
+    const r2 = await runPortalMigrations(models);
+    expect(r1).to.include('001-initial-schema.js');
+    expect(r2).to.deep.equal([]);
 
     await models.sequelize.close();
   });
@@ -207,7 +207,7 @@ describe('Schema maintenance', function() {
     const models = loadPortalModels({ storage: ':memory:' });
     await models.sequelize.sync();
     await models.sequelize.getQueryInterface().removeColumn('licenses', 'metadata');
-    await runSchemaMaintenance(models.sequelize);
+    await runPortalMigrations(models);
 
     const { seedPlans } = require('../../../portal/seeders/seed_plans');
     const { FileSigningProvider } = require('../../../portal/signing/file_signing_provider');

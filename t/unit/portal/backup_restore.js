@@ -6,6 +6,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const expect = require('chai').expect;
 const { loadPortalModels } = require('../../../portal/models');
+const { runPortalMigrations } = require('../../../portal/migrator');
 const { seedPlans } = require('../../../portal/seeders/seed_plans');
 const { hashPassword } = require('../../../portal/auth/passwords');
 
@@ -27,7 +28,7 @@ describe('Portal backup/restore', function() {
 
     try {
       const models = loadPortalModels({ storage: dbPath });
-      await models.sequelize.sync();
+      await runPortalMigrations(models);
       await seedPlans(models.Plan);
       await models.sequelize.close();
 
@@ -59,7 +60,7 @@ describe('Portal backup/restore', function() {
 
     try {
       const models = loadPortalModels({ storage: dbPath });
-      await models.sequelize.sync();
+      await runPortalMigrations(models);
       await seedPlans(models.Plan);
 
       await models.AdminUser.create({
@@ -105,7 +106,7 @@ describe('Portal backup/restore', function() {
       fs.copyFileSync(backupFile, restoredPath);
 
       const restored = loadPortalModels({ storage: restoredPath });
-      await restored.sequelize.sync();
+      await runPortalMigrations(restored);
 
       const countsAfter = {
         adminUsers: await restored.AdminUser.count(),
@@ -135,7 +136,7 @@ describe('Portal backup/restore', function() {
 
     try {
       const models = loadPortalModels({ storage: dbPath });
-      await models.sequelize.sync();
+      await runPortalMigrations(models);
       await models.sequelize.close();
 
       const result = spawnSync(node, [
@@ -189,7 +190,7 @@ describe('Portal backup/restore', function() {
 
     try {
       const models = loadPortalModels({ storage: dbPath });
-      await models.sequelize.sync();
+      await runPortalMigrations(models);
       await models.sequelize.close();
 
       const result = spawnSync(node, [

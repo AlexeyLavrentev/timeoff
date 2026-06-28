@@ -50,15 +50,29 @@ module.exports = sequelize => {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    authRevision: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   }, {
     tableName: 'admin_users',
     timestamps: true,
+    hooks: {
+      beforeUpdate(user) {
+        const invalidatesSession = ['passwordHash', 'role', 'isActive']
+          .some(field => user.changed(field));
+        if (invalidatesSession && !user.changed('authRevision')) {
+          user.authRevision += 1;
+        }
+      },
+    },
   });
 
   AdminUser.associate = () => {};
 
   AdminUser.prototype.toSafeJSON = function() {
-    const { passwordHash, ...safe } = this.toJSON();
+    const { passwordHash, authRevision, ...safe } = this.toJSON();
     return safe;
   };
 
