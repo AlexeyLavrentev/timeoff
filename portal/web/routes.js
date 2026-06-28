@@ -378,151 +378,74 @@ const createWebRoutes = (models, options = {}) => {
 
   router.get('/licenses', requireAuth, async (req, res, next) => {
     try {
-      const { Op } = models.Sequelize;
-      const where = {};
-      const customerWhere = {};
-      const planWhere = {};
+      const {
+        buildFilterState, buildDbFilters, licenseMatchesMetadataFilters,
+        singleValue, parsePagination, SCAN_CAP,
+      } = require('../services/license_list_filters');
 
-      const singleValue = (v) => {
-        if (Array.isArray(v)) return (v[0] || '').trim().substring(0, 128);
-        return typeof v === 'string' ? v.trim().substring(0, 128) : '';
-      };
-
-      const sanitizeLike = (v) => v.replace(/[%_]/g, '');
-
-      const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
-
-      const parseSeatsFilter = (raw) => {
-        if (!raw) return { provided: false, value: null, invalid: false };
-        const trimmed = String(raw).trim();
-        if (!trimmed) return { provided: false, value: null, invalid: false };
-        if (!/^\d+$/.test(trimmed)) return { provided: true, value: null, invalid: true };
-        const n = Number(trimmed);
-        if (n < 1 || n > 1000000) return { provided: true, value: null, invalid: true };
-        return { provided: true, value: n, invalid: false };
-      };
-
-      const normalizeDomainFilter = (raw) => {
-        const d = String(raw || '').trim().toLowerCase();
-        if (!d) return { provided: false, value: null, invalid: false };
-        if (d.length > 253) return { provided: true, value: null, invalid: true };
-        if (d.includes('://') || d.includes('/') || d.includes('@') || d.includes('*') || d.includes(' ')) {
-          return { provided: true, value: null, invalid: true };
-        }
-        if (!DOMAIN_RE.test(d)) return { provided: true, value: null, invalid: true };
-        return { provided: true, value: d, invalid: false };
-      };
-
-      const customerFilter = singleValue(req.query.customer);
-      const planFilter = singleValue(req.query.plan);
-      const qFilter = singleValue(req.query.q);
-      const externalIdRaw = singleValue(req.query.externalCustomerId);
-      const externalIdLike = externalIdRaw ? sanitizeLike(externalIdRaw) : null;
-      const externalIdFilter = externalIdLike || null;
-
-      const domainFilter = singleValue(req.query.domain);
-      const { provided: domainProvided, value: domainLike, invalid: domainInvalid } = normalizeDomainFilter(domainFilter);
-
-      const minSeatsRaw = singleValue(req.query.minSeats);
-      const maxSeatsRaw = singleValue(req.query.maxSeats);
-      const { provided: minSeatsProvided, value: minSeats, invalid: minSeatsInvalid } = parseSeatsFilter(minSeatsRaw);
-      const { provided: maxSeatsProvided, value: maxSeats, invalid: maxSeatsInvalid } = parseSeatsFilter(maxSeatsRaw);
-
-      const hasInvalidMetaFilter = domainInvalid || minSeatsInvalid || maxSeatsInvalid
-        || (minSeats && maxSeats && minSeats > maxSeats)
-        || (externalIdRaw && !externalIdLike);
-
-      const VALID_STATUSES = ['all', 'active', 'expired'];
-      const rawStatus = singleValue(req.query.status);
-      const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
-
-      const customerLike = sanitizeLike(customerFilter);
-      const qLike = sanitizeLike(qFilter);
-
-      if (customerFilter && customerLike) {
-        customerWhere.name = { [Op.like]: '%' + customerLike + '%' };
-      } else if (customerFilter && !customerLike) {
-        customerWhere.id = { [Op.in]: [] };
-      }
-
-      if (planFilter) {
-        planWhere.name = planFilter;
-      }
-
-      if (statusFilter === 'active') {
-        where[Op.or] = [
-          { expiresAt: { [Op.is]: null } },
-          { expiresAt: { [Op.gte]: new Date() } },
-        ];
-      } else if (statusFilter === 'expired') {
-        where.expiresAt = { [Op.lt]: new Date() };
-      }
-
-      if (qFilter && qLike) {
-        const qConditions = [
-          { payloadHash: { [Op.like]: qLike + '%' } },
-          { licenseHash: { [Op.like]: qLike + '%' } },
-          { '$customer.name$': { [Op.like]: '%' + qLike + '%' } },
-          { '$plan.name$': { [Op.like]: '%' + qLike + '%' } },
-        ];
-
-        if (where[Op.or]) {
-          where[Op.and] = [
-            { [Op.or]: where[Op.or] },
-            { [Op.or]: qConditions },
-          ];
-          delete where[Op.or];
-        } else {
-          where[Op.or] = qConditions;
-        }
-      } else if (qFilter && !qLike) {
-        where.id = { [Op.in]: [] };
-      }
-
-      const needsMetadataFilter = externalIdFilter || domainProvided || minSeatsProvided || maxSeatsProvided;
+      const filters = buildFilterState(req.query);
+      const pagination = parsePagination(req.query);
+      const { where, customerWhere, planWhere } = buildDbFilters(filters);
 
       const allPlans = await listPlans(Plan);
 
-      let licenses = await License.findAll({
-        attributes: { exclude: ['licensePayload'] },
-        where,
-        order: [['issuedAt', 'DESC']],
-        limit: 200,
-        include: [
-          { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
-          { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
-        ],
-      });
+      let licenses;
+      let warning = null;
 
-      if (hasInvalidMetaFilter) {
+      if (filters.hasInvalidMetaFilter) {
         licenses = [];
-      } else if (needsMetadataFilter) {
-        licenses = licenses.filter(l => {
-          const m = l.metadata || {};
+      } else if (filters.needsMetadataFilter) {
+        licenses = await License.findAll({
+          attributes: { exclude: ['licensePayload'] },
+          where,
+          order: [['issuedAt', 'DESC']],
+          limit: SCAN_CAP,
+          include: [
+            { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
+            { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
+          ],
+        });
 
-          if (externalIdFilter) {
-            const eid = String(m.externalCustomerId || '').toLowerCase();
-            if (!eid.includes(externalIdFilter.toLowerCase())) return false;
-          }
-
-          if (domainLike) {
-            const domains = m.customerDomains || [];
-            if (!domains.some(d => d === domainLike)) return false;
-          }
-
-          if (minSeats) {
-            if (!m.seats || m.seats < minSeats) return false;
-          }
-
-          if (maxSeats) {
-            if (!m.seats || m.seats > maxSeats) return false;
-          }
-
-          return true;
+        const matched = licenses.filter(l => licenseMatchesMetadataFilters(l, filters));
+        if (licenses.length >= SCAN_CAP && matched.length < pagination.offset + pagination.perPage) {
+          warning = 'Поиск ограничен последними ' + SCAN_CAP + ' записями. Уточните фильтры.';
+        }
+        licenses = matched;
+      } else {
+        licenses = await License.findAll({
+          attributes: { exclude: ['licensePayload'] },
+          where,
+          order: [['issuedAt', 'DESC']],
+          limit: pagination.perPage + 1,
+          offset: pagination.offset,
+          include: [
+            { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
+            { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
+          ],
         });
       }
 
-      licenses = licenses.slice(0, 100);
+      const hasNext = filters.needsMetadataFilter
+        ? licenses.length > pagination.perPage
+        : licenses.length > pagination.perPage;
+
+      if (hasNext) {
+        licenses = licenses.slice(0, pagination.perPage);
+      }
+
+      const buildPaginationUrl = (page) => {
+        const params = new URLSearchParams();
+        if (singleValue(req.query.customer)) params.set('customer', singleValue(req.query.customer));
+        if (singleValue(req.query.plan)) params.set('plan', singleValue(req.query.plan));
+        if (singleValue(req.query.status) && singleValue(req.query.status) !== 'all') params.set('status', singleValue(req.query.status));
+        if (singleValue(req.query.q)) params.set('q', singleValue(req.query.q));
+        if (singleValue(req.query.externalCustomerId)) params.set('externalCustomerId', singleValue(req.query.externalCustomerId));
+        if (singleValue(req.query.domain)) params.set('domain', singleValue(req.query.domain));
+        if (singleValue(req.query.minSeats)) params.set('minSeats', singleValue(req.query.minSeats));
+        if (singleValue(req.query.maxSeats)) params.set('maxSeats', singleValue(req.query.maxSeats));
+        params.set('page', String(page));
+        return '/licenses?' + params.toString();
+      };
 
       res.render('licenses', {
         title: 'Лицензии',
@@ -537,17 +460,26 @@ const createWebRoutes = (models, options = {}) => {
         })),
         canIssue: ['issuer', 'admin'].includes(req.session.userRole),
         filters: {
-          customer: escapeHtml(customerFilter),
-          plan: escapeHtml(planFilter),
-          status: statusFilter,
-          q: escapeHtml(qFilter),
-          externalCustomerId: escapeHtml(externalIdFilter),
-          domain: escapeHtml(domainFilter),
-          minSeats: minSeatsRaw,
-          maxSeats: maxSeatsRaw,
+          customer: escapeHtml(filters.customerFilter),
+          plan: escapeHtml(filters.planFilter),
+          status: filters.statusFilter,
+          q: escapeHtml(filters.qFilter),
+          externalCustomerId: escapeHtml(singleValue(req.query.externalCustomerId)),
+          domain: escapeHtml(singleValue(req.query.domain)),
+          minSeats: singleValue(req.query.minSeats),
+          maxSeats: singleValue(req.query.maxSeats),
         },
         plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
-        hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter || externalIdRaw || domainFilter || minSeatsRaw || maxSeatsRaw),
+        hasActiveFilters: filters.hasActiveFilters,
+        pagination: {
+          page: pagination.page,
+          perPage: pagination.perPage,
+          hasNext,
+          hasPrev: pagination.page > 1,
+          nextUrl: hasNext ? buildPaginationUrl(pagination.page + 1) : null,
+          prevUrl: pagination.page > 1 ? buildPaginationUrl(pagination.page - 1) : null,
+        },
+        warning,
       });
     } catch (error) {
       next(error);

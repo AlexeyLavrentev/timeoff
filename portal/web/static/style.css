@@ -49,3 +49,5 @@ a { color: #1a1a2e; }
 .filter-actions { display: flex; gap: 0.5rem; align-items: flex-end; }
 .metadata-section { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 1rem 0; background: #fafafa; }
 .metadata-section legend { font-weight: 600; font-size: 0.95rem; }
+.pagination { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; }
+.flash--warning { background: #ffc; color: #856404; border: 1px solid #ffc107; }
