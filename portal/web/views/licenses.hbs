@@ -55,6 +55,10 @@
   </div>
 </form>
 
+{{#if warning}}
+<div class="flash flash--warning">{{warning}}</div>
+{{/if}}
+
 <table>
   <thead><tr><th>Клиент</th><th>План</th><th>Фичи</th><th>Срок</th><th>Выпущена</th></tr></thead>
   <tbody>
@@ -71,4 +75,15 @@
     {{/each}}
   </tbody>
 </table>
-<p class="muted">Показано до 100 новейших записей.</p>
+
+{{#if pagination}}
+<div class="pagination">
+  {{#if pagination.hasPrev}}
+  <a href="{{{pagination.prevUrl}}}" class="btn btn-secondary">← Назад</a>
+  {{/if}}
+  <span class="muted">Страница {{pagination.page}}</span>
+  {{#if pagination.hasNext}}
+  <a href="{{{pagination.nextUrl}}}" class="btn">Далее →</a>
+  {{/if}}
+</div>
+{{/if}}
