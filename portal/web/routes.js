@@ -444,6 +444,7 @@ const createWebRoutes = (models, options = {}) => {
         if (singleValue(req.query.domain)) params.set('domain', singleValue(req.query.domain));
         if (singleValue(req.query.minSeats)) params.set('minSeats', singleValue(req.query.minSeats));
         if (singleValue(req.query.maxSeats)) params.set('maxSeats', singleValue(req.query.maxSeats));
+        if (singleValue(req.query.issueReason)) params.set('issueReason', singleValue(req.query.issueReason));
         params.set('page', String(page));
         params.set('perPage', String(pagination.perPage));
         return '/licenses?' + params.toString();
@@ -516,6 +517,7 @@ const createWebRoutes = (models, options = {}) => {
         ? body.features.split('\n').map(f => f.trim()).filter(Boolean)
         : null;
 
+      if (!body.issueReason) body.issueReason = 'new';
       const { metadata, errors: metaErrors } = validateMetadata(body);
 
       if (body.issueReason === 'replacement' && (!metadata || !metadata.replacementOfLicenseId)) {
@@ -613,19 +615,16 @@ const createWebRoutes = (models, options = {}) => {
 
       const m = license.metadata || {};
 
-      let replacedByLinks = [];
-      if (m.replacementOfLicenseId) {
-        const replacedBy = await License.findAll({
-          where: { metadata: { [models.Sequelize.Op.ne]: null } },
-          attributes: ['id'],
-        });
-        replacedByLinks = replacedBy
-          .filter(l => {
-            const lm = l.metadata || {};
-            return lm.replacementOfLicenseId === license.id;
-          })
-          .map(l => ({ id: l.id.substring(0, 8) + '…', url: '/licenses/' + l.id }));
-      }
+      const allWithMeta = await License.findAll({
+        where: { metadata: { [models.Sequelize.Op.ne]: null } },
+        attributes: ['id', 'metadata'],
+      });
+      const replacedByLinks = allWithMeta
+        .filter(l => {
+          const lm = l.metadata || {};
+          return lm.replacementOfLicenseId === license.id;
+        })
+        .map(l => ({ id: l.id.substring(0, 8) + '…', url: '/licenses/' + l.id }));
 
       res.render('license-detail', {
         title: 'Лицензия',

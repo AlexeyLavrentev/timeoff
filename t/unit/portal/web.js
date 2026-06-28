@@ -1670,7 +1670,10 @@ describe('Portal Web UI', function() {
         _csrf: targetCsrf,
       }, cookie);
       expect(targetRes.status).to.equal(302);
-      const targetLic = await models.License.findOne({ order: [['id', 'DESC']] });
+      const targetLic = await models.License.findOne({
+        where: { customerId: cust.id },
+        order: [['issuedAt', 'DESC'], ['createdAt', 'DESC']],
+      });
 
       const newPage = await get(port, '/licenses/new', cookie);
       const csrf = extractCsrf(newPage.body);
@@ -1691,6 +1694,136 @@ describe('Portal Web UI', function() {
       const entry = data.find(e => e.issueReason === 'replacement');
       expect(entry).to.not.be.undefined;
       expect(entry.replacementOfLicenseId).to.equal(targetLic.id);
+    });
+
+    it('default issueReason is new when missing', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'DefaultReason_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: cust.id,
+        planId: plan.id,
+        features: 'sso_authentication',
+        expiresAt: '2031-12-10',
+        _csrf: csrf,
+      }, cookie);
+      expect(res.status).to.equal(302);
+
+      const lic = await models.License.findOne({ where: { customerId: cust.id } });
+      expect(lic.metadata.issueReason).to.equal('new');
+    });
+
+    it('issueReason in AuditLog details', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'AuditReason_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: cust.id,
+        planId: plan.id,
+        features: 'sso_authentication',
+        issueReason: 'trial',
+        lifecycleNote: 'test note content',
+        expiresAt: '2031-12-11',
+        _csrf: csrf,
+      }, cookie);
+
+      const logs = await models.AuditLog.findAll({ where: { action: 'issue_license' } });
+      const latest = logs[logs.length - 1];
+      expect(latest.details.issueReason).to.equal('trial');
+      expect(latest.details.lifecycleNotePresent).to.equal(true);
+      expect(JSON.stringify(latest.details)).to.not.contain('test note content');
+    });
+
+    it('detail shows replacedBy link', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'ReplacedBy_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+
+      const p1 = await get(port, '/licenses/new', cookie);
+      const c1 = extractCsrf(p1.body);
+      await post(port, '/licenses', {
+        customerId: cust.id, planId: plan.id, features: 'sso_authentication',
+        issueReason: 'new', expiresAt: '2031-12-12', _csrf: c1,
+      }, cookie);
+      const origLic = await models.License.findOne({ where: { customerId: cust.id } });
+
+      const p2 = await get(port, '/licenses/new', cookie);
+      const c2 = extractCsrf(p2.body);
+      await post(port, '/licenses', {
+        customerId: cust.id, planId: plan.id,
+        features: 'sso_authentication,integration_api',
+        issueReason: 'replacement', replacementOfLicenseId: origLic.id,
+        expiresAt: '2031-12-13', _csrf: c2,
+      }, cookie);
+
+      const detail = await get(port, `/licenses/${origLic.id}`, cookie);
+      expect(detail.body).to.contain('Заменена на');
+      expect(detail.body).to.contain('/licenses/');
+    });
+
+    it('issueReason preserved in pagination links', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?issueReason=trial&page=1&perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('issueReason=trial');
+      expect(res.body).to.contain('perPage=1');
+    });
+
+    it('unknown replacement UUID rejected', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'UnknownUUID_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+      const p = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(p.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: cust.id, planId: plan.id,
+        features: 'sso_authentication',
+        issueReason: 'replacement', replacementOfLicenseId: '00000000-0000-0000-0000-000000000000',
+        expiresAt: '2031-12-14', _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('not found');
+    });
+
+    it('replacement from another customer rejected', async function() {
+      const cust1 = await models.Customer.create({ name: 'OtherCust1_' + Date.now() });
+      const cust2 = await models.Customer.create({ name: 'OtherCust2_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+
+      const p1 = await get(port, '/licenses/new', cookie);
+      const c1 = extractCsrf(p1.body);
+      await post(port, '/licenses', {
+        customerId: cust1.id, planId: plan.id, features: 'sso_authentication',
+        issueReason: 'new', expiresAt: '2031-12-15', _csrf: c1,
+      }, cookie);
+      const origLic = await models.License.findOne({ where: { customerId: cust1.id } });
+
+      const p2 = await get(port, '/licenses/new', cookie);
+      const c2 = extractCsrf(p2.body);
+      const res = await post(port, '/licenses', {
+        customerId: cust2.id, planId: plan.id,
+        features: 'sso_authentication,integration_api',
+        issueReason: 'replacement', replacementOfLicenseId: origLic.id,
+        expiresAt: '2031-12-16', _csrf: c2,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('different customer');
     });
   });
 
