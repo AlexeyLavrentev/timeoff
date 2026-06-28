@@ -410,7 +410,7 @@ const createWebRoutes = (models, options = {}) => {
         if (licenses.length >= SCAN_CAP && matched.length < pagination.offset + pagination.perPage) {
           warning = 'Поиск ограничен последними ' + SCAN_CAP + ' записями. Уточните фильтры.';
         }
-        licenses = matched;
+        licenses = matched.slice(pagination.offset, pagination.offset + pagination.perPage + 1);
       } else {
         licenses = await License.findAll({
           attributes: { exclude: ['licensePayload'] },
@@ -444,6 +444,7 @@ const createWebRoutes = (models, options = {}) => {
         if (singleValue(req.query.minSeats)) params.set('minSeats', singleValue(req.query.minSeats));
         if (singleValue(req.query.maxSeats)) params.set('maxSeats', singleValue(req.query.maxSeats));
         params.set('page', String(page));
+        params.set('perPage', String(pagination.perPage));
         return '/licenses?' + params.toString();
       };
 
