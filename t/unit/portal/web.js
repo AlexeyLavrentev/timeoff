@@ -1518,6 +1518,182 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('license lifecycle', function() {
+    it('issue with issueReason stores it in metadata', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const beforeCount = await models.License.count();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        features: 'sso_authentication',
+        issueReason: 'renewal',
+        expiresAt: '2031-12-01',
+        _csrf: csrf,
+      }, cookie);
+      expect(res.status).to.equal(302);
+
+      const afterCount = await models.License.count();
+      expect(afterCount).to.be.greaterThan(beforeCount);
+      const allLicenses = await models.License.findAll();
+      const lic = allLicenses.find(l => l.metadata && l.metadata.issueReason === 'renewal');
+      expect(lic).to.not.be.undefined;
+    });
+
+    it('replacement without replacementOfLicenseId rejected', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        issueReason: 'replacement',
+        expiresAt: '2031-12-02',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('replacementOfLicenseId is required');
+    });
+
+    it('replacementOfLicenseId with non-replacement reason rejected', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        issueReason: 'new',
+        replacementOfLicenseId: '550e8400-e29b-41d4-a716-446655440000',
+        expiresAt: '2031-12-03',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('issueReason must be');
+    });
+
+    it('invalid issueReason rejected', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        issueReason: 'badreason',
+        expiresAt: '2031-12-04',
+        _csrf: csrf,
+      }, cookie);
+
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('issueReason');
+    });
+
+    it('lifecycleNote rendered escaped on detail', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        lifecycleNote: 'test note',
+        expiresAt: '2031-12-05',
+        _csrf: csrf,
+      }, cookie);
+
+      const licenses = await models.License.findAll({ order: [['id', 'DESC']] });
+      const lic = licenses.find(l => l.metadata && l.metadata.lifecycleNote === 'test note');
+      expect(lic).to.not.be.undefined;
+
+      const detail = await get(port, `/licenses/${lic.id}`, cookie);
+      expect(detail.body).to.contain('test note');
+      expect(detail.body).to.not.contain('licensePayload');
+    });
+
+    it('issueReason filter works', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        issueReason: 'trial',
+        expiresAt: '2031-12-06',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?issueReason=trial', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('invalid issueReason filter returns empty', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?issueReason=badreason', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('registry export includes issueReason and replacementOfLicenseId', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const cust = await models.Customer.create({ name: 'RegistryLifecycle_' + Date.now() });
+      const plans = await models.Plan.findAll();
+      const plan = plans.find(p => p.name === 'pro');
+
+      const targetPage = await get(port, '/licenses/new', cookie);
+      const targetCsrf = extractCsrf(targetPage.body);
+      const targetRes = await post(port, '/licenses', {
+        customerId: cust.id,
+        planId: plan.id,
+        features: 'sso_authentication,integration_api',
+        issueReason: 'new',
+        expiresAt: '2031-12-08',
+        _csrf: targetCsrf,
+      }, cookie);
+      expect(targetRes.status).to.equal(302);
+      const targetLic = await models.License.findOne({ order: [['id', 'DESC']] });
+
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      const res = await post(port, '/licenses', {
+        customerId: cust.id,
+        planId: plan.id,
+        features: 'sso_authentication,integration_api,employee_groups',
+        issueReason: 'replacement',
+        replacementOfLicenseId: targetLic.id,
+        expiresAt: '2031-12-07',
+        _csrf: csrf,
+      }, cookie);
+      expect(res.status).to.equal(302);
+
+      const exportRes = await get(port, '/licenses/export/registry.json', cookie);
+      const data = JSON.parse(exportRes.body);
+      const entry = data.find(e => e.issueReason === 'replacement');
+      expect(entry).to.not.be.undefined;
+      expect(entry.replacementOfLicenseId).to.equal(targetLic.id);
+    });
+  });
+
   describe('isolation', function() {
     it('portal web app is not mounted in customer runtime', function() {
       const mainApp = require('express')();
