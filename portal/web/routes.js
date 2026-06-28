@@ -390,30 +390,54 @@ const createWebRoutes = (models, options = {}) => {
 
       const sanitizeLike = (v) => v.replace(/[%_]/g, '');
 
+      const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
+
+      const parseSeatsFilter = (raw) => {
+        if (!raw) return { provided: false, value: null, invalid: false };
+        const trimmed = String(raw).trim();
+        if (!trimmed) return { provided: false, value: null, invalid: false };
+        if (!/^\d+$/.test(trimmed)) return { provided: true, value: null, invalid: true };
+        const n = Number(trimmed);
+        if (n < 1 || n > 1000000) return { provided: true, value: null, invalid: true };
+        return { provided: true, value: n, invalid: false };
+      };
+
+      const normalizeDomainFilter = (raw) => {
+        const d = String(raw || '').trim().toLowerCase();
+        if (!d) return { provided: false, value: null, invalid: false };
+        if (d.length > 253) return { provided: true, value: null, invalid: true };
+        if (d.includes('://') || d.includes('/') || d.includes('@') || d.includes('*') || d.includes(' ')) {
+          return { provided: true, value: null, invalid: true };
+        }
+        if (!DOMAIN_RE.test(d)) return { provided: true, value: null, invalid: true };
+        return { provided: true, value: d, invalid: false };
+      };
+
       const customerFilter = singleValue(req.query.customer);
       const planFilter = singleValue(req.query.plan);
       const qFilter = singleValue(req.query.q);
-      const externalIdFilter = singleValue(req.query.externalCustomerId);
+      const externalIdRaw = singleValue(req.query.externalCustomerId);
+      const externalIdLike = externalIdRaw ? sanitizeLike(externalIdRaw) : null;
+      const externalIdFilter = externalIdLike || null;
+
       const domainFilter = singleValue(req.query.domain);
+      const { provided: domainProvided, value: domainLike, invalid: domainInvalid } = normalizeDomainFilter(domainFilter);
+
       const minSeatsRaw = singleValue(req.query.minSeats);
       const maxSeatsRaw = singleValue(req.query.maxSeats);
+      const { provided: minSeatsProvided, value: minSeats, invalid: minSeatsInvalid } = parseSeatsFilter(minSeatsRaw);
+      const { provided: maxSeatsProvided, value: maxSeats, invalid: maxSeatsInvalid } = parseSeatsFilter(maxSeatsRaw);
+
+      const hasInvalidMetaFilter = domainInvalid || minSeatsInvalid || maxSeatsInvalid
+        || (minSeats && maxSeats && minSeats > maxSeats)
+        || (externalIdRaw && !externalIdLike);
 
       const VALID_STATUSES = ['all', 'active', 'expired'];
       const rawStatus = singleValue(req.query.status);
       const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
 
-      const minSeats = /^\d+$/.test(minSeatsRaw) ? Number(minSeatsRaw) : null;
-      const maxSeats = /^\d+$/.test(maxSeatsRaw) ? Number(maxSeatsRaw) : null;
-
       const customerLike = sanitizeLike(customerFilter);
       const qLike = sanitizeLike(qFilter);
-
-      const sanitizeDomain = (v) => {
-        const d = String(v || '').trim().toLowerCase();
-        if (!d || d.length > 253 || d.includes('://') || d.includes('/') || d.includes('@') || d.includes('*') || d.includes(' ')) return null;
-        return d;
-      };
-      const domainLike = sanitizeDomain(domainFilter);
 
       if (customerFilter && customerLike) {
         customerWhere.name = { [Op.like]: '%' + customerLike + '%' };
@@ -455,9 +479,7 @@ const createWebRoutes = (models, options = {}) => {
         where.id = { [Op.in]: [] };
       }
 
-      const domainFilterProvided = !!singleValue(req.query.domain);
-      const needsMetadataFilter = externalIdFilter || domainFilterProvided || minSeats || maxSeats;
-      const hasInvalidDomain = domainFilterProvided && !domainLike;
+      const needsMetadataFilter = externalIdFilter || domainProvided || minSeatsProvided || maxSeatsProvided;
 
       const allPlans = await listPlans(Plan);
 
@@ -472,7 +494,7 @@ const createWebRoutes = (models, options = {}) => {
         ],
       });
 
-      if (hasInvalidDomain) {
+      if (hasInvalidMetaFilter) {
         licenses = [];
       } else if (needsMetadataFilter) {
         licenses = licenses.filter(l => {
@@ -525,7 +547,7 @@ const createWebRoutes = (models, options = {}) => {
           maxSeats: maxSeatsRaw,
         },
         plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
-        hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter),
+        hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter || externalIdRaw || domainFilter || minSeatsRaw || maxSeatsRaw),
       });
     } catch (error) {
       next(error);

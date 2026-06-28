@@ -717,6 +717,80 @@ describe('Portal Web UI', function() {
       expect(res.body).to.not.contain('operatorNotes');
       expect(res.body).to.not.contain('confidential');
     });
+
+    it('invalid minSeats=abc returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=abc', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('invalid maxSeats=xyz returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?maxSeats=xyz', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('minSeats=0 returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=0', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('maxSeats=0 returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?maxSeats=0', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('minSeats > maxSeats returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=100&maxSeats=10', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('invalid seats filters preserve values in form', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=abc&maxSeats=xyz', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('value="abc"');
+      expect(res.body).to.contain('value="xyz"');
+    });
+
+    it('invalid domain bad..com returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?domain=bad..com', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('invalid domain -bad.com returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?domain=-bad.com', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Ничего не найдено');
+    });
+
+    it('wildcard-only externalCustomerId returns empty result', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licensesBefore = await models.License.count();
+      const res = await get(port, '/licenses?externalCustomerId=%25_%25', cookie);
+      expect(res.status).to.equal(200);
+      if (licensesBefore > 0) {
+        expect(res.body).to.contain('Ничего не найдено');
+      }
+    });
+
+    it('metadata filters show Сбросить link', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Сбросить');
+    });
   });
 
   describe('security', function() {
