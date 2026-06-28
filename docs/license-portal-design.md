@@ -1132,6 +1132,19 @@ Detail — operational metadata only, не влияет на рантайм.
 - Тесты: 9 новых (audit create/disable/reset, actor, fallback,
   failed create, list no audit, invalid actor-email).
 
+### Phase 3B — статус реализации
+
+Реализовано:
+- **Metadata filters**: `externalCustomerId` (contains), `domain` (exact,
+  normalized), `minSeats`, `maxSeats` — query params на `/licenses`.
+- **Filter safety**: wildcard-only значения → пустой результат; невалидные
+  домены → пустой результат; min/max seats валидируются как integers.
+- **UI**: новые поля фильтров в licenses list (compact layout).
+- **Audit safety**: operatorNotes не ищется через q, не экспортируется.
+- Тесты: 13 новых (metadata filters, safety, regression).
+
+Фильтры — operator convenience only, не влияют на рантайм/подпись.
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow
