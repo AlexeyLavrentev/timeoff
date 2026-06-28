@@ -19,6 +19,22 @@
   {{#if license.operatorNotes}}
   <tr><th>Заметки</th><td>{{license.operatorNotes}}</td></tr>
   {{/if}}
+  {{#if license.issueReason}}
+  <tr><th>Причина</th><td>{{license.issueReason}}</td></tr>
+  {{/if}}
+  {{#if license.replacementOfLicenseLink}}
+  <tr><th>Заменяет</th><td><a href="{{{license.replacementOfLicenseLink}}}">{{license.replacementOfLicenseId}}</a></td></tr>
+  {{/if}}
+  {{#if license.replacedByLinks.length}}
+  <tr><th>Заменена на</th><td>
+    {{#each license.replacedByLinks}}
+    <a href="{{{this.url}}}">{{this.id}}</a>{{#unless @last}}, {{/unless}}
+    {{/each}}
+  </td></tr>
+  {{/if}}
+  {{#if license.lifecycleNote}}
+  <tr><th>Примечание цикла</th><td>{{license.lifecycleNote}}</td></tr>
+  {{/if}}
   <tr><th>Payload Hash</th><td><code>{{license.payloadHash}}</code></td></tr>
   <tr><th>License Hash</th><td><code>{{license.licenseHash}}</code></td></tr>
 </table>

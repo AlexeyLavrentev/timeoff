@@ -1145,6 +1145,23 @@ Detail — operational metadata only, не влияет на рантайм.
 
 Фильтры — operator convenience only, не влияют на рантайм/подпись.
 
+### Phase 3D — статус реализации
+
+Реализовано:
+- **Lifecycle metadata**: `issueReason` (enum: new/renewal/replacement/correction/trial/other),
+  `replacementOfLicenseId` (UUID, валидация на существование и ту же компанию),
+  `lifecycleNote` (строка, max 500, не экспортируется).
+- **Cross-validation**: replacement требует replacementOfLicenseId; replacementOfLicenseId
+  требует issueReason=replacement.
+- **Issue form**: lifecycle section (issueReason select, replacementOfLicenseId input,
+  lifecycleNote textarea).
+- **License detail**: показывает issueReason, replacementOfLicenseId как ссылку,
+  replacedBy licenses, lifecycleNote escaped.
+- **Registry export**: включает issueReason, replacementOfLicenseId.
+- **Filter**: `issueReason` exact match на /licenses.
+- **Audit**: issueReason, replacementOfLicenseIdPresent, lifecycleNotePresent.
+- Тесты: 12 новых (validation, issue, detail, filter, export).
+
 ### Phase 3C — статус реализации
 
 Реализовано:
