@@ -63,11 +63,17 @@ const buildFilterState = (query) => {
 
   const externalIdFilter = externalIdLike || null;
 
+  const VALID_ISSUE_REASONS = ['new', 'renewal', 'replacement', 'correction', 'trial', 'other'];
+  const issueReasonRaw = singleValue(query.issueReason);
+  const issueReasonFilter = issueReasonRaw && VALID_ISSUE_REASONS.includes(issueReasonRaw) ? issueReasonRaw : null;
+  const issueReasonInvalid = issueReasonRaw && !issueReasonFilter;
+
   const hasInvalidMetaFilter = domainInvalid || minSeatsInvalid || maxSeatsInvalid
+    || issueReasonInvalid
     || (minSeats && maxSeats && minSeats > maxSeats)
     || (externalIdRaw && !externalIdLike);
 
-  const needsMetadataFilter = externalIdFilter || domainProvided || minSeatsProvided || maxSeatsProvided;
+  const needsMetadataFilter = externalIdFilter || domainProvided || minSeatsProvided || maxSeatsProvided || issueReasonFilter;
 
   const customerLike = sanitizeLike(customerFilter);
   const qLike = sanitizeLike(qFilter);
@@ -86,9 +92,11 @@ const buildFilterState = (query) => {
     maxSeatsRaw,
     hasInvalidMetaFilter,
     needsMetadataFilter,
+    issueReasonFilter,
+    issueReasonRaw,
     customerLike,
     qLike,
-    hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter || externalIdRaw || domainFilter || minSeatsRaw || maxSeatsRaw),
+    hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter || externalIdRaw || domainFilter || minSeatsRaw || maxSeatsRaw || issueReasonRaw),
   };
 };
 
@@ -160,6 +168,10 @@ const licenseMatchesMetadataFilters = (license, filters) => {
 
   if (filters.maxSeats) {
     if (!m.seats || m.seats > filters.maxSeats) return false;
+  }
+
+  if (filters.issueReasonFilter) {
+    if (m.issueReason !== filters.issueReasonFilter) return false;
   }
 
   return true;

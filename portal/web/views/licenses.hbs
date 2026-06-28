@@ -35,6 +35,18 @@
       <input type="text" id="domain" name="domain" value="{{filters.domain}}" placeholder="example.com">
     </div>
     <div class="filter-group">
+      <label for="issueReason">Причина</label>
+      <select id="issueReason" name="issueReason">
+        <option value="">Все</option>
+        <option value="new" {{#if (eq filters.issueReason "new")}}selected{{/if}}>Новая</option>
+        <option value="renewal" {{#if (eq filters.issueReason "renewal")}}selected{{/if}}>Продление</option>
+        <option value="replacement" {{#if (eq filters.issueReason "replacement")}}selected{{/if}}>Замена</option>
+        <option value="correction" {{#if (eq filters.issueReason "correction")}}selected{{/if}}>Коррекция</option>
+        <option value="trial" {{#if (eq filters.issueReason "trial")}}selected{{/if}}>Пробная</option>
+        <option value="other" {{#if (eq filters.issueReason "other")}}selected{{/if}}>Другое</option>
+      </select>
+    </div>
+    <div class="filter-group">
       <label for="minSeats">Min мест</label>
       <input type="number" id="minSeats" name="minSeats" value="{{filters.minSeats}}" min="1" max="1000000" placeholder="1">
     </div>

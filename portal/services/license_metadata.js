@@ -5,6 +5,8 @@ const MAX_DOMAIN_LENGTH = 253;
 const MAX_EXTERNAL_ID_LENGTH = 128;
 const MAX_NOTES_LENGTH = 1000;
 const MAX_SEATS = 1000000;
+const MAX_LIFECYCLE_NOTE_LENGTH = 500;
+const VALID_ISSUE_REASONS = ['new', 'renewal', 'replacement', 'correction', 'trial', 'other'];
 
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/;
 
@@ -74,6 +76,38 @@ const validateOperatorNotes = (value) => {
   return { value: trimmed, error: null };
 };
 
+const validateIssueReason = (value) => {
+  if (!value) return { value: null, error: null };
+  const trimmed = String(value).trim().toLowerCase();
+  if (!trimmed) return { value: null, error: null };
+  if (!VALID_ISSUE_REASONS.includes(trimmed)) {
+    return { value: null, error: 'issueReason must be one of: ' + VALID_ISSUE_REASONS.join(', ') };
+  }
+  return { value: trimmed, error: null };
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const validateReplacementOfLicenseId = (value) => {
+  if (!value) return { value: null, error: null };
+  const trimmed = String(value).trim();
+  if (!trimmed) return { value: null, error: null };
+  if (!UUID_RE.test(trimmed)) {
+    return { value: null, error: 'replacementOfLicenseId must be a valid UUID' };
+  }
+  return { value: trimmed.toLowerCase(), error: null };
+};
+
+const validateLifecycleNote = (value) => {
+  if (!value) return { value: null, error: null };
+  const trimmed = String(value).trim();
+  if (!trimmed) return { value: null, error: null };
+  if (trimmed.length > MAX_LIFECYCLE_NOTE_LENGTH) {
+    return { value: null, error: 'lifecycleNote must be at most ' + MAX_LIFECYCLE_NOTE_LENGTH + ' characters' };
+  }
+  return { value: trimmed, error: null };
+};
+
 const validateMetadata = (input) => {
   if (!input || typeof input !== 'object') return { metadata: null, errors: [] };
 
@@ -104,6 +138,24 @@ const validateMetadata = (input) => {
     else if (value) metadata.operatorNotes = value;
   }
 
+  if (input.issueReason) {
+    const { value, error } = validateIssueReason(input.issueReason);
+    if (error) errors.push(error);
+    else if (value) metadata.issueReason = value;
+  }
+
+  if (input.replacementOfLicenseId) {
+    const { value, error } = validateReplacementOfLicenseId(input.replacementOfLicenseId);
+    if (error) errors.push(error);
+    else if (value) metadata.replacementOfLicenseId = value;
+  }
+
+  if (input.lifecycleNote) {
+    const { value, error } = validateLifecycleNote(input.lifecycleNote);
+    if (error) errors.push(error);
+    else if (value) metadata.lifecycleNote = value;
+  }
+
   return {
     metadata: Object.keys(metadata).length > 0 ? metadata : null,
     errors,
@@ -116,9 +168,15 @@ module.exports = {
   validateDomains,
   validateExternalCustomerId,
   validateOperatorNotes,
+  validateIssueReason,
+  validateReplacementOfLicenseId,
+  validateLifecycleNote,
   MAX_DOMAINS,
   MAX_DOMAIN_LENGTH,
   MAX_EXTERNAL_ID_LENGTH,
   MAX_NOTES_LENGTH,
   MAX_SEATS,
+  MAX_LIFECYCLE_NOTE_LENGTH,
+  VALID_ISSUE_REASONS,
+  UUID_RE,
 };
