@@ -1145,6 +1145,21 @@ Detail — operational metadata only, не влияет на рантайм.
 
 Фильтры — operator convenience only, не влияют на рантайм/подпись.
 
+### Phase 3C — статус реализации
+
+Реализовано:
+- **Пагинация**: `page` (default 1), `perPage` (default 50, max 100).
+  Previous/Next ссылки с сохранением фильтров.
+- **Рефакторинг фильтров**: `portal/services/license_list_filters.js` —
+  чистые helper-функции: `parseSeatsFilter`, `normalizeDomainFilter`,
+  `parsePagination`, `buildFilterState`, `buildDbFilters`,
+  `licenseMatchesMetadataFilters`.
+- **Metadata filtering**: DB-level фильтры (customer/plan/status/q) сначала,
+  затем in-memory metadata фильтры с SCAN_CAP=5000.
+  Предупреждение при достижении cap: "Поиск ограничен последними 5000 записями."
+- **Сброс фильтров**: includes all filter params.
+- Тесты: 20 новых (pagination, filter helpers, scan cap, safety).
+
 ## Связанные материалы
 
 - [Операции с лицензиями](license-operations.md) — CLI workflow

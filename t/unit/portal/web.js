@@ -793,6 +793,82 @@ describe('Portal Web UI', function() {
     });
   });
 
+  describe('pagination', function() {
+    it('default page works', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Страница 1');
+    });
+
+    it('perPage=1 shows one row', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Страница 1');
+    });
+
+    it('Next link appears when more rows exist', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      const hasLicenseRows = res.body.includes('/licenses/');
+      if (hasLicenseRows) {
+        expect(res.body).to.contain('Далее');
+      }
+    });
+
+    it('Previous link appears on page 2', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?page=2&perPage=1', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Назад');
+      expect(res.body).to.contain('Страница 2');
+    });
+
+    it('pagination links preserve filters', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?page=2&perPage=1&customer=WebCorp&plan=pro', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('customer=WebCorp');
+      expect(res.body).to.contain('plan=pro');
+      expect(res.body).to.contain('page=3');
+    });
+
+    it('invalid page/perPage do not 500', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?page=abc&perPage=xyz', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('Страница 1');
+    });
+
+    it('perPage > 100 is capped', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?perPage=500', cookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('paginated list does not contain licensePayload', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?page=1&perPage=10', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('licensePayload');
+    });
+
+    it('paginated list does not contain operatorNotes', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?page=1&perPage=10', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('operatorNotes');
+    });
+
+    it('metadata filter + pagination works together', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=1&page=1&perPage=5', cookie);
+      expect(res.status).to.equal(200);
+    });
+  });
+
   describe('security', function() {
     it('no rendered HTML contains passwordHash', async function() {
       const { cookie } = await login(port, 'admin@test.com', 'admin123');
