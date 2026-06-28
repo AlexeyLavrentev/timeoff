@@ -6,6 +6,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const validator = require('validator');
 const { getPortalConfig, ensureDbDirectory } = require('../portal/config');
 const { loadPortalModels } = require('../portal/models');
+const { runPortalMigrations } = require('../portal/migrator');
 const { hashPassword } = require('../portal/auth/passwords');
 const { VALID_ROLES } = require('../portal/models/admin_user');
 
@@ -77,7 +78,7 @@ const getDb = async () => {
   const config = getPortalConfig();
   ensureDbDirectory(config.dbStorage);
   const models = loadPortalModels({ storage: config.dbStorage });
-  await models.sequelize.sync();
+  await runPortalMigrations(models);
   return models;
 };
 

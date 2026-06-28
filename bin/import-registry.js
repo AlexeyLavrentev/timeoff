@@ -6,6 +6,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const fs = require('fs');
 const path = require('path');
 const { loadPortalModels } = require('../portal/models');
+const { runPortalMigrations } = require('../portal/migrator');
 const { importRegistry } = require('../portal/import/registry_importer');
 
 const printUsageAndExit = () => {
@@ -50,7 +51,7 @@ const run = async () => {
     storage: argv.db ? path.resolve(argv.db) : undefined,
   });
 
-  await models.sequelize.sync();
+  await runPortalMigrations(models);
 
   const result = await importRegistry(registryData, models, {
     dryRun: !!argv['dry-run'],

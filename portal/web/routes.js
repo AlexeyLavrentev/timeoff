@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const { verifyPassword } = require('../auth/passwords');
+const { createPortalAuth } = require('../auth/middleware');
 const { listCustomers, createCustomer } = require('../services/customer_service');
 const { listPlans } = require('../services/plan_service');
 const { issueLicense, listLicenses, getLicense, getLicenseBlob } = require('../services/license_service');
@@ -83,10 +84,12 @@ const summarizeAuditDetails = (details) => {
 const createWebRoutes = (models, options = {}) => {
   const router = express.Router();
   const { AdminUser, Customer, Plan, License, AuditLog } = models;
+  const auth = createPortalAuth(models, { kind: 'web' });
 
+  router.use(auth.loadSessionUser);
   router.use((req, res, next) => {
-    res.locals.user = req.session && req.session.userId
-      ? { id: req.session.userId, email: req.session.userEmail, role: req.session.userRole }
+    res.locals.user = req.portalUser
+      ? { id: req.portalUser.id, email: req.portalUser.email, role: req.portalUser.role }
       : null;
     res.locals.csrf = generateCsrfToken(req);
     next();
@@ -164,6 +167,7 @@ const createWebRoutes = (models, options = {}) => {
       const savedEmail = user.email;
       const savedId = user.id;
       const savedRole = user.role;
+      const savedAuthRevision = user.authRevision;
 
       req.session.regenerate(async (err) => {
         if (err) return next(err);
@@ -172,6 +176,7 @@ const createWebRoutes = (models, options = {}) => {
           req.session.userId = savedId;
           req.session.userEmail = savedEmail;
           req.session.userRole = savedRole;
+          req.session.authRevision = savedAuthRevision;
           req.session.csrfToken = crypto.randomBytes(16).toString('hex');
 
           await AuditLog.create({
@@ -212,16 +217,7 @@ const createWebRoutes = (models, options = {}) => {
     }
   });
 
-  const requireAuth = (req, res, next) => {
-    if (!req.session || !req.session.userId) return res.redirect('/login');
-    next();
-  };
-
-  const requireRole = (...roles) => (req, res, next) => {
-    if (!req.session || !req.session.userId) return res.redirect('/login');
-    if (!roles.includes(req.session.userRole)) return res.status(403).send('Доступ запрещён');
-    next();
-  };
+  const { requireAuth, requireRole } = auth;
 
   router.get('/', requireAuth, async (req, res, next) => {
     try {
@@ -271,7 +267,7 @@ const createWebRoutes = (models, options = {}) => {
           contactEmail: escapeHtml(c.contactEmail),
           createdAt: formatDate(c.createdAt),
         })),
-        isAdmin: req.session.userRole === 'admin',
+        isAdmin: req.portalUser.role === 'admin',
       });
     } catch (error) {
       next(error);
@@ -352,7 +348,7 @@ const createWebRoutes = (models, options = {}) => {
             licenseHashShort: l.licenseHash ? l.licenseHash.substring(0, 12) + '…' : '—',
           };
         }),
-        canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+        canIssue: ['issuer', 'admin'].includes(req.portalUser.role),
       });
     } catch (error) {
       next(error);
@@ -461,7 +457,7 @@ const createWebRoutes = (models, options = {}) => {
           expiresAtDisplay: formatDate(l.expiresAt),
           issuedAtDisplay: formatDate(l.issuedAt),
         })),
-        canIssue: ['issuer', 'admin'].includes(req.session.userRole),
+        canIssue: ['issuer', 'admin'].includes(req.portalUser.role),
         filters: {
           customer: escapeHtml(filters.customerFilter),
           plan: escapeHtml(filters.planFilter),

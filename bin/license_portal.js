@@ -4,8 +4,8 @@
 
 const { getPortalConfig, validateProductionConfig, ensureDbDirectory } = require('../portal/config');
 const { loadPortalModels } = require('../portal/models');
+const { runPortalMigrations } = require('../portal/migrator');
 const { seedPlans } = require('../portal/seeders/seed_plans');
-const { runSchemaMaintenance } = require('../portal/models/schema_maintenance');
 const { createSigningProvider } = require('../portal/signing/provider_factory');
 const { createPortalWebApp } = require('../portal/web/app');
 const { createPersistentStore } = require('../portal/auth/session_store');
@@ -20,12 +20,8 @@ const run = async () => {
   ensureDbDirectory(config.dbStorage);
 
   const models = loadPortalModels({ storage: config.dbStorage });
-  await models.sequelize.sync();
-
-  const schemaChanges = await runSchemaMaintenance(models.sequelize);
-  if (schemaChanges.metadataColumnAdded) {
-    console.log('Schema maintenance: added metadata column to licenses table');
-  }
+  const appliedMigrations = await runPortalMigrations(models);
+  process.stdout.write('Portal migrations: ' + (appliedMigrations.join(', ') || 'none') + '\n');
 
   const seeded = await seedPlans(models.Plan);
   console.log('Plans seeded:', seeded.map(s => s.name).join(', '));
@@ -36,7 +32,6 @@ const run = async () => {
   let sessionStore = null;
   if (config.isProduction) {
     sessionStore = createPersistentStore(models.sequelize);
-    await sessionStore.sync();
     console.log('Session store: persistent (database)');
   } else {
     console.log('Session store: memory (dev/test only)');
@@ -48,6 +43,9 @@ const run = async () => {
     sessionSecret: config.sessionSecret || 'portal-dev-secret',
     sessionStore,
     secure: config.sessionSecure,
+    trustProxy: config.trustProxy,
+    nodeEnv: config.nodeEnv,
+    apiEnabled: config.apiEnabled,
   });
 
   const healthRoute = require('../portal/web/health');

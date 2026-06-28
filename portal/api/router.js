@@ -2,7 +2,8 @@
 
 const express = require('express');
 const { hashPassword, verifyPassword } = require('../auth/passwords');
-const { requireAuth, requireRole } = require('../auth/middleware');
+const { createPortalAuth } = require('../auth/middleware');
+const { issueCsrfToken, requireCsrfToken, rotateCsrfToken } = require('./csrf');
 const { listCustomers, createCustomer } = require('../services/customer_service');
 const { listPlans } = require('../services/plan_service');
 const { issueLicense, listLicenses, getLicense, getLicenseBlob } = require('../services/license_service');
@@ -12,8 +13,14 @@ const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
 
 const createAuthRouter = (models) => {
   const router = express.Router();
+  const auth = createPortalAuth(models, { kind: 'api' });
+  router.use(auth.loadSessionUser);
 
-  router.post('/login', async (req, res, next) => {
+  router.get('/csrf', (req, res) => {
+    res.json({ csrfToken: issueCsrfToken(req) });
+  });
+
+  router.post('/login', requireCsrfToken, async (req, res, next) => {
     try {
       const { email, password } = req.body || {};
 
@@ -83,9 +90,14 @@ const createAuthRouter = (models) => {
         lockedUntil: null,
       });
 
+      await new Promise((resolve, reject) => {
+        req.session.regenerate(error => error ? reject(error) : resolve());
+      });
       req.session.userId = user.id;
       req.session.userEmail = user.email;
       req.session.userRole = user.role;
+      req.session.authRevision = user.authRevision;
+      const csrfToken = rotateCsrfToken(req);
 
       await models.AuditLog.create({
         actorName: user.email,
@@ -95,13 +107,13 @@ const createAuthRouter = (models) => {
         details: { role: user.role },
       });
 
-      res.json({ user: user.toSafeJSON() });
+      res.json({ user: user.toSafeJSON(), csrfToken });
     } catch (error) {
       next(error);
     }
   });
 
-  router.post('/logout', async (req, res, next) => {
+  router.post('/logout', auth.requireAuth, requireCsrfToken, async (req, res, next) => {
     try {
       const email = req.session ? req.session.userEmail : null;
 
@@ -124,13 +136,9 @@ const createAuthRouter = (models) => {
     }
   });
 
-  router.get('/me', requireAuth, async (req, res, next) => {
+  router.get('/me', auth.requireAuth, async (req, res, next) => {
     try {
-      const user = await models.AdminUser.findByPk(req.session.userId);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.json({ user: user.toSafeJSON() });
+      res.json({ user: req.portalUser.toSafeJSON() });
     } catch (error) {
       next(error);
     }
@@ -141,6 +149,9 @@ const createAuthRouter = (models) => {
 
 const createPortalRouter = (models, signingProvider) => {
   const router = express.Router();
+  const auth = createPortalAuth(models, { kind: 'api' });
+  const { requireAuth, requireRole } = auth;
+  router.use(auth.loadSessionUser);
 
   router.get('/customers', requireAuth, async (_req, res, next) => {
     try {
@@ -151,7 +162,7 @@ const createPortalRouter = (models, signingProvider) => {
     }
   });
 
-  router.post('/customers', requireRole('admin'), async (req, res, next) => {
+  router.post('/customers', requireRole('admin'), requireCsrfToken, async (req, res, next) => {
     try {
       const customer = await createCustomer(models.Customer, req.body || {});
       res.status(201).json(customer.toJSON());
@@ -184,7 +195,7 @@ const createPortalRouter = (models, signingProvider) => {
     }
   });
 
-  router.post('/licenses', requireRole('issuer', 'admin'), async (req, res, next) => {
+  router.post('/licenses', requireRole('issuer', 'admin'), requireCsrfToken, async (req, res, next) => {
     try {
       const body = req.body || {};
 

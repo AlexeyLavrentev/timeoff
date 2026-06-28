@@ -1,36 +1,58 @@
 'use strict';
 
-const requireAuth = (req, res, next) => {
-  if (!req.session || !req.session.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  next();
-};
-
-const requireRole = (...roles) => (req, res, next) => {
-  if (!req.session || !req.session.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
-  if (!roles.includes(req.session.userRole)) {
-    return res.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  next();
-};
-
 const ROLE_HIERARCHY = { admin: 3, issuer: 2, viewer: 1 };
 
-const requireAnyRole = (...roles) => (req, res, next) => {
-  if (!req.session || !req.session.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+const destroySession = req => new Promise(resolve => {
+  if (!req.session) return resolve();
+  req.session.destroy(() => resolve());
+});
 
-  if (!roles.includes(req.session.userRole)) {
-    return res.status(403).json({ error: 'Insufficient permissions' });
-  }
+const createPortalAuth = (models, options = {}) => {
+  const web = options.kind === 'web';
 
-  next();
+  const loadSessionUser = async (req, _res, next) => {
+    try {
+      req.portalUser = null;
+      if (!req.session || !req.session.userId) return next();
+
+      const user = await models.AdminUser.findByPk(req.session.userId);
+      const revisionMatches = user
+        && Number(req.session.authRevision) === Number(user.authRevision);
+
+      if (!user || !user.isActive || !revisionMatches) {
+        await destroySession(req);
+        return next();
+      }
+
+      req.portalUser = user;
+      req.session.userEmail = user.email;
+      req.session.userRole = user.role;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const unauthenticated = (req, res) => web
+    ? res.redirect('/login')
+    : res.status(401).json({ error: 'Authentication required' });
+
+  const requireAuth = (req, res, next) => {
+    if (!req.portalUser) return unauthenticated(req, res);
+    next();
+  };
+
+  const requireRole = (...roles) => (req, res, next) => {
+    if (!req.portalUser) return unauthenticated(req, res);
+    if (!roles.includes(req.portalUser.role)) {
+      return web
+        ? res.status(403).send('Доступ запрещён')
+        : res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    next();
+  };
+
+  return { loadSessionUser, requireAuth, requireRole };
 };
 
-module.exports = { requireAuth, requireRole, requireAnyRole, ROLE_HIERARCHY };
+module.exports = { createPortalAuth, destroySession, ROLE_HIERARCHY };

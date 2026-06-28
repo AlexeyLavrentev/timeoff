@@ -21,7 +21,9 @@ node bin/license_portal.js
 | `NODE_ENV` | нет | `production` для продакшена |
 | `PORTAL_PORT` | нет | Порт (по умолчанию 3001) |
 | `PORTAL_SESSION_SECRET` | в production | Секрет сессии (длинная случайная строка) |
-| `PORTAL_SESSION_SECURE` | нет | `true` если за HTTPS |
+| `PORTAL_SESSION_SECURE` | production: да | `true`; cookie передаётся только через HTTPS |
+| `PORTAL_TRUST_PROXY` | при HTTPS proxy: да | Число доверенных proxy hops, обычно `1` |
+| `PORTAL_API_ENABLED` | нет | `true` включает экспериментальный JSON API на `/api/v1`; по умолчанию `false` |
 | `PORTAL_SIGNING_PROVIDER` | нет | `file` (default), `vault`, `aws-kms`, `pkcs11`, `external` |
 | `PORTAL_DB_STORAGE` | нет | Путь к SQLite файлу (по умолчанию `data/portal.sqlite`) |
 | `PORTAL_LICENSE_PRIVATE_KEY_FILE` | в production | Путь к приватному ключу PEM |
@@ -73,7 +75,8 @@ PORTAL_SESSION_SECRET=<длинная-случайная-строка-миним
 PORTAL_PRIVATE_KEY_FILE=./secrets/license_private.pem
 PORTAL_PUBLIC_KEY_FILE=./secrets/license_public_key.pem
 PORTAL_PORT=3001
-PORTAL_SESSION_SECURE=false
+PORTAL_SESSION_SECURE=true
+PORTAL_TRUST_PROXY=1
 ```
 
 ### 3. Запуск
@@ -165,10 +168,28 @@ server {
 }
 ```
 
-При использовании HTTPS установите `PORTAL_SESSION_SECURE=true`.
+Production требует `PORTAL_SESSION_SECURE=true` и явный `PORTAL_TRUST_PROXY`.
+Для одного reverse proxy перед контейнером используйте `PORTAL_TRUST_PROXY=1`.
+Не устанавливайте доверие ко всем proxy: неверная граница позволяет подделывать
+схему запроса и клиентский адрес.
 
 **Важно:** портал должен быть доступен только через VPN или внутреннюю сеть.
 Никогда не экспонируйте его в публичный интернет.
+
+## JSON API (ограниченная поддержка)
+
+JSON API выключен по умолчанию. Web-интерфейс не требует его включения. Для
+явного opt-in задайте `PORTAL_API_ENABLED=true`; единственный поддерживаемый
+префикс — `/api/v1`.
+
+API использует ту же серверную сессию и актуальные роли из БД, что и Web UI.
+Перед входом клиент получает session-bound CSRF token через
+`GET /api/v1/auth/csrf`, а во всех изменяющих запросах передаёт его в заголовке
+`X-CSRF-Token`. После входа используется новый token из ответа login.
+
+Не публикуйте API напрямую в интернет и не считайте флаг заменой сетевой
+изоляции, TLS, firewall или VPN. Это внутренний операторский интерфейс с
+ограниченной совместимостью, а не публичный продуктовый API.
 
 ## Healthcheck
 
@@ -244,7 +265,9 @@ docker compose -f docker-compose.portal.yml start portal
 - [ ] Приватный ключ смонтирован read-only
 - [ ] Портал не экспонирован в публичный интернет
 - [ ] HTTPS/reverse proxy настроен
-- [ ] `PORTAL_SESSION_SECURE=true` если за HTTPS
+- [ ] `PORTAL_SESSION_SECURE=true`
+- [ ] `PORTAL_TRUST_PROXY` соответствует реальному числу proxy hops
+- [ ] `PORTAL_API_ENABLED=false` либо API отдельно ограничен внутренней сетью
 - [ ] Бэкап протестирован
 - [ ] Администратор создан
 - [ ] Секреты не в git
