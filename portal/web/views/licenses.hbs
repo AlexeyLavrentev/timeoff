@@ -27,6 +27,22 @@
       </select>
     </div>
     <div class="filter-group">
+      <label for="externalCustomerId">Внешний ID</label>
+      <input type="text" id="externalCustomerId" name="externalCustomerId" value="{{filters.externalCustomerId}}" placeholder="CRM-123…">
+    </div>
+    <div class="filter-group">
+      <label for="domain">Домен</label>
+      <input type="text" id="domain" name="domain" value="{{filters.domain}}" placeholder="example.com">
+    </div>
+    <div class="filter-group">
+      <label for="minSeats">Min мест</label>
+      <input type="number" id="minSeats" name="minSeats" value="{{filters.minSeats}}" min="1" max="1000000" placeholder="1">
+    </div>
+    <div class="filter-group">
+      <label for="maxSeats">Max мест</label>
+      <input type="number" id="maxSeats" name="maxSeats" value="{{filters.maxSeats}}" min="1" max="1000000" placeholder="1000000">
+    </div>
+    <div class="filter-group">
       <label for="q">Поиск</label>
       <input type="text" id="q" name="q" value="{{filters.q}}" placeholder="Hash, клиент, план…">
     </div>

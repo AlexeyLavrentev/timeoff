@@ -393,13 +393,27 @@ const createWebRoutes = (models, options = {}) => {
       const customerFilter = singleValue(req.query.customer);
       const planFilter = singleValue(req.query.plan);
       const qFilter = singleValue(req.query.q);
+      const externalIdFilter = singleValue(req.query.externalCustomerId);
+      const domainFilter = singleValue(req.query.domain);
+      const minSeatsRaw = singleValue(req.query.minSeats);
+      const maxSeatsRaw = singleValue(req.query.maxSeats);
 
       const VALID_STATUSES = ['all', 'active', 'expired'];
       const rawStatus = singleValue(req.query.status);
       const statusFilter = VALID_STATUSES.includes(rawStatus) ? rawStatus : 'all';
 
+      const minSeats = /^\d+$/.test(minSeatsRaw) ? Number(minSeatsRaw) : null;
+      const maxSeats = /^\d+$/.test(maxSeatsRaw) ? Number(maxSeatsRaw) : null;
+
       const customerLike = sanitizeLike(customerFilter);
       const qLike = sanitizeLike(qFilter);
+
+      const sanitizeDomain = (v) => {
+        const d = String(v || '').trim().toLowerCase();
+        if (!d || d.length > 253 || d.includes('://') || d.includes('/') || d.includes('@') || d.includes('*') || d.includes(' ')) return null;
+        return d;
+      };
+      const domainLike = sanitizeDomain(domainFilter);
 
       if (customerFilter && customerLike) {
         customerWhere.name = { [Op.like]: '%' + customerLike + '%' };
@@ -441,18 +455,52 @@ const createWebRoutes = (models, options = {}) => {
         where.id = { [Op.in]: [] };
       }
 
+      const domainFilterProvided = !!singleValue(req.query.domain);
+      const needsMetadataFilter = externalIdFilter || domainFilterProvided || minSeats || maxSeats;
+      const hasInvalidDomain = domainFilterProvided && !domainLike;
+
       const allPlans = await listPlans(Plan);
 
-      const licenses = await License.findAll({
+      let licenses = await License.findAll({
         attributes: { exclude: ['licensePayload'] },
         where,
         order: [['issuedAt', 'DESC']],
-        limit: 100,
+        limit: 200,
         include: [
           { model: Customer, as: 'customer', attributes: ['name'], where: Object.keys(customerWhere).length ? customerWhere : undefined },
           { model: Plan, as: 'plan', attributes: ['name'], where: Object.keys(planWhere).length ? planWhere : undefined },
         ],
       });
+
+      if (hasInvalidDomain) {
+        licenses = [];
+      } else if (needsMetadataFilter) {
+        licenses = licenses.filter(l => {
+          const m = l.metadata || {};
+
+          if (externalIdFilter) {
+            const eid = String(m.externalCustomerId || '').toLowerCase();
+            if (!eid.includes(externalIdFilter.toLowerCase())) return false;
+          }
+
+          if (domainLike) {
+            const domains = m.customerDomains || [];
+            if (!domains.some(d => d === domainLike)) return false;
+          }
+
+          if (minSeats) {
+            if (!m.seats || m.seats < minSeats) return false;
+          }
+
+          if (maxSeats) {
+            if (!m.seats || m.seats > maxSeats) return false;
+          }
+
+          return true;
+        });
+      }
+
+      licenses = licenses.slice(0, 100);
 
       res.render('licenses', {
         title: 'Лицензии',
@@ -471,6 +519,10 @@ const createWebRoutes = (models, options = {}) => {
           plan: escapeHtml(planFilter),
           status: statusFilter,
           q: escapeHtml(qFilter),
+          externalCustomerId: escapeHtml(externalIdFilter),
+          domain: escapeHtml(domainFilter),
+          minSeats: minSeatsRaw,
+          maxSeats: maxSeatsRaw,
         },
         plans: allPlans.map(p => ({ name: escapeHtml(p.name) })),
         hasActiveFilters: !!(customerFilter || planFilter || statusFilter !== 'all' || qFilter),

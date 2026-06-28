@@ -564,6 +564,159 @@ describe('Portal Web UI', function() {
         expect(res.body).to.contain('Ничего не найдено');
       }
     });
+
+    it('filter by externalCustomerId returns matching license', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        externalCustomerId: 'CRM-999',
+        expiresAt: '2030-01-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?externalCustomerId=CRM-999', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('externalCustomerId filter preserves value', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?externalCustomerId=CRM-999', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.contain('value="CRM-999"');
+    });
+
+    it('externalCustomerId wildcard-only does not expose all', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licensesBefore = await models.License.count();
+      const res = await get(port, '/licenses?externalCustomerId=%25_%25', cookie);
+      expect(res.status).to.equal(200);
+      if (licensesBefore > 0) {
+        expect(res.body).to.contain('Ничего не найдено');
+      }
+    });
+
+    it('filter by domain returns matching license', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        customerDomains: 'domainfilter.test',
+        expiresAt: '2030-02-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?domain=domainfilter.test', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('domain filter normalizes uppercase', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        customerDomains: 'uppercase.test',
+        expiresAt: '2030-03-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?domain=UPPERCASE.TEST', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('domain filter rejects invalid domain-like values', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const licensesBefore = await models.License.count();
+      const res = await get(port, '/licenses?domain=https://bad.com', cookie);
+      expect(res.status).to.equal(200);
+      if (licensesBefore > 0) {
+        expect(res.body).to.contain('Ничего не найдено');
+      }
+    });
+
+    it('minSeats returns licenses with seats >= value', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '50',
+        expiresAt: '2030-04-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?minSeats=50', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('maxSeats returns licenses with seats <= value', async function() {
+      const { cookie } = await login(port, 'admin@test.com', 'admin123');
+      const customers = await models.Customer.findAll();
+      const plans = await models.Plan.findAll();
+      const newPage = await get(port, '/licenses/new', cookie);
+      const csrf = extractCsrf(newPage.body);
+
+      await post(port, '/licenses', {
+        customerId: customers[0].id,
+        planId: plans.find(p => p.name === 'pro').id,
+        seats: '5',
+        expiresAt: '2030-05-01',
+        _csrf: csrf,
+      }, cookie);
+
+      const res = await get(port, '/licenses?maxSeats=5', cookie);
+      expect(res.status).to.equal(200);
+      expect(res.body).to.not.contain('Ничего не найдено');
+    });
+
+    it('minSeats + maxSeats range works', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=1&maxSeats=1000', cookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('invalid minSeats/maxSeats does not 500', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=abc&maxSeats=xyz', cookie);
+      expect(res.status).to.equal(200);
+    });
+
+    it('license list does not contain licensePayload', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses?minSeats=1', cookie);
+      expect(res.body).to.not.contain('licensePayload');
+      expect(res.body).to.not.contain('RSA-SHA256');
+    });
+
+    it('license list does not contain operatorNotes', async function() {
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const res = await get(port, '/licenses', cookie);
+      expect(res.body).to.not.contain('operatorNotes');
+      expect(res.body).to.not.contain('confidential');
+    });
   });
 
   describe('security', function() {
