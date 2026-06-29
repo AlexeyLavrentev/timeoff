@@ -50,6 +50,18 @@ npm run check
 npm test
 ```
 
+Production dependency audit:
+
+```sh
+npm audit --omit=dev
+```
+
+Release gate: zero `high` and zero `critical` findings. The 2.1.0 audit reports
+the known moderate `uuid <11.1.1` advisory through Sequelize 6.37.x. Its affected
+buffer-writing paths are UUID v3/v5/v6; this Sequelize line imports UUID v1/v4
+only. npm's suggested “fix” downgrades Sequelize to 3.30.0 and must not be
+applied. Reassess when Sequelize provides a compatible dependency update.
+
 Compose configuration:
 
 ```sh
@@ -209,21 +221,24 @@ Premium compatibility metadata is stored in:
 The `timeoffCore` field records:
 
 - premium module contract version;
-- core ref used by premium CI;
+- exact 40-character core commit used by premium CI (`testedWithRef`);
+- expected public core version and tag separately;
 - required core extension points.
 
 Before a commercial release:
 
-1. Confirm premium CI uses the intended core ref.
-2. After merging core, update premium `testedWithRef` from a feature branch to
-   the release branch or tag.
-3. Tag core and premium together when the pair is released.
+1. Confirm premium CI uses the exact immutable core SHA.
+2. After merging core, compare the merge result with `testedWithRef`; if the
+   SHA changed, update the pin and rerun the full Premium suite.
+3. Never replace `testedWithRef` with a branch or tag; keep `targetTag` for the
+   human-facing release name.
+4. Tag core and premium together only after both final SHAs are verified.
 
 Release tags:
 
 ```sh
 CORE_VERSION=2.1.0
-PREMIUM_VERSION=0.2.0
+PREMIUM_VERSION=0.3.0
 
 git -C /path/to/timeoff tag "v${CORE_VERSION}"
 git -C /path/to/timeoff push origin "v${CORE_VERSION}"
@@ -255,7 +270,7 @@ Expected:
 Premium:
 
 ```sh
-PREMIUM_VERSION=0.2.0
+PREMIUM_VERSION=0.3.0
 CORE_VERSION=2.1.0
 PREMIUM_IMAGE="ghcr.io/alexeylavrentev/leavepilot-premium:${PREMIUM_VERSION}-core-${CORE_VERSION}"
 
