@@ -99,7 +99,8 @@
     "adminRequired": "Для доступа к этой странице нужны права администратора.",
     "teamViewRenderFailed": "Не удалось отобразить командный обзор.",
     "feedUnavailable": "Фид недоступен.",
-    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты."
+    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты.",
+    "blockingConflicts": "Невозможно создать отпуск из-за конфликтов с другими сотрудниками"
   },
   "titles": {
     "calendar": "Календарь",
@@ -109,6 +110,8 @@
     "departmentDetails": "Детали отдела",
     "groups": "Группы",
     "groupDetails": "Детали группы",
+    "conflictRules": "Правила конфликтов",
+    "conflictRulesDetails": "Детали правила конфликта",
     "login": "LeavePilot"
   },
   "userPopup": {
