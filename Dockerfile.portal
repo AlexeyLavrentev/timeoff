@@ -12,7 +12,9 @@ RUN apt-get update \
     g++ \
   && rm -rf /var/lib/apt/lists/*
 
-ENV npm_config_build_from_source=true
+ENV CHROMEDRIVER_SKIP_DOWNLOAD=true \
+    PUPPETEER_SKIP_DOWNLOAD=true \
+    npm_config_build_from_source=true
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -35,9 +37,7 @@ VOLUME /run/secrets
 ENV NODE_ENV=production \
     PORTAL_HOST=0.0.0.0 \
     PORTAL_PORT=3001 \
-    PORTAL_DB_STORAGE=/app/data/portal.sqlite \
-    PORTAL_LICENSE_PRIVATE_KEY_FILE=/run/secrets/license_private_key \
-    PORTAL_LICENSE_PUBLIC_KEY_FILE=/run/secrets/license_public_key
+    PORTAL_DB_STORAGE=/app/data/portal.sqlite
 
 EXPOSE 3001
 
