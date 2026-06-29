@@ -4,6 +4,7 @@ var path = require('path');
 var db = require('../lib/model/db');
 var edition = require('../lib/edition');
 var migrator = require('../lib/model/migrator');
+var ssoSecretBackfill = require('../lib/sso_secret_backfill');
 
 db.connect()
   .then(function() {
@@ -27,6 +28,15 @@ db.connect()
           );
         } else {
           console.log('Applied migrations:', result.applied.join(', ') || 'none');
+        }
+        return ssoSecretBackfill.audit({ sequelize: sequelize });
+      })
+      .then(function(summary) {
+        process.stdout.write(ssoSecretBackfill.formatSummary('startup audit', summary) + '\n');
+        if (summary.plaintext > 0 || summary.decryptionFailed > 0) {
+          process.stderr.write(
+            'Run `npm run sso-secret-backfill -- --dry-run` and remediate before enabling SSO.\n'
+          );
         }
       })
       .finally(function() {

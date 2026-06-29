@@ -6,17 +6,16 @@ const path = require('path');
 const expect = require('chai').expect;
 const express = require('express');
 const http = require('http');
-const session = require('express-session');
 const { loadPortalModels } = require('../../../portal/models');
 const { seedPlans } = require('../../../portal/seeders/seed_plans');
 const { FileSigningProvider, canonicalJson } = require('../../../portal/signing/file_signing_provider');
 const { hashPassword } = require('../../../portal/auth/passwords');
 const { createSessionMiddleware } = require('../../../portal/auth/session');
-const { requireAuth, requireRole } = require('../../../portal/auth/middleware');
 const { issueLicense, listLicenses, getLicense, getLicenseBlob } = require('../../../portal/services/license_service');
 const { listCustomers, createCustomer, getCustomer } = require('../../../portal/services/customer_service');
 const { listPlans, getPlan } = require('../../../portal/services/plan_service');
-const { createPortalRouter, createAuthRouter } = require('../../../portal/api/router');
+const { createPortalWebApp } = require('../../../portal/web/app');
+const { listen, close } = require('./http_test_helpers');
 
 const sha256hex = data => crypto.createHash('sha256').update(data).digest('hex');
 const makeModels = () => loadPortalModels({ storage: ':memory:' });
@@ -28,19 +27,6 @@ const generateKeyPair = () => {
     publicKey: kp.publicKey.export({ type: 'pkcs1', format: 'pem' }),
   };
 };
-
-const waitForServer = (port) => new Promise((resolve, reject) => {
-  const deadline = Date.now() + 5000;
-  const attempt = () => {
-    const req = http.get(`http://127.0.0.1:${port}/license-portal/auth/me`, res => {
-      res.resume();
-      resolve();
-    });
-    req.on('error', () => Date.now() >= deadline ? reject(new Error('timeout')) : setTimeout(attempt, 50));
-    req.setTimeout(100, () => { req.destroy(); attempt(); });
-  };
-  attempt();
-});
 
 describe('Portal signing', function() {
   it('FileSigningProvider signs a valid RSA envelope', async function() {
@@ -342,20 +328,19 @@ describe('Portal API auth', function() {
       isActive: false,
     });
 
-    const app = express();
-    app.use(express.json());
-    app.use(createSessionMiddleware({ secret: 'test-secret' }));
-    app.use('/license-portal/auth', createAuthRouter(models));
-    app.use('/license-portal', createPortalRouter(models, signingProvider));
+    const app = createPortalWebApp({
+      models,
+      signingProvider,
+      sessionSecret: 'test-secret',
+      apiEnabled: true,
+    });
 
-    server = app.listen(0);
-    port = server.address().port;
-    baseUrl = `http://127.0.0.1:${port}/license-portal`;
-    await waitForServer(port);
+    ({ server, port } = await listen(app));
+    baseUrl = `http://127.0.0.1:${port}/api/v1`;
   });
 
   after(async function() {
-    if (server) server.close();
+    await close(server);
     if (models) await models.sequelize.close();
   });
 
@@ -375,10 +360,13 @@ describe('Portal API auth', function() {
     }).on('error', reject);
   });
 
-  const httpPost = (urlPath, data, cookie) => new Promise((resolve, reject) => {
+  const csrfByCookie = new Map();
+
+  const rawHttpPost = (urlPath, data, cookie, csrfToken) => new Promise((resolve, reject) => {
     const body = JSON.stringify(data);
     const headers = { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) };
     if (cookie) headers.Cookie = cookie;
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
     const req = http.request(`${baseUrl}${urlPath}`, { method: 'POST', headers }, res => {
       let responseBody = '';
       res.on('data', chunk => responseBody += chunk);
@@ -395,14 +383,45 @@ describe('Portal API auth', function() {
     req.end();
   });
 
+  const cookieFromHeaders = headers => {
+    const setCookie = headers['set-cookie'];
+    const cookie = Array.isArray(setCookie)
+      ? setCookie.find(value => value.startsWith('connect.sid='))
+      : setCookie;
+    return cookie ? cookie.split(';')[0] : null;
+  };
+
+  const httpPost = async (urlPath, data, cookie) => {
+    let requestCookie = cookie;
+    let csrfToken = cookie && csrfByCookie.get(cookie);
+
+    if (!requestCookie) {
+      const csrf = await httpGet('/auth/csrf');
+      requestCookie = cookieFromHeaders(csrf.headers);
+      csrfToken = csrf.body.csrfToken;
+    }
+
+    return rawHttpPost(urlPath, data, requestCookie, csrfToken);
+  };
+
   const login = async (email, password) => {
     const res = await httpPost('/auth/login', { email, password });
     const setCookie = res.headers['set-cookie'];
     const cookie = Array.isArray(setCookie) ? setCookie.find(c => c.startsWith('connect.sid=')) : setCookie;
-    return { ...res, cookie: cookie ? cookie.split(';')[0] : null };
+    const sessionCookie = cookie ? cookie.split(';')[0] : null;
+    if (sessionCookie && res.body.csrfToken) csrfByCookie.set(sessionCookie, res.body.csrfToken);
+    return { ...res, cookie: sessionCookie };
   };
 
   describe('POST /auth/login', function() {
+    it('rejects login without a session-bound CSRF header', async function() {
+      const res = await rawHttpPost('/auth/login', {
+        email: 'admin@test.com',
+        password: 'admin123',
+      });
+      expect(res.status).to.equal(403);
+    });
+
     it('logs in with valid credentials', async function() {
       const res = await login('admin@test.com', 'admin123');
       expect(res.status).to.equal(200);
@@ -458,6 +477,12 @@ describe('Portal API auth', function() {
   });
 
   describe('POST /auth/logout', function() {
+    it('rejects a request without the session CSRF header', async function() {
+      const { cookie } = await login('admin@test.com', 'admin123');
+      const res = await rawHttpPost('/auth/logout', {}, cookie);
+      expect(res.status).to.equal(403);
+    });
+
     it('clears session', async function() {
       const { cookie } = await login('admin@test.com', 'admin123');
       const logoutRes = await httpPost('/auth/logout', {}, cookie);
@@ -495,6 +520,19 @@ describe('Portal API auth', function() {
     it('viewer cannot create customer', async function() {
       const { cookie } = await login('viewer@test.com', 'viewer123');
       const res = await httpPost('/customers', { name: 'Blocked' }, cookie);
+      expect(res.status).to.equal(403);
+    });
+
+    it('admin cannot mutate without the session CSRF header', async function() {
+      const { cookie } = await login('admin@test.com', 'admin123');
+      const res = await rawHttpPost('/customers', { name: 'BlockedByCsrf' }, cookie);
+      expect(res.status).to.equal(403);
+      expect(res.body).to.deep.equal({ error: 'CSRF token mismatch' });
+    });
+
+    it('issuer cannot issue a license without the session CSRF header', async function() {
+      const { cookie } = await login('issuer@test.com', 'issuer123');
+      const res = await rawHttpPost('/licenses', { customerId: 'x', planId: 'y' }, cookie);
       expect(res.status).to.equal(403);
     });
 
@@ -586,6 +624,22 @@ describe('Portal API auth', function() {
       const json = JSON.stringify(res.body);
       expect(json).to.not.contain('passwordHash');
       expect(json).to.not.contain('scrypt$');
+    });
+
+    it('returns a generic JSON error without internal details', async function() {
+      const { cookie } = await login('admin@test.com', 'admin123');
+      const originalFindAll = models.Customer.findAll;
+      models.Customer.findAll = async () => {
+        throw new Error('SQL stack PRIVATE KEY passwordHash signature licensePayload');
+      };
+
+      try {
+        const res = await httpGet('/customers', cookie);
+        expect(res.status).to.equal(500);
+        expect(res.body).to.deep.equal({ error: 'Internal server error' });
+      } finally {
+        models.Customer.findAll = originalFindAll;
+      }
     });
   });
 
@@ -707,6 +761,37 @@ describe('Portal API auth', function() {
     it('portal router is not mounted in main app', function() {
       const mainApp = express();
       expect(mainApp._router).to.be.undefined;
+    });
+
+    it('keeps JSON API routes disabled in the default Portal app', async function() {
+      const disabledApp = createPortalWebApp({
+        models,
+        signingProvider,
+        sessionSecret: 'disabled-api-secret',
+      });
+      const disabled = await listen(disabledApp);
+
+      try {
+        const res = await new Promise((resolve, reject) => {
+          http.get(`http://127.0.0.1:${disabled.port}/api/v1/auth/csrf`, response => {
+            response.resume();
+            response.on('end', () => resolve(response));
+          }).on('error', reject);
+        });
+        expect(res.statusCode).to.equal(404);
+      } finally {
+        await close(disabled.server);
+      }
+    });
+
+    it('mounts no legacy API prefix when enabled', async function() {
+      const res = await new Promise((resolve, reject) => {
+        http.get(`http://127.0.0.1:${port}/license-portal/auth/csrf`, response => {
+          response.resume();
+          response.on('end', () => resolve(response));
+        }).on('error', reject);
+      });
+      expect(res.statusCode).to.equal(404);
     });
   });
 });

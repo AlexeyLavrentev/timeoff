@@ -5,13 +5,14 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const expect = require('chai').expect;
-const { getPortalConfig, validateProductionConfig, ensureDbDirectory } = require('../../../portal/config');
+const { getPortalConfig, validateProductionConfig, ensureDbDirectory, parseTrustProxy } = require('../../../portal/config');
 const { createSigningProvider, SUPPORTED_PROVIDERS, RESERVED_PROVIDERS } = require('../../../portal/signing/provider_factory');
 const { createPersistentStore } = require('../../../portal/auth/session_store');
 const { hashPassword, verifyPassword } = require('../../../portal/auth/passwords');
 const { loadPortalModels } = require('../../../portal/models');
 const { createPortalWebApp } = require('../../../portal/web/app');
 const healthRoute = require('../../../portal/web/health');
+const { listen, close } = require('./http_test_helpers');
 
 const generateKeyPair = () => {
   const kp = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
@@ -28,6 +29,9 @@ describe('Portal config', function() {
     const origEnv = { ...process.env };
     delete process.env.PORTAL_SESSION_SECRET;
     delete process.env.PORTAL_LICENSE_PRIVATE_KEY_FILE;
+    delete process.env.PORTAL_SESSION_SECURE;
+    delete process.env.PORTAL_TRUST_PROXY;
+    delete process.env.PORTAL_API_ENABLED;
     delete process.env.NODE_ENV;
 
     try {
@@ -35,29 +39,63 @@ describe('Portal config', function() {
       expect(config.port).to.equal(3001);
       expect(config.isProduction).to.equal(false);
       expect(config.sessionSecret).to.be.null;
+      expect(config.sessionSecure).to.equal(false);
+      expect(config.trustProxy).to.equal(false);
+      expect(config.apiEnabled).to.equal(false);
     } finally {
       Object.assign(process.env, origEnv);
     }
   });
 
   it('throws in production without PORTAL_SESSION_SECRET', function() {
-    const config = { isProduction: true, sessionSecret: null, privateKeyPath: '/x', publicKeyPath: '/x' };
+    const config = { isProduction: true, sessionSecret: null, sessionSecure: true, trustProxy: 1, privateKeyPath: '/x', publicKeyPath: '/x' };
     expect(() => validateProductionConfig(config)).to.throw('PORTAL_SESSION_SECRET');
   });
 
   it('throws in production without signing key', function() {
-    const config = { isProduction: true, sessionSecret: 's', privateKeyPath: null, privateKeyPem: null, publicKeyPath: '/x' };
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, privateKeyPath: null, privateKeyPem: null, publicKeyPath: '/x' };
     expect(() => validateProductionConfig(config)).to.throw('PRIVATE_KEY');
   });
 
   it('throws in production without public key', function() {
-    const config = { isProduction: true, sessionSecret: 's', privateKeyPath: '/x', publicKeyPath: null, publicKeyPem: null };
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, privateKeyPath: '/x', publicKeyPath: null, publicKeyPem: null };
     expect(() => validateProductionConfig(config)).to.throw('PUBLIC_KEY');
   });
 
   it('passes with all required production vars', function() {
-    const config = { isProduction: true, sessionSecret: 's', privateKeyPath: '/k', publicKeyPath: '/p' };
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, privateKeyPath: '/k', publicKeyPath: '/p' };
     expect(() => validateProductionConfig(config)).to.not.throw();
+  });
+
+  it('rejects production without secure session cookies', function() {
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: false, trustProxy: 1, privateKeyPath: '/k', publicKeyPath: '/p' };
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_SESSION_SECURE=true');
+  });
+
+  it('rejects secure sessions without an explicit trusted proxy', function() {
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: false, privateKeyPath: '/k', publicKeyPath: '/p' };
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_TRUST_PROXY');
+  });
+
+  it('parses safe trust proxy forms', function() {
+    expect(parseTrustProxy(undefined)).to.equal(false);
+    expect(parseTrustProxy('false')).to.equal(false);
+    expect(parseTrustProxy('true')).to.equal(1);
+    expect(parseTrustProxy('2')).to.equal(2);
+    expect(parseTrustProxy('loopback')).to.equal('loopback');
+  });
+
+  it('enables the Portal API only through an explicit true value', function() {
+    const original = process.env.PORTAL_API_ENABLED;
+    try {
+      process.env.PORTAL_API_ENABLED = 'true';
+      expect(getPortalConfig().apiEnabled).to.equal(true);
+      process.env.PORTAL_API_ENABLED = '1';
+      expect(getPortalConfig().apiEnabled).to.equal(false);
+    } finally {
+      if (original === undefined) delete process.env.PORTAL_API_ENABLED;
+      else process.env.PORTAL_API_ENABLED = original;
+    }
   });
 });
 
@@ -113,12 +151,12 @@ describe('Portal signing provider factory', function() {
   });
 
   it('validateProductionConfig rejects reserved provider', function() {
-    const config = { isProduction: true, sessionSecret: 's', signingProvider: 'aws-kms' };
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, signingProvider: 'aws-kms' };
     expect(() => validateProductionConfig(config)).to.throw('not implemented yet');
   });
 
   it('validateProductionConfig skips key check for non-file provider', function() {
-    const config = { isProduction: true, sessionSecret: 's', signingProvider: 'vault' };
+    const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, signingProvider: 'vault' };
     expect(() => validateProductionConfig(config)).to.throw('not implemented yet');
   });
 
@@ -231,8 +269,7 @@ describe('Portal health endpoint', function() {
     });
     app.get('/healthz', healthRoute(models));
 
-    const server = app.listen(0);
-    const port = server.address().port;
+    const { server, port } = await listen(app);
 
     try {
       const res = await new Promise((resolve, reject) => {
@@ -247,7 +284,47 @@ describe('Portal health endpoint', function() {
       expect(res.body.ok).to.equal(true);
       expect(res.body.service).to.equal('license-portal');
     } finally {
-      server.close();
+      await close(server);
+      await models.sequelize.close();
+    }
+  });
+});
+
+describe('Portal secure proxy cookies', function() {
+  it('emits Secure, HttpOnly and SameSite cookies behind a trusted HTTPS proxy', async function() {
+    const models = makeModels();
+    await models.sequelize.sync();
+    const { publicKey } = generateKeyPair();
+    const app = createPortalWebApp({
+      models,
+      signingProvider: { sign: async () => ({}), getPublicKeyPem: async () => publicKey, getInfo: () => ({}) },
+      sessionSecret: 'proxy-cookie-secret',
+      secure: true,
+      trustProxy: 1,
+      nodeEnv: 'production',
+    });
+    const { server, port } = await listen(app);
+
+    try {
+      const headers = await new Promise((resolve, reject) => {
+        const req = http.get({
+          hostname: '127.0.0.1',
+          port,
+          path: '/login',
+          headers: { 'X-Forwarded-Proto': 'https' },
+        }, res => {
+          res.resume();
+          res.on('end', () => resolve(res.headers));
+        });
+        req.on('error', reject);
+      });
+      const cookie = (headers['set-cookie'] || []).join('; ');
+      expect(cookie).to.contain('Secure');
+      expect(cookie).to.contain('HttpOnly');
+      expect(cookie).to.contain('SameSite=Lax');
+      expect(headers['strict-transport-security']).to.contain('max-age=31536000');
+    } finally {
+      await close(server);
       await models.sequelize.close();
     }
   });
