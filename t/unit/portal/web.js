@@ -8,6 +8,7 @@ const { seedPlans } = require('../../../portal/seeders/seed_plans');
 const { hashPassword } = require('../../../portal/auth/passwords');
 const { FileSigningProvider } = require('../../../portal/signing/file_signing_provider');
 const { createPortalWebApp } = require('../../../portal/web/app');
+const { listen, close } = require('./http_test_helpers');
 
 const makeModels = () => loadPortalModels({ storage: ':memory:' });
 
@@ -18,15 +19,6 @@ const generateKeyPair = () => {
     publicKey: kp.publicKey.export({ type: 'pkcs1', format: 'pem' }),
   };
 };
-
-const waitForServer = (port) => new Promise((resolve, reject) => {
-  const deadline = Date.now() + 5000;
-  const attempt = () => {
-    http.get(`http://127.0.0.1:${port}/login`, res => { res.resume(); resolve(); })
-      .on('error', () => Date.now() >= deadline ? reject(new Error('timeout')) : setTimeout(attempt, 50));
-  };
-  attempt();
-});
 
 const get = (port, path, cookie) => new Promise((resolve, reject) => {
   const opts = {};
@@ -108,13 +100,11 @@ describe('Portal Web UI', function() {
     testLicenseId = testLicense.id;
 
     const app = createPortalWebApp({ models, signingProvider, sessionSecret: 'test-web-secret' });
-    server = app.listen(0);
-    port = server.address().port;
-    await waitForServer(port);
+    ({ server, port } = await listen(app));
   });
 
   after(async function() {
-    if (server) server.close();
+    await close(server);
     if (models) await models.sequelize.close();
   });
 
@@ -969,6 +959,25 @@ describe('Portal Web UI', function() {
       const cookie = Array.isArray(setCookie) ? setCookie.join('; ') : (setCookie || '');
       expect(cookie).to.contain('HttpOnly');
       expect(cookie).to.contain('SameSite=Lax');
+      expect(cookie).to.not.contain('Secure');
+    });
+
+    it('sets browser hardening headers for anonymous and authenticated HTML', async function() {
+      const anonymous = await get(port, '/login');
+      const { cookie } = await login(port, 'viewer@test.com', 'viewer123');
+      const authenticated = await get(port, '/', cookie);
+
+      [anonymous, authenticated].forEach(response => {
+        expect(response.headers['x-frame-options']).to.equal('DENY');
+        expect(response.headers['x-content-type-options']).to.equal('nosniff');
+        expect(response.headers['referrer-policy']).to.equal('same-origin');
+        expect(response.headers['permissions-policy']).to.equal('camera=(), microphone=(), geolocation=()');
+        expect(response.headers['content-security-policy']).to.contain("default-src 'self'");
+        expect(response.headers['content-security-policy']).to.contain("base-uri 'self'");
+        expect(response.headers['content-security-policy']).to.contain("form-action 'self'");
+        expect(response.headers['content-security-policy']).to.contain("frame-ancestors 'none'");
+        expect(response.headers['content-security-policy']).to.contain("object-src 'none'");
+      });
     });
   });
 
@@ -1015,6 +1024,18 @@ describe('Portal Web UI', function() {
 
       expect(postLoginCsrf).to.be.a('string');
       expect(postLoginCsrf).to.not.equal(preLoginCsrf);
+    });
+
+    it('session identifier rotates after login', async function() {
+      const loginPage = await get(port, '/login');
+      const csrf = extractCsrf(loginPage.body);
+      const loginRes = await post(port, '/login', {
+        email: 'admin@test.com', password: 'admin123', _csrf: csrf,
+      }, loginPage.cookie);
+
+      expect(loginRes.status).to.equal(302);
+      expect(loginRes.cookie).to.be.a('string');
+      expect(loginRes.cookie).to.not.equal(loginPage.cookie);
     });
   });
 
@@ -1494,7 +1515,7 @@ describe('Portal Web UI', function() {
       expect(res.status).to.equal(200);
       expect(res.body).to.contain('externalCustomerId');
       expect(res.body).to.contain('128');
-      expect(res.body).to.not.contain('129');
+      expect(res.body).to.contain('value="' + 'x'.repeat(129) + '"');
     });
 
     it('invalid metadata does not create license', async function() {

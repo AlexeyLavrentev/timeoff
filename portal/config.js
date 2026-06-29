@@ -3,6 +3,15 @@
 const fs = require('fs');
 const path = require('path');
 
+const parseTrustProxy = value => {
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized || ['false', '0', 'no', 'off'].includes(normalized)) return false;
+  if (['true', 'yes', 'on'].includes(normalized)) return 1;
+  if (/^\d+$/.test(normalized)) return Number(normalized);
+  return value;
+};
+
 const getPortalConfig = () => {
   const isProduction = (process.env.NODE_ENV || '') === 'production';
 
@@ -14,6 +23,8 @@ const getPortalConfig = () => {
 
     sessionSecret: process.env.PORTAL_SESSION_SECRET || null,
     sessionSecure: process.env.PORTAL_SESSION_SECURE === 'true',
+    trustProxy: parseTrustProxy(process.env.PORTAL_TRUST_PROXY),
+    apiEnabled: process.env.PORTAL_API_ENABLED === 'true',
 
     dbStorage: process.env.PORTAL_DB_STORAGE || path.join(process.cwd(), 'data', 'portal.sqlite'),
 
@@ -34,6 +45,14 @@ const validateProductionConfig = (config) => {
 
   if (!config.sessionSecret) {
     errors.push('PORTAL_SESSION_SECRET is required in production');
+  }
+
+  if (!config.sessionSecure) {
+    errors.push('PORTAL_SESSION_SECURE=true is required in production');
+  }
+
+  if (config.sessionSecure && !config.trustProxy) {
+    errors.push('PORTAL_TRUST_PROXY is required when secure Portal sessions are enabled');
   }
 
   const provider = (config.signingProvider || 'file').toLowerCase();
@@ -65,4 +84,4 @@ const ensureDbDirectory = (dbStorage) => {
   }
 };
 
-module.exports = { getPortalConfig, validateProductionConfig, ensureDbDirectory };
+module.exports = { getPortalConfig, validateProductionConfig, ensureDbDirectory, parseTrustProxy };
