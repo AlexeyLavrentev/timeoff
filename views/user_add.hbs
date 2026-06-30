@@ -27,6 +27,7 @@
   <section class="admin-form-card employee-form-card" aria-labelledby="employee-details-heading">
     <h2 id="employee-details-heading" class="employee-section-title">{{t "userAdd.detailsTitle"}}</h2>
     <form class="form-horizontal" method="POST" action="/users/add/" id="add_new_user_form">
+      <input type="hidden" name="_csrf" value="{{csrf_token}}">
       <div class="form-group">
         <label for="name_inp" class="col-sm-4 control-label">{{t "userDetails.firstName"}}</label>
         <div class="col-sm-5">

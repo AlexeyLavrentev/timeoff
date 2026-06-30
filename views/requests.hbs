@@ -53,12 +53,14 @@
           <td>{{this.comment.comment}}</td>
           <td>
             <form action="/requests/reject/" method="POST">
+              <input type="hidden" name="_csrf" value="{{@root.csrf_token}}">
             <input class="btn btn-warning single-click" type="submit" value="{{t "requests.reject"}}">
             <input type="hidden" value="{{this.id}}" name="request">
             </form>
           </td>
           <td>
             <form action="/requests/approve/" method="POST">
+              <input type="hidden" name="_csrf" value="{{@root.csrf_token}}">
             <input class="btn btn-success single-click" type="submit" value="{{t "requests.approve"}}">
             <input type="hidden" value="{{this.id}}" name="request">
             </form>

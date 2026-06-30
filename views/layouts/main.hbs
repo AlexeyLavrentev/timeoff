@@ -51,6 +51,7 @@
     <script>
       window.timeoff = {
         locale: "{{locale}}",
+        csrfToken: {{{json csrf_token}}},
         disableNotifications: {{#if disable_notifications}}true{{else}}false{{/if}},
         features: {{{json features}}},
         branding: {{{json branding}}},

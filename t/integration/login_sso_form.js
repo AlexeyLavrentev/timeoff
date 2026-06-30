@@ -40,7 +40,7 @@ describe('Login page SSO UX', function(){
   it('renders password login and a dedicated SSO entry point', function(){
     return driver.findElement(By.css('form#local_login_form'))
       .then(function(){
-        return driver.findElement(By.css('form#local_login_form input[name="username"]'));
+        return driver.findElement(By.css('form#local_login_form input[name="email"]'));
       })
       .then(function(){
         return driver.findElement(By.css('form#local_login_form input[name="password"]'));
@@ -119,7 +119,7 @@ describe('Login page SSO UX', function(){
       return driver.get(application_host + 'login/');
     })
     .then(function(){
-      return driver.findElement(By.css('form#local_login_form input[name="username"]'))
+      return driver.findElement(By.css('form#local_login_form input[name="email"]'))
         .then(function(el){
           return el.clear().then(function(){
             return el.sendKeys(companyAdminEmail);

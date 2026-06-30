@@ -35,7 +35,7 @@ function login_with_user_func(args) {
     .then(function() {
       return Promise.each([
         {
-          selector : '#local_login_form input[name="username"]',
+          selector : '#local_login_form input[name="email"]',
           value    : user_email,
         },
         {
