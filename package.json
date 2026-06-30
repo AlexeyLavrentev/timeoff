@@ -20,7 +20,7 @@
     "formidable": "~3.5.4",
     "handlebars": "^4.7.9",
     "html-to-text": "^9.0.5",
-    "i18next": "^19.9.2",
+    "i18next": "^26.3.4",
     "i18next-express-middleware": "^2.0.0",
     "i18next-fs-backend": "^2.6.6",
     "ical-generator": "^0.2.7",
