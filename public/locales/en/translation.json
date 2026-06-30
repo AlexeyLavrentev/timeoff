@@ -436,7 +436,13 @@
     "morning": "Morning",
     "afternoon": "Afternoon",
     "commentOptional": "Comment (optional):",
-    "leaveSummary": "Leave summary"
+    "leaveSummary": "Leave summary",
+    "forecast": {
+      "summary": "{deducted} day(s) would be deducted — you would have {remaining} of {available} days left.",
+      "exceed": "Not enough allowance: this needs {deducted} day(s) but only {available} are left.",
+      "noAllowance": "This leave type does not draw from your allowance.",
+      "spansYears": "Figures shown are for the start year."
+    }
   },
   "leaveWarnings": {
     "missingMinimumBlock": "Reminder: in {{year}} you still need to schedule at least {{days}} consecutive days of {{leaveType}}.",
