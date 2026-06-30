@@ -327,6 +327,48 @@ describe('Settings authentication route', function() {
     expect(company.sso_auth_config).to.deep.equal({ client_id: 'preserved' });
   });
 
+  it('keeps the existing client secret when the form leaves it blank', async function() {
+    const company = createCompany({
+      sso_auth_enabled: true,
+      sso_auth_provider: 'oidc',
+      sso_auth_config: { client_id: 'kept', client_secret: 'kept-secret' },
+    });
+
+    ssoService.validateSsoSettings = function() {
+      return Promise.resolve();
+    };
+
+    const result = await invokeRoute(
+      postAuthenticationHandler,
+      createReq({
+        sso_auth_enabled: 'on',
+        sso_auth_provider: 'oidc',
+        sso_issuer_url: 'https://idp.example.com/realms/acme',
+        sso_client_id: 'timeoff-web',
+        sso_client_secret: '',
+      }, company)
+    );
+
+    expect(result.type).to.equal('redirect');
+    expect(company.sso_auth_config.client_secret).to.equal('kept-secret');
+  });
+
+  it('does not render the client secret value in the settings view', function() {
+    const fs = require('fs');
+    const path = require('path');
+    const view = fs.readFileSync(
+      path.join(__dirname, '../../../views/settings_company_authentication.hbs'),
+      'utf8'
+    );
+    const secretInputLine = view
+      .split('\n')
+      .find(line => line.indexOf('name="sso_client_secret"') !== -1);
+
+    expect(secretInputLine, 'sso_client_secret input must exist').to.be.a('string');
+    expect(secretInputLine).to.not.contain('value=');
+    expect(secretInputLine).to.not.contain('client_secret}}');
+  });
+
   it('does not expose LDAP connection details to the administrator', async function() {
     process.env.FEATURE_SSO_AUTHENTICATION = 'false';
     const company = createCompany();

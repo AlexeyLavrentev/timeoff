@@ -127,4 +127,35 @@ describe('auth security middleware', function() {
       'Too many authentication attempts. Please try again in 60 seconds.',
     ]);
   });
+
+  it('keys rate limiting on req.ip so a spoofed X-Forwarded-For cannot bypass it', function() {
+    const limiter = authSecurity.createAuthRateLimit({
+      max: 2,
+      windowMs: 60 * 1000,
+      keyPrefix: 'test-spoof',
+    });
+
+    // Same real client (req.ip), attacker rotates X-Forwarded-For each request.
+    function attempt(spoofedXff) {
+      const req = createReq({
+        ip: '10.0.0.5',
+        headers: { 'x-forwarded-for': spoofedXff },
+      });
+      const res = createRes();
+      let allowed = false;
+
+      limiter(req, res, function() {
+        allowed = true;
+      });
+
+      return { allowed: allowed, res: res };
+    }
+
+    expect(attempt('1.1.1.1').allowed).to.equal(true);
+    expect(attempt('2.2.2.2').allowed).to.equal(true);
+
+    const third = attempt('3.3.3.3');
+    expect(third.allowed).to.equal(false);
+    expect(third.res.headers['Retry-After']).to.equal('60');
+  });
 });
