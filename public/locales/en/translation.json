@@ -255,6 +255,11 @@
     "approve": "Approve",
     "allAbsences": "All my absences",
     "deductedFromAllowance": "Days would be deducted from allowance",
+    "selectAll": "Select all",
+    "selectRow": "Select this request",
+    "approveSelected": "Approve selected",
+    "rejectSelected": "Reject selected",
+    "selectedCount": "{count} selected",
     "messages": {
       "processed": "Request from {{name}} was processed",
       "approveFailed": "Failed to approve request",
@@ -263,7 +268,10 @@
       "cancelFailed": "Failed to cancel leave request",
       "revokeFailed": "Failed to revoke leave request",
       "revokeRequested": "You have requested leave to be revoked.",
-      "revokeRequestedNeedsApproval": "You have requested leave to be revoked. Your supervisor needs to approve it."
+      "revokeRequestedNeedsApproval": "You have requested leave to be revoked. Your supervisor needs to approve it.",
+      "bulkNoneSelected": "Please select at least one request first.",
+      "bulkProcessed": "{{count}} request(s) were processed ({{action}}).",
+      "bulkFailed": "{{count}} request(s) could not be processed."
     }
   },
   "leaveRequest": {
