@@ -17,6 +17,8 @@ describe("Test runner logging", function() {
 
     expect(testRunner).to.contain("SILENCE_PRETEND_EMAILS: 'true'");
     expect(testRunner).to.contain("SILENCE_HTTP_LOGS: 'true'");
+    expect(testRunner).to.contain('Running integration batch');
+    expect(testRunner).to.contain("'--recursive', 't/unit'");
     expect(app).to.contain("process.env.SILENCE_HTTP_LOGS !== 'true'");
   });
 });
