@@ -60,24 +60,28 @@
       </div>
 
       <div class="form-group">
-        <label for="country_inp" class="col-sm-4 control-label">{{t "register.country"}}</label>
+        <label for="country_inp" class="col-sm-4 control-label">{{t "register.country"}} <span class="text-danger">*</span></label>
         <div class="col-sm-8">
-          <select class="form-control" id="country_inp" placeholder="{{t "register.countryPlaceholder"}}" name="country">
+          <select class="form-control" id="country_inp" name="country" required>
+            <option value="">{{t "register.countryPlaceholder"}}</option>
             {{#each countries}}
             <option value="{{@key}}" {{#if this.default }} selected="selected" {{/if}}>{{@key}}: {{this.name}}</option>
             {{/each}}
           </select>
+          <span class="help-block">{{t "register.countryHelp"}}</span>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="timezone_inp" class="col-sm-4 control-label">{{t "register.timezone"}}</label>
+        <label for="timezone_inp" class="col-sm-4 control-label">{{t "register.timezone"}} <span class="text-danger">*</span></label>
         <div class="col-sm-8">
-          <select class="form-control" id="timezone_inp" placeholder="{{t "register.timezonePlaceholder"}}" name="timezone">
+          <select class="form-control" id="timezone_inp" name="timezone" required>
+            <option value="">{{t "register.timezonePlaceholder"}}</option>
             {{#each timezones_available}}
             <option value="{{this}}" {{#if_equal this 'Europe/London' }} selected="selected" {{/if_equal}}>{{this}}</option>
             {{/each}}
           </select>
+          <span class="help-block">{{t "register.timezoneHelp"}}</span>
         </div>
       </div>
 

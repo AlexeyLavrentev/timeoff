@@ -1,5 +1,6 @@
 
 <form method="POST" action="/settings/departments/edit/{{ department.id }}/" id="department_edit_form">
+  <input type="hidden" name="_csrf" value="{{csrf_token}}">
 
 <div class="admin-form-card">
 

@@ -116,13 +116,13 @@ app.use(i18nextMiddleware.handle(i18next));
 // Setup authentication mechanism
 const passport = require('./lib/passport')();
 
-app.use(createSessionMiddleware({
+const sessionMiddleware = createSessionMiddleware({
   sequelizeDb: app.get('db_model').sequelize,
-}))
+});
+app.set('session_middleware', sessionMiddleware);
+app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
-
-
 
 // Custom middlewares
 //
@@ -194,6 +194,59 @@ app.get('/language/:lng', function(req, res) {
 app.use( require('./lib/middleware/flash_messages') );
 
 app.use( require('./lib/middleware/session_aware_redirect') );
+
+
+// CSRF and security headers for all routes
+const authSecurity = require("./lib/middleware/auth_security");
+app.use(authSecurity.setAuthSecurityHeaders);
+app.use(authSecurity.attachCsrfToken);
+
+// Verify CSRF token for POST/PUT/DELETE requests
+app.use(function(req, res, next) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    return next();
+  }
+
+  // Skip CSRF verification for login/register routes as they have their own middleware
+  if (req.path.startsWith("/login") || req.path.startsWith("/register") || req.path.startsWith("/forgot-password") || req.path.startsWith("/reset-password")) {
+    return next();
+  }
+
+  // Multipart bodies are parsed by formidable inside the import route, after
+  // this global middleware. That route performs the same token comparison as
+  // soon as fields are available.
+  if (req.path === "/users/import/" && req.is("multipart/form-data")) {
+    return next();
+  }
+
+  // For authenticated routes, verify CSRF token
+  const sessionToken = req.session && req.session.csrf_token;
+  const requestToken = req.body && req.body._csrf || req.headers && req.headers["x-csrf-token"];
+  const rejectCsrf = function() {
+    const wantsJson = req.xhr
+      || /^\/api\//.test(req.originalUrl || req.url || '')
+      || (req.accepts && req.accepts(['html', 'json']) === 'json');
+
+    if (wantsJson) {
+      return res.status(403).json({error: 'invalid_csrf'});
+    }
+
+    if (req.user) {
+      req.session.flash_error(req.t ? req.t("login.messages.invalidCsrfToken") : "Invalid CSRF token");
+    }
+    return res.redirect_with_session(req.originalUrl || req.path || "/");
+  };
+
+  if (!sessionToken || !requestToken) {
+    return rejectCsrf();
+  }
+
+  if (!authSecurity.tokensMatch(sessionToken, requestToken)) {
+    return rejectCsrf();
+  }
+
+  next();
+});
 
 // Here will be publicly accessible routes
 

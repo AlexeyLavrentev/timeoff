@@ -77,6 +77,7 @@
 
       </div>
       <div class="modal-footer">
+        <input type="hidden" name="_csrf" value="{{csrf_token}}">
         <button type="button" class="btn btn-link" data-dismiss="modal">{{t "common.cancel"}}</button>
         <button type="submit" class="btn btn-success single-click">{{t "common.create"}}</button>
         {{# if redirect_back_to }}
