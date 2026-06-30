@@ -29,8 +29,10 @@
       <h2>{{t "feeds.myCalendarFeed"}}</h2>
       <a class="feed-card-link" href="webcal://{{current_host}}/feed/{{calendar_feed.feed_token}}/ical.ics"><span class="fa fa-rss" aria-hidden="true"></span> {{t "feeds.openFeed"}}</a>
       <div class="feed-card-url">
-        <code id="calendar-feed-url">https://{{current_host}}/feed/{{calendar_feed.feed_token}}/ical.ics</code>
-        <button type="button" class="btn btn-xs btn-default feed-copy-btn" data-clipboard-target="#calendar-feed-url"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
+        <code id="calendar-feed-url">{{current_protocol}}://{{current_host}}/feed/{{calendar_feed.feed_token}}/ical.ics</code>
+        <button type="button" class="btn btn-xs btn-default feed-copy-btn" aria-live="polite"
+          data-clipboard-target="#calendar-feed-url" data-copy-success="{{t "feeds.copied"}}"
+          data-copy-failure="{{t "feeds.copyFailed"}}"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
       </div>
       <p class="help-block">{{t "feeds.regenerateHelp"}}</p>
     </div>
@@ -48,8 +50,10 @@
       <h2>{{t "feeds.teamViewFeed"}}</h2>
       <a class="feed-card-link" href="webcal://{{current_host}}/feed/{{team_view_feed.feed_token}}/ical.ics"><span class="fa fa-rss" aria-hidden="true"></span> {{t "feeds.openFeed"}}</a>
       <div class="feed-card-url">
-        <code id="teamview-feed-url">https://{{current_host}}/feed/{{team_view_feed.feed_token}}/ical.ics</code>
-        <button type="button" class="btn btn-xs btn-default feed-copy-btn" data-clipboard-target="#teamview-feed-url"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
+        <code id="teamview-feed-url">{{current_protocol}}://{{current_host}}/feed/{{team_view_feed.feed_token}}/ical.ics</code>
+        <button type="button" class="btn btn-xs btn-default feed-copy-btn" aria-live="polite"
+          data-clipboard-target="#teamview-feed-url" data-copy-success="{{t "feeds.copied"}}"
+          data-copy-failure="{{t "feeds.copyFailed"}}"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
       </div>
       <p class="help-block">{{t "feeds.regenerateHelp"}}</p>
     </div>
@@ -104,20 +108,26 @@
       if (!codeEl) return;
       var text = codeEl.textContent.trim();
 
-      function showFeedback() {
+      function showFeedback(success) {
         var originalHTML = btn.innerHTML;
-        btn.innerHTML = '<span class="fa fa-check" aria-hidden="true"></span> {{t "feeds.copied"}}';
-        btn.classList.add('btn-success');
+        var icon = document.createElement('span');
+        icon.className = success ? 'fa fa-check' : 'fa fa-exclamation-triangle';
+        icon.setAttribute('aria-hidden', 'true');
+        btn.textContent = '';
+        btn.appendChild(icon);
+        btn.appendChild(document.createTextNode(' ' + btn.getAttribute(success ? 'data-copy-success' : 'data-copy-failure')));
+        btn.classList.add(success ? 'btn-success' : 'btn-danger');
         btn.classList.remove('btn-default');
         setTimeout(function() {
           btn.innerHTML = originalHTML;
           btn.classList.remove('btn-success');
+          btn.classList.remove('btn-danger');
           btn.classList.add('btn-default');
         }, 2000);
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showFeedback).catch(function() {
+        navigator.clipboard.writeText(text).then(function() { showFeedback(true); }).catch(function() {
           fallbackCopy(text, showFeedback);
         });
       } else {
@@ -133,7 +143,7 @@
     ta.style.opacity = '0';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); cb(); } catch(e) {}
+    try { cb(Boolean(document.execCommand('copy'))); } catch(e) { cb(false); }
     document.body.removeChild(ta);
   }
 })();
