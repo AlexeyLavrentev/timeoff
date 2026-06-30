@@ -17,7 +17,7 @@
     "express": "^4.22.2",
     "express-handlebars": "^9.0.1",
     "express-session": "^1.19.0",
-    "formidable": "~1.0.17",
+    "formidable": "~3.5.4",
     "handlebars": "^4.7.9",
     "html-to-text": "^9.0.5",
     "i18next": "^26.3.4",
