@@ -13,6 +13,10 @@ FakeEmailTransport.prototype.promise_forgot_password_email = function() {
   emailSendAttempts += 1;
   return Promise.resolve();
 };
+FakeEmailTransport.prototype.promise_reset_password_email = function() {
+  emailSendAttempts += 1;
+  return Promise.resolve();
+};
 
 require.cache[emailModulePath] = {
   id: emailModulePath,
@@ -80,6 +84,11 @@ function createReq(overrides) {
         'login.messages.forgotPasswordSent': 'Please check your email box for further instructions',
         'login.messages.forgotPasswordFailed': 'Failed to proceed with submitted data.',
         'login.messages.useSsoPasswordRecovery': 'This account uses SSO. Reset your password through your company identity provider.',
+        'login.messages.passwordBlank': 'Password cannot be blank',
+        'login.messages.resetPasswordMismatch': 'Confirmed password does not match password',
+        'login.messages.resetLinkUnknown': 'Unknown reset password link, please submit request again',
+        'login.messages.resetPasswordFailed': 'Failed to reset the password. Please request a new link.',
+        'login.messages.resetPasswordUseNew': 'Please use new password to login into system',
       };
 
       return translations[key] || key;
@@ -270,5 +279,96 @@ describe('Forgot password route', function() {
     expect(req.session.flash.warnings).to.deep.equal([
       'This account uses SSO. Reset your password through your company identity provider.',
     ]);
+  });
+});
+
+describe('Reset password route', function() {
+  const router = loginRouterFactory({
+    authenticate() {
+      return function(req, res, next) {
+        return next && next();
+      };
+    },
+  });
+  const postResetPasswordHandlers = getRouteHandlers(router, '/reset-password/', 'post');
+
+  beforeEach(function() {
+    emailSendAttempts = 0;
+  });
+
+  it('stops after redirecting an invalid token', async function() {
+    let hashAttempts = 0;
+    const req = createReq({
+      body: {
+        t: 'invalid',
+        password: 'new-password',
+        confirm_password: 'new-password',
+        _csrf: 'expected-token',
+      },
+      path: '/reset-password/',
+      session: {
+        csrf_token: 'expected-token',
+      },
+      app: {
+        get(key) {
+          if (key === 'db_model') {
+            return {
+              User: {
+                get_user_by_reset_password_token() {
+                  return Promise.resolve();
+                },
+                hashify_password() {
+                  hashAttempts += 1;
+                },
+              },
+            };
+          }
+        },
+      },
+    });
+
+    const result = await invokeRouteHandlers(postResetPasswordHandlers, req);
+
+    expect(result.type).to.equal('redirect');
+    expect(result.location).to.equal('/forgot-password/');
+    expect(hashAttempts).to.equal(0);
+    expect(emailSendAttempts).to.equal(0);
+  });
+
+  it('rejects a blank or whitespace-only password before looking up the token', async function() {
+    let lookupAttempts = 0;
+    const req = createReq({
+      body: {
+        t: 'token',
+        password: '   ',
+        confirm_password: '   ',
+        _csrf: 'expected-token',
+      },
+      path: '/reset-password/',
+      session: {
+        csrf_token: 'expected-token',
+      },
+      app: {
+        get(key) {
+          if (key === 'db_model') {
+            return {
+              User: {
+                get_user_by_reset_password_token() {
+                  lookupAttempts += 1;
+                  return Promise.resolve();
+                },
+              },
+            };
+          }
+        },
+      },
+    });
+
+    const result = await invokeRouteHandlers(postResetPasswordHandlers, req);
+
+    expect(result.type).to.equal('redirect');
+    expect(result.location).to.equal('/reset-password/?t=token');
+    expect(lookupAttempts).to.equal(0);
+    expect(req.session.flash.errors).to.deep.equal(['Password cannot be blank']);
   });
 });

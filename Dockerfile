@@ -78,8 +78,9 @@ COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
 RUN mkdir -p /tmp/sso-deps && \
     cd /tmp/sso-deps && \
     npm install --no-package-lock --no-audit --no-fund \
-      @node-saml/node-saml@^5.1.0 \
-      openid-client@^5.7.1 && \
+      @node-saml/node-saml@5.1.0 \
+      openid-client@5.7.1 \
+      pdfkit@0.16.0 && \
     cp -a node_modules/. /app/node_modules/ && \
     rm -rf /tmp/sso-deps
 

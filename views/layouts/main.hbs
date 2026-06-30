@@ -51,11 +51,13 @@
     <script>
       window.timeoff = {
         locale: "{{locale}}",
+        csrfToken: {{{json csrf_token}}},
         disableNotifications: {{#if disable_notifications}}true{{else}}false{{/if}},
         features: {{{json features}}},
         branding: {{{json branding}}},
         translations: {
           loading: "{{t "common.loading"}}",
+          requestFailed: "{{t "errors.requestFailed"}}",
           employeeSummary: "{{t "user.employeeSummary"}}",
           leaveSummary: "{{t "leave.leaveSummary"}}",
           notificationsEmpty: "{{t "nav.notificationsEmpty"}}",

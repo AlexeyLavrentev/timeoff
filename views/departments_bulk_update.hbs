@@ -1,7 +1,7 @@
 
 {{> header }}
 
-<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
 
 <main id="main-content" tabindex="-1">
 
@@ -28,9 +28,10 @@
 
 <div class="content-spacer-sm"></div>
 
-<form id="delete_form" method="post" action="/settings/departments/delete/"></form>
+<form id="delete_form" method="post" action="/settings/departments/delete/"><input type="hidden" name="_csrf" value="{{csrf_token}}"></form>
 
 <form method="post" action="/settings/departments-bulk-update/" id="edit_department_form">
+  <input type="hidden" name="_csrf" value="{{csrf_token}}">
 
 {{# unless departments.length }}
 <div class="row">

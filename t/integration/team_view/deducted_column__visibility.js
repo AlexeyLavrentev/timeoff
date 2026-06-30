@@ -166,9 +166,6 @@ describe('Check that values for new columns are shown only for employess current
       .then(el => el.click())
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{

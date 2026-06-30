@@ -1,13 +1,14 @@
 
 {{> header }}
 
-<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
 
 <main id="main-content" tabindex="-1">
 
 <h1>{{t "departments.detailsTitle" name=department.name}}</h1>
 
 <form method="post" action="/settings/departments/delete/{{ department.id }}/">
+  <input type="hidden" name="_csrf" value="{{csrf_token}}">
   <div class="row admin-page-header">
     <div class="col-sm-7 lead">
       {{t "departments.detailsLead"}}

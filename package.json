@@ -1,6 +1,6 @@
 {
   "name": "TimeOff.Management",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": false,
   "description": "LeavePilot is an open-source leave management system for small and medium-sized businesses",
   "engines": {
@@ -60,6 +60,8 @@
     "start": "node bin/wwww",
     "start:dev": "node --watch bin/wwww",
     "db-update": "node bin/db_update.js",
+    "sso-secret-backfill": "node bin/sso_secret_backfill.js",
+    "dump-schema": "node bin/dump_schema.js",
     "carry-over-allowance": "node bin/calculate_carry_over_allowance_for_all_users.js",
     "send-upcoming-leave-reminders": "node bin/send_upcoming_leave_reminders.js",
     "compile-sass": "sass scss/main.scss public/css/style.css",

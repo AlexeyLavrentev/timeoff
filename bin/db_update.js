@@ -1,81 +1,10 @@
 'use strict';
 
 var path = require('path');
-var Umzug = require('umzug');
 var db = require('../lib/model/db');
 var edition = require('../lib/edition');
-
-function normalizeTableName(table) {
-  if (typeof table === 'string') {
-    return table;
-  }
-
-  if (table && typeof table === 'object') {
-    return table.tableName || table.name || '';
-  }
-
-  return '';
-}
-
-function bootstrapEmptyDatabase(sequelize) {
-  var queryInterface = sequelize.getQueryInterface();
-
-  return queryInterface.showAllTables().then(function(tables) {
-    var existingTables = (tables || [])
-      .map(normalizeTableName)
-      .filter(Boolean)
-      .filter(function(tableName) {
-        return tableName !== 'SequelizeMeta';
-      });
-
-    var requiredBaseTables = [
-      'Companies',
-      'Departments',
-      'LeaveTypes',
-      'Users',
-      'schedule',
-    ];
-    var missingBaseTables = requiredBaseTables.filter(function(tableName) {
-      return existingTables.indexOf(tableName) === -1;
-    });
-
-    if (existingTables.length > 0 && missingBaseTables.length === 0) {
-      return null;
-    }
-
-    console.log(
-      existingTables.length === 0
-        ? 'Database is empty, creating base schema with sequelize.sync()'
-        : 'Database schema is incomplete, creating missing base tables with sequelize.sync(): '
-          + missingBaseTables.join(', ')
-    );
-    return sequelize.sync();
-  });
-}
-
-function createUmzug(sequelize, migrationsPath) {
-  return new Umzug({
-    storage: 'sequelize',
-    storageOptions: {
-      sequelize: sequelize,
-    },
-    migrations: {
-      path: migrationsPath,
-      params: [sequelize.getQueryInterface(), db.Sequelize],
-      pattern: /\.js$/,
-    },
-  });
-}
-
-function runMigrations(sequelize, migrationsPath) {
-  return createUmzug(sequelize, migrationsPath)
-    .up()
-    .then(function(migrations) {
-      return migrations.map(function(migration) {
-        return migration.file || migration;
-      });
-    });
-}
+var migrator = require('../lib/model/migrator');
+var ssoSecretBackfill = require('../lib/sso_secret_backfill');
 
 db.connect()
   .then(function() {
@@ -86,19 +15,29 @@ db.connect()
         return allPaths.indexOf(migrationsPath) === index;
       });
 
-    return bootstrapEmptyDatabase(sequelize)
-      .then(function() {
-        return migrationPaths.reduce(function(sequence, migrationsPath) {
-          return sequence.then(function(appliedMigrations) {
-            return runMigrations(sequelize, migrationsPath)
-              .then(function(migrations) {
-                return appliedMigrations.concat(migrations);
-              });
-          });
-        }, Promise.resolve([]));
+    return migrator.run({
+      sequelize: sequelize,
+      Sequelize: db.Sequelize,
+      migrationPaths: migrationPaths,
+    })
+      .then(function(result) {
+        if (result.bootstrapped) {
+          console.log(
+            'Fresh database: created base schema and baselined migrations:',
+            result.baselined.join(', ') || 'none'
+          );
+        } else {
+          console.log('Applied migrations:', result.applied.join(', ') || 'none');
+        }
+        return ssoSecretBackfill.audit({ sequelize: sequelize });
       })
-      .then(function(migrations) {
-        console.log('Applied migrations:', migrations.join(', ') || 'none');
+      .then(function(summary) {
+        process.stdout.write(ssoSecretBackfill.formatSummary('startup audit', summary) + '\n');
+        if (summary.plaintext > 0 || summary.decryptionFailed > 0) {
+          process.stderr.write(
+            'Run `npm run sso-secret-backfill -- --dry-run` and remediate before enabling SSO.\n'
+          );
+        }
       })
       .finally(function() {
         return sequelize.close();

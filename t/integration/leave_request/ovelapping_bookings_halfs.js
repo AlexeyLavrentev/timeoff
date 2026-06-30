@@ -105,9 +105,6 @@ describe('Overlapping leaverequest (with halfs)', function(){
       // Create new leave request
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{
@@ -145,9 +142,6 @@ describe('Overlapping leaverequest (with halfs)', function(){
       // Create new leave request
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{
@@ -171,9 +165,6 @@ describe('Overlapping leaverequest (with halfs)', function(){
 
       // Create new leave request
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
 
         submit_form_func({
           driver      : driver,
@@ -202,9 +193,6 @@ describe('Overlapping leaverequest (with halfs)', function(){
       // Create new leave request
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           form_params : [{
@@ -231,9 +219,6 @@ describe('Overlapping leaverequest (with halfs)', function(){
 
       // Create new leave request
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
 
         submit_form_func({
           driver      : driver,

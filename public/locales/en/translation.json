@@ -91,9 +91,11 @@
     "leaveDetailsFailed": "Failed to get leave details.",
     "userDetailsFailed": "Failed to get user details.",
     "notificationsFailed": "Failed to fetch notifications.",
+    "adminRequired": "Administrator access is required for this page.",
     "teamViewRenderFailed": "Failed to render Team View.",
     "feedUnavailable": "Feed is not available.",
-    "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
+    "criticalOverlapExceeded": "Too many critical employees are already off during these dates.",
+    "blockingConflicts": "Cannot create leave due to conflicts with other employees"
   },
   "titles": {
     "calendar": "Calendar",
@@ -103,6 +105,8 @@
     "departmentDetails": "Department details",
     "groups": "Groups",
     "groupDetails": "Group details",
+    "conflictRules": "Conflict rules",
+    "conflictRulesDetails": "Conflict rule details",
     "login": "LeavePilot"
   },
   "userPopup": {
@@ -205,11 +209,13 @@
       "importNone": "No more new bank holidays exist",
       "importFailed": "Failed to import bank holidays",
       "removeWrongParams": "Cannot remove bank holiday: wrong parameters",
-      "removed": "Bank holiday was successfully removed",
-      "dateInvalid": "New day for {{name}} should be date",
+    "removed": "Bank holiday was successfully removed",
+    "nameRequired": "Name for {{name}} is required",
+    "dateInvalid": "New day for {{name}} should be date",
       "dayTypeInvalid": "Day type for {{name}} is invalid",
-      "calendarNameRequired": "Branch calendar name is required",
-      "calendarCreated": "Branch calendar {{name}} was created",
+    "calendarNameRequired": "Branch calendar name is required",
+    "calendarNameDuplicate": "A branch calendar with this name already exists",
+    "calendarCreated": "Branch calendar {{name}} was created",
       "calendarCreateFailed": "Failed to create branch calendar",
       "calendarRemoveWrongParams": "Cannot remove branch calendar: wrong parameters",
       "calendarRemoveHasDepartments": "Cannot remove branch calendar while it is assigned to departments",
@@ -348,6 +354,7 @@
       "emailInvalid": "Email address is invalid",
       "nameMissing": "Name was not specified",
       "lastNameMissing": "Last name was not specified",
+      "companyNameMissing": "Company name was not specified",
       "passwordBlank": "Password could not be blank",
       "passwordMismatch": "Confirmed password does not match initial one",
       "countryInvalid": "Incorrect country code",
@@ -362,6 +369,7 @@
       "tooManyAuthAttempts": "Too many authentication attempts. Please try again in {{seconds}} seconds.",
       "resetLinkUnknown": "Unknown reset password link, please submit request again",
       "resetPasswordMismatch": "Confirmed password does not match password",
+      "resetPasswordFailed": "Failed to reset the password. Please request a new link.",
       "resetPasswordUseNew": "Please use new password to login into system",
       "ssoNotConfigured": "SSO is not configured for this account.",
       "ssoUnsupportedProvider": "Unsupported SSO provider.",
@@ -643,10 +651,12 @@
       "detailsUpdated": "Details for {{name}} were updated",
       "saveFailed": "Failed to save changes.",
       "recordsRemoved": "Employee records were removed from the system",
-      "removeFailed": "Failed to remove user. {{error}}",
+      "removeFailed": "Failed to remove user.",
       "invalidSearchEmail": "Provided email does not look like valid one: \"{{email}}\""
     },
-    "validation": {
+  "validation": {
+      "nameRequired": "Employee first name is required",
+      "lastNameRequired": "Employee last name is required",
       "emailInvalid": "New email of {{itemName}} should be valid email address",
       "departmentInvalid": "New department number of {{itemName}} should be a valid number",
       "adjustmentInvalid": "New allowance adjustment of {{itemName}} should be a valid number",
@@ -747,6 +757,7 @@
       "carryOverInvalid": "Carried over allowance has to be a number",
       "dateFormatUnknown": "Unknown date format was provided",
       "companyUpdated": "Company was successfully updated",
+      "companyNameRequired": "Company name is required",
       "companyUpdateFailed": "Failed to update company details, please contact customer service",
       "carryOverSuccess": "Unused allowance was successfully carried over",
       "carryOverFailed": "Failed to carry over unused allowances, please contact customer service and provide incident ID: {{incidentId}}",
@@ -760,6 +771,7 @@
       "saveFailed": "Failed to save settings. {{reason}}",
       "ldapUpdated": "LDAP configuration was updated",
       "ldapUpdateFailed": "Failed to update LDAP configuration. {{reason}}",
+      "ldapValidationFailed": "Could not validate the LDAP settings with the current administrator credentials.",
       "ldapUrlInvalid": "URL to LDAP server must be of following format: 'ldap://HOSTNAME:PORT'",
       "companySummaryFailed": "Failed to download company summary. {{reason}}",
       "companyRemoved": "Company {{company}} and related data were successfully removed",
@@ -778,8 +790,9 @@
       "ssoEmailDomainInvalid": "SSO email domain {{domain}} is invalid."
     },
     "leaveTypes": {
-      "validation": {
-        "colorInvalid": "New color for {{name}} should be valid css class",
+    "validation": {
+      "nameDuplicate": "Leave type name {{name}} is already in use",
+      "colorInvalid": "New color for {{name}} should be valid css class",
         "limitInvalid": "New limit for {{name}} should be a valid number",
         "limitNonNegative": "New limit for {{name}} should be positive number or 0",
         "minimumInvalid": "Minimum consecutive days for {{name}} should be a valid number",
@@ -834,8 +847,10 @@
     "addSupervisorsSuffix": "department",
     "addSelectedEmployees": "Add selected employees",
     "noAvailableSupervisors": "No employees available to be added as secondary supervisors.",
-    "messages": {
-      "allowanceNumeric": "New allowance for {{department}} should be numeric",
+  "messages": {
+    "nameRequired": "Department name is required",
+    "duplicateName": "A department with this name already exists",
+    "allowanceNumeric": "New allowance for {{department}} should be numeric",
       "allowanceRange": "New allowance for {{department}} should be between 0.5 and 50 days",
       "bossNumeric": "New boss reference for {{department}} should be numeric",
       "bossUnknown": "New boss for {{department}} is unknown",
@@ -882,6 +897,8 @@
   },
   "emailAudit": {
     "title": "Emails audit",
+    "invalidFilters": "Email audit filters are invalid.",
+    "loadFailed": "Failed to load the email audit.",
     "subtitle": "All emails ever been sent by the system",
     "filterOptions": "Filter options",
     "startDatePlaceholder": "Start Date",
@@ -904,6 +921,7 @@
   },
   "reportsPage": {
     "title": "Reports",
+    "invalidFilters": "Report filters are invalid. Check the date range and selected values.",
     "subtitle": "List of available reports",
     "allowanceByTime": "Allowance usage by time",
     "employeesLeaves": "Employee absences",

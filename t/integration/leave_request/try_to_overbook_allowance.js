@@ -111,9 +111,6 @@ describe('Try to book more holidays then in allowance', function(){
       // Create new leave request
       .then(function(){
 
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
         submit_form_func({
           driver      : driver,
           // The order matters here as we need to populate dropdown prior date filds

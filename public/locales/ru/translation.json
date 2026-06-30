@@ -96,9 +96,11 @@
     "leaveDetailsFailed": "Не удалось получить детали отпуска.",
     "userDetailsFailed": "Не удалось получить данные сотрудника.",
     "notificationsFailed": "Не удалось получить уведомления.",
+    "adminRequired": "Для доступа к этой странице нужны права администратора.",
     "teamViewRenderFailed": "Не удалось отобразить командный обзор.",
     "feedUnavailable": "Фид недоступен.",
-    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты."
+    "criticalOverlapExceeded": "Слишком много критических сотрудников уже отсутствуют в эти даты.",
+    "blockingConflicts": "Невозможно создать отпуск из-за конфликтов с другими сотрудниками"
   },
   "titles": {
     "calendar": "Календарь",
@@ -108,6 +110,8 @@
     "departmentDetails": "Детали отдела",
     "groups": "Группы",
     "groupDetails": "Детали группы",
+    "conflictRules": "Правила конфликтов",
+    "conflictRulesDetails": "Детали правила конфликта",
     "login": "LeavePilot"
   },
   "userPopup": {
@@ -210,11 +214,13 @@
       "importNone": "Новых праздничных дней нет",
       "importFailed": "Не удалось импортировать праздничные дни",
       "removeWrongParams": "Нельзя удалить праздничный день: неверные параметры",
-      "removed": "Праздничный день успешно удалён",
-      "dateInvalid": "Новая дата для {{name}} должна быть корректной",
+    "removed": "Праздничный день успешно удалён",
+    "nameRequired": "Укажите название для {{name}}",
+    "dateInvalid": "Новая дата для {{name}} должна быть корректной",
       "dayTypeInvalid": "Некорректный тип дня для {{name}}",
-      "calendarNameRequired": "Укажите название календаря филиала",
-      "calendarCreated": "Календарь филиала «{{name}}» создан",
+    "calendarNameRequired": "Укажите название календаря филиала",
+    "calendarNameDuplicate": "Календарь филиала с таким названием уже существует",
+    "calendarCreated": "Календарь филиала «{{name}}» создан",
       "calendarCreateFailed": "Не удалось создать календарь филиала",
       "calendarRemoveWrongParams": "Нельзя удалить календарь филиала: неверные параметры",
       "calendarRemoveHasDepartments": "Нельзя удалить календарь филиала, пока он назначен отделам",
@@ -353,6 +359,7 @@
       "emailInvalid": "Некорректный адрес email",
       "nameMissing": "Имя не указано",
       "lastNameMissing": "Фамилия не указана",
+      "companyNameMissing": "Название компании не указано",
       "passwordBlank": "Пароль не может быть пустым",
       "passwordMismatch": "Подтверждение пароля не совпадает",
       "countryInvalid": "Неверный код страны",
@@ -367,6 +374,7 @@
       "tooManyAuthAttempts": "Слишком много попыток аутентификации. Повторите попытку через {{seconds}} сек.",
       "resetLinkUnknown": "Ссылка на сброс пароля недействительна, отправьте запрос ещё раз",
       "resetPasswordMismatch": "Подтверждение пароля не совпадает",
+      "resetPasswordFailed": "Не удалось сбросить пароль. Запросите новую ссылку.",
       "resetPasswordUseNew": "Используйте новый пароль для входа",
       "ssoNotConfigured": "Для этой учётной записи SSO не настроен.",
       "ssoUnsupportedProvider": "Неподдерживаемый провайдер SSO.",
@@ -648,10 +656,12 @@
       "detailsUpdated": "Данные пользователя {{name}} обновлены",
       "saveFailed": "Не удалось сохранить изменения.",
       "recordsRemoved": "Записи сотрудника удалены из системы",
-      "removeFailed": "Не удалось удалить пользователя. {{error}}",
+      "removeFailed": "Не удалось удалить пользователя.",
       "invalidSearchEmail": "Указанный email выглядит неверно: \"{{email}}\""
     },
-    "validation": {
+  "validation": {
+      "nameRequired": "Укажите имя сотрудника",
+      "lastNameRequired": "Укажите фамилию сотрудника",
       "emailInvalid": "Новый email для {{itemName}} должен быть корректным адресом",
       "departmentInvalid": "Новый отдел для {{itemName}} должен быть корректным номером",
       "adjustmentInvalid": "Новое значение корректировки лимита для {{itemName}} должно быть числом",
@@ -752,6 +762,7 @@
       "carryOverInvalid": "Переносимый лимит должен быть числом",
       "dateFormatUnknown": "Указан неизвестный формат даты",
       "companyUpdated": "Компания успешно обновлена",
+      "companyNameRequired": "Укажите название компании",
       "companyUpdateFailed": "Не удалось обновить данные компании, обратитесь в поддержку",
       "carryOverSuccess": "Неиспользованный лимит успешно перенесён",
       "carryOverFailed": "Не удалось перенести лимит. Обратитесь в поддержку и укажите идентификатор инцидента: {{incidentId}}",
@@ -765,6 +776,7 @@
       "saveFailed": "Не удалось сохранить настройки. {{reason}}",
       "ldapUpdated": "Настройки LDAP обновлены",
       "ldapUpdateFailed": "Не удалось обновить настройки LDAP. {{reason}}",
+      "ldapValidationFailed": "Не удалось проверить настройки LDAP с текущими учётными данными администратора.",
       "ldapUrlInvalid": "URL LDAP-сервера должен быть вида 'ldap://HOSTNAME:PORT'",
       "companySummaryFailed": "Не удалось скачать сводку компании. {{reason}}",
       "companyRemoved": "Компания {{company}} и связанные данные успешно удалены",
@@ -783,8 +795,9 @@
       "ssoEmailDomainInvalid": "Некорректный SSO email-домен: {{domain}}."
     },
     "leaveTypes": {
-      "validation": {
-        "colorInvalid": "Новый цвет для {{name}} должен быть корректным CSS-классом",
+    "validation": {
+      "nameDuplicate": "Название типа отсутствия «{{name}}» уже используется",
+      "colorInvalid": "Новый цвет для {{name}} должен быть корректным CSS-классом",
         "limitInvalid": "Новый лимит для {{name}} должен быть числом",
         "limitNonNegative": "Новый лимит для {{name}} должен быть положительным числом или 0",
         "minimumInvalid": "Минимальное количество подряд идущих дней для {{name}} должно быть числом",
@@ -839,8 +852,10 @@
     "addSupervisorsSuffix": "",
     "addSelectedEmployees": "Добавить выбранных сотрудников",
     "noAvailableSupervisors": "Нет сотрудников, которых можно добавить как дополнительных руководителей.",
-    "messages": {
-      "allowanceNumeric": "Новый лимит для {{department}} должен быть числом",
+  "messages": {
+    "nameRequired": "Укажите название отдела",
+    "duplicateName": "Отдел с таким названием уже существует",
+    "allowanceNumeric": "Новый лимит для {{department}} должен быть числом",
       "allowanceRange": "Новый лимит для {{department}} должен быть от 0,5 до 50 дней",
       "bossNumeric": "Идентификатор руководителя для {{department}} должен быть числом",
       "bossUnknown": "Руководитель для {{department}} не найден",
@@ -887,6 +902,8 @@
   },
   "emailAudit": {
     "title": "Журнал писем",
+    "invalidFilters": "Некорректные фильтры журнала писем.",
+    "loadFailed": "Не удалось загрузить журнал писем.",
     "subtitle": "Все письма, которые отправляла система",
     "filterOptions": "Параметры фильтра",
     "startDatePlaceholder": "Дата начала",
@@ -909,6 +926,7 @@
   },
   "reportsPage": {
     "title": "Отчёты",
+    "invalidFilters": "Некорректные фильтры отчёта. Проверьте диапазон дат и выбранные значения.",
     "subtitle": "Список доступных отчётов",
     "allowanceByTime": "Использование лимита по времени",
     "employeesLeaves": "Отсутствия сотрудников",
