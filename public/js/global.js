@@ -1,4 +1,29 @@
 
+$(function () {
+  var csrfToken = window.timeoff && window.timeoff.csrfToken;
+
+  if (!csrfToken) {
+    return;
+  }
+
+  $('form').each(function () {
+    var method = String($(this).attr('method') || 'GET').toUpperCase();
+    if (method !== 'GET' && !$(this).find('input[name="_csrf"]').length) {
+      $('<input>', {type: 'hidden', name: '_csrf', value: csrfToken}).appendTo(this);
+    }
+  });
+
+  $(document).ajaxSend(function (_event, xhr, settings) {
+    var method = String(settings.type || settings.method || 'GET').toUpperCase();
+    var url = document.createElement('a');
+    url.href = settings.url || '';
+    var sameOrigin = !url.host || url.host === window.location.host;
+    if (sameOrigin && !/^(GET|HEAD|OPTIONS)$/.test(method)) {
+      xhr.setRequestHeader('X-CSRF-Token', csrfToken);
+    }
+  });
+});
+
 /*
  * Book Leave request pop-up window.
  *

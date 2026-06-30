@@ -38,6 +38,7 @@
   <div class="col-sm-5 admin-page-actions">
     {{#if selectedWorkCalendar}}
     <form method="POST" action="/settings/bankholidays/calendars/delete/{{selectedWorkCalendar.id}}/">
+      <input type="hidden" name="_csrf" value="{{csrf_token}}">
       <button type="submit" class="btn btn-link text-danger"><span class="fa fa-trash" aria-hidden="true"></span> {{t "bankHolidays.removeCalendar"}}</button>
     </form>
     {{/if}}
@@ -126,11 +127,12 @@
     </div>
     {{/unless}}
 
-    <form id="delete_bankholiday_form" method="post" action="/settings/bankholidays/delete/">
+    <form id="delete_bankholiday_form" method="post" action="/settings/bankholidays/delete/"><input type="hidden" name="_csrf" value="{{csrf_token}}">
       <input name="year" value="{{yearCurrent}}" type="hidden">
       <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     </form>
     <form id="update_bankholiday_form" method="post" action="/settings/bankholidays/?year={{yearCurrent}}">
+      <input type="hidden" name="_csrf" value="{{csrf_token}}">
     <input name="work_calendar_id" value="{{workCalendarId}}" type="hidden">
     {{#each bankHolidays}}
     <div class="row bank-holiday-row">
@@ -227,6 +229,7 @@
         </div>
         {{/unless}}
         <form method="POST" action="/settings/bankholidays/import/?year={{yearCurrent}}">
+          <input type="hidden" name="_csrf" value="{{csrf_token}}">
           <input type="hidden" name="week_type" value="{{weekType}}">
           <button class="btn btn-success single-click" type="submit" {{#unless importChangesCount}}disabled="disabled"{{/unless}}>
             <span class="fa fa-download" aria-hidden="true"></span> {{t "bankHolidays.applyImport"}}
@@ -256,6 +259,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form method="POST" action="/settings/bankholidays/calendars/">
+        <input type="hidden" name="_csrf" value="{{csrf_token}}">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
           <h4 class="modal-title">{{t "bankHolidays.addCalendar"}}</h4>

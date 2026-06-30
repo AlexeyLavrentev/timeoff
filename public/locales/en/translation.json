@@ -94,7 +94,8 @@
     "adminRequired": "Administrator access is required for this page.",
     "teamViewRenderFailed": "Failed to render Team View.",
     "feedUnavailable": "Feed is not available.",
-    "criticalOverlapExceeded": "Too many critical employees are already off during these dates."
+    "criticalOverlapExceeded": "Too many critical employees are already off during these dates.",
+    "blockingConflicts": "Cannot create leave due to conflicts with other employees"
   },
   "titles": {
     "calendar": "Calendar",
@@ -104,6 +105,8 @@
     "departmentDetails": "Department details",
     "groups": "Groups",
     "groupDetails": "Group details",
+    "conflictRules": "Conflict rules",
+    "conflictRulesDetails": "Conflict rule details",
     "login": "LeavePilot"
   },
   "userPopup": {

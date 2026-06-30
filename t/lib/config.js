@@ -17,6 +17,9 @@ module.exports = {
    *
    * */
   get_execution_timeout : function(){
-    return 3 * 60 * 1000;
+    const configured = Number(process.env.TEST_EXECUTION_TIMEOUT_MS);
+    return Number.isFinite(configured) && configured > 0
+      ? configured
+      : 60 * 1000;
   },
 }

@@ -91,6 +91,12 @@ describe('auth security middleware', function() {
     ]);
   });
 
+  it('compares CSRF tokens safely for delayed multipart parsing', function() {
+    expect(authSecurity.tokensMatch('expected-token', 'expected-token')).to.equal(true);
+    expect(authSecurity.tokensMatch('expected-token', 'invalid-token')).to.equal(false);
+    expect(authSecurity.tokensMatch('expected-token', undefined)).to.equal(false);
+  });
+
   it('limits repeated auth attempts by client ip', function() {
     const limiter = authSecurity.createAuthRateLimit({
       max: 1,
