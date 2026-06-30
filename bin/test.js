@@ -45,6 +45,40 @@ const run = (command, args, options = {}) => new Promise((resolve, reject) => {
   });
 });
 
+const collectJavaScriptFiles = directory => fs.readdirSync(directory, {withFileTypes: true})
+  .sort((left, right) => left.name.localeCompare(right.name))
+  .reduce((files, entry) => {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      return files.concat(collectJavaScriptFiles(entryPath));
+    }
+    return entry.isFile() && entry.name.endsWith('.js')
+      ? files.concat(entryPath)
+      : files;
+  }, []);
+
+const runMochaSuite = () => {
+  if (mochaArgs.length) {
+    return run(node, ['node_modules/mocha/bin/mocha', '--recursive', 't'].concat(mochaArgs));
+  }
+
+  const integrationFiles = collectJavaScriptFiles(path.join('t', 'integration'));
+  const configuredBatchSize = Number(process.env.TEST_INTEGRATION_BATCH_SIZE);
+  const batchSize = Number.isInteger(configuredBatchSize) && configuredBatchSize > 0
+    ? configuredBatchSize
+    : 15;
+  const batches = [];
+  for (let offset = 0; offset < integrationFiles.length; offset += batchSize) {
+    batches.push(integrationFiles.slice(offset, offset + batchSize));
+  }
+
+  return batches.reduce((sequence, batch, index) => sequence.then(() => {
+    console.log(`Running integration batch ${index + 1}/${batches.length} (${batch.length} files)`);
+    return run(node, ['node_modules/mocha/bin/mocha'].concat(batch));
+  }), Promise.resolve())
+    .then(() => run(node, ['node_modules/mocha/bin/mocha', '--recursive', 't/unit']));
+};
+
 const waitForServer = () => new Promise((resolve, reject) => {
   const deadline = Date.now() + 30000;
 
@@ -116,7 +150,7 @@ run(node, ['bin/db_update.js'])
 
     return waitForServer();
   })
-  .then(() => run(node, ['node_modules/mocha/bin/mocha', '--recursive', 't'].concat(mochaArgs)))
+  .then(() => runMochaSuite())
   .then(() => stopServer(server))
   .catch(error => stopServer(server).then(() => {
     console.error(error && error.stack || error);
