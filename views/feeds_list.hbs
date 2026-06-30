@@ -28,6 +28,10 @@
     <div class="feed-card-content">
       <h2>{{t "feeds.myCalendarFeed"}}</h2>
       <a class="feed-card-link" href="webcal://{{current_host}}/feed/{{calendar_feed.feed_token}}/ical.ics"><span class="fa fa-rss" aria-hidden="true"></span> {{t "feeds.openFeed"}}</a>
+      <div class="feed-card-url">
+        <code id="calendar-feed-url">https://{{current_host}}/feed/{{calendar_feed.feed_token}}/ical.ics</code>
+        <button type="button" class="btn btn-xs btn-default feed-copy-btn" data-clipboard-target="#calendar-feed-url"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
+      </div>
       <p class="help-block">{{t "feeds.regenerateHelp"}}</p>
     </div>
     <form method="POST" action="/calendar/feeds/regenerate/" class="feed-card-action">
@@ -43,6 +47,10 @@
     <div class="feed-card-content">
       <h2>{{t "feeds.teamViewFeed"}}</h2>
       <a class="feed-card-link" href="webcal://{{current_host}}/feed/{{team_view_feed.feed_token}}/ical.ics"><span class="fa fa-rss" aria-hidden="true"></span> {{t "feeds.openFeed"}}</a>
+      <div class="feed-card-url">
+        <code id="teamview-feed-url">https://{{current_host}}/feed/{{team_view_feed.feed_token}}/ical.ics</code>
+        <button type="button" class="btn btn-xs btn-default feed-copy-btn" data-clipboard-target="#teamview-feed-url"><span class="fa fa-clipboard" aria-hidden="true"></span> {{t "feeds.copyUrl"}}</button>
+      </div>
       <p class="help-block">{{t "feeds.regenerateHelp"}}</p>
     </div>
     <form method="POST" action="/calendar/feeds/regenerate/" class="feed-card-action">
@@ -53,6 +61,83 @@
   </article>
   {{/ unless }}
 </div>
+
+<section class="feeds-instructions">
+  <h2>{{t "feeds.instructionsTitle"}}</h2>
+  <p class="help-block">{{t "feeds.instructionsHelp"}}</p>
+
+  <div class="feeds-instructions-group">
+    <h3><span class="fa fa-yahoo" aria-hidden="true"></span> {{t "feeds.yandexTitle"}}</h3>
+    <ol>
+      <li>{{t "feeds.yandexStep1"}}</li>
+      <li>{{t "feeds.yandexStep2"}}</li>
+      <li>{{t "feeds.yandexStep3"}}</li>
+      <li>{{t "feeds.yandexStep4"}}</li>
+    </ol>
+  </div>
+
+  <div class="feeds-instructions-group">
+    <h3><span class="fa fa-google" aria-hidden="true"></span> {{t "feeds.googleTitle"}}</h3>
+    <ol>
+      <li>{{t "feeds.googleStep1"}}</li>
+      <li>{{t "feeds.googleStep2"}}</li>
+      <li>{{t "feeds.googleStep3"}}</li>
+    </ol>
+  </div>
+
+  <div class="feeds-instructions-group">
+    <h3><span class="fa fa-windows" aria-hidden="true"></span> {{t "feeds.outlookTitle"}}</h3>
+    <ol>
+      <li>{{t "feeds.outlookStep1"}}</li>
+      <li>{{t "feeds.outlookStep2"}}</li>
+      <li>{{t "feeds.outlookStep3"}}</li>
+    </ol>
+  </div>
+</section>
+
+<script>
+(function() {
+  document.querySelectorAll('.feed-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var targetId = btn.getAttribute('data-clipboard-target');
+      var codeEl = document.querySelector(targetId);
+      if (!codeEl) return;
+      var text = codeEl.textContent.trim();
+
+      function showFeedback() {
+        var originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span class="fa fa-check" aria-hidden="true"></span> {{t "feeds.copied"}}';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-default');
+        setTimeout(function() {
+          btn.innerHTML = originalHTML;
+          btn.classList.remove('btn-success');
+          btn.classList.add('btn-default');
+        }, 2000);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showFeedback).catch(function() {
+          fallbackCopy(text, showFeedback);
+        });
+      } else {
+        fallbackCopy(text, showFeedback);
+      }
+    });
+  });
+
+  function fallbackCopy(text, cb) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); cb(); } catch(e) {}
+    document.body.removeChild(ta);
+  }
+})();
+</script>
 
 </main>
 
