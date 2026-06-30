@@ -23,7 +23,7 @@
     "i18next": "^26.3.4",
     "i18next-express-middleware": "^2.0.0",
     "i18next-fs-backend": "^2.6.6",
-    "ical-generator": "^0.2.7",
+    "ical-generator": "^11.0.0",
     "joi": "^18.2.3",
     "ldapauth-fork": "^6.1.0",
     "moment": "^2.11.2",
