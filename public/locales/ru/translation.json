@@ -260,6 +260,11 @@
     "approve": "Утвердить",
     "allAbsences": "Все мои отсутствия",
     "deductedFromAllowance": "Дни будут списаны из лимита",
+    "selectAll": "Выбрать все",
+    "selectRow": "Выбрать эту заявку",
+    "approveSelected": "Утвердить выбранные",
+    "rejectSelected": "Отклонить выбранные",
+    "selectedCount": "Выбрано: {count}",
     "messages": {
       "processed": "Запрос от {{name}} обработан",
       "approveFailed": "Не удалось одобрить запрос",
@@ -268,7 +273,10 @@
       "cancelFailed": "Не удалось отменить запрос на отпуск",
       "revokeFailed": "Не удалось отозвать запрос на отпуск",
       "revokeRequested": "Вы запросили отзыв отпуска.",
-      "revokeRequestedNeedsApproval": "Вы запросили отзыв отпуска. Требуется подтверждение руководителя."
+      "revokeRequestedNeedsApproval": "Вы запросили отзыв отпуска. Требуется подтверждение руководителя.",
+      "bulkNoneSelected": "Сначала выберите хотя бы одну заявку.",
+      "bulkProcessed": "Обработано заявок: {{count}} ({{action}}).",
+      "bulkFailed": "Не удалось обработать заявок: {{count}}."
     }
   },
   "leaveRequest": {
