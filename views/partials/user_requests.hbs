@@ -37,6 +37,7 @@
           {{# if this.is_approved_leave }}
           {{# unless this.is_pended_revoke_leave}}
           <form method="post" action="/requests/revoke/">
+            <input type="hidden" name="_csrf" value="{{@root.csrf_token}}">
             <input type="hidden" value="{{this.id}}" name="request">
             <button type="submit" class="pull-right btn btn-default btn-xs revoke-btn single-click" title="{{t 'requests.revokeTooltip'}}"><i class="fa fa-trash" aria-hidden="true"></i> {{t "requests.revoke"}}</button>
           </form>
@@ -46,6 +47,7 @@
           {{else}}
             {{#if_equal this.userId ../logged_user.id }}
             <form method="post" action='/requests/cancel/'>
+              <input type="hidden" name="_csrf" value="{{@root.csrf_token}}">
               <input type="hidden" value="{{this.id}}" name="request">
               <button type="submit" class="pull-right btn btn-default btn-xs revoke-btn single-click" title="{{t 'requests.cancelTooltip'}}" value="cancel"><i class="fa fa-trash" aria-hidden="true"></i> {{t "requests.cancel"}}</button>
             </form>

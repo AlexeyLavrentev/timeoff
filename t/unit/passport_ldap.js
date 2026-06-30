@@ -24,9 +24,10 @@ function loadPassportFactory() {
     },
   };
 
-  function FakeLocalStrategy(verify) {
+  function FakeLocalStrategy(options, verify) {
     this.name = 'local';
-    this._verify = verify;
+    this.options = options;
+    this._verify = verify || options;
   }
 
   function FakeBearerStrategy(verify) {

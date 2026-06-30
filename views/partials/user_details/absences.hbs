@@ -1,5 +1,6 @@
 
   <form method="POST" action="/users/edit/{{employee.id}}/" class="admin-form-card employee-absence-card">
+    <input type="hidden" name="_csrf" value="{{csrf_token}}">
 
   <input type="hidden" name="back_to_absences" value="1">
   <input type="hidden" name="name" value="{{employee.name}}">
