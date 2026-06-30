@@ -24,7 +24,7 @@
     "i18next-express-middleware": "^2.0.0",
     "i18next-fs-backend": "^2.6.6",
     "ical-generator": "^0.2.7",
-    "joi": "^17.13.4",
+    "joi": "^18.2.3",
     "ldapauth-fork": "^4.0.2",
     "moment": "^2.11.2",
     "moment-timezone": "^0.5.14",
