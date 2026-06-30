@@ -145,7 +145,28 @@ docker compose run --rm app npm run send-upcoming-leave-reminders
 
 Она безопасна для повторного запуска и не должна отправлять дубли по уже обработанным отпускам.
 
-### 4. Откройте приложение
+### 4. Настройте scheduler внешних коннекторов Premium
+
+Scheduler отключён по умолчанию. Включите его только после настройки и проверки
+коннекторов в административном интерфейсе:
+
+```env
+EXTERNAL_CONNECTORS_SCHEDULER_ENABLED=true
+EXTERNAL_CONNECTORS_SCHEDULER_TIME=08:00
+EXTERNAL_CONNECTORS_SCHEDULER_TIMEZONE=UTC
+```
+
+Для внутренней Jira Data Center оператор может явно разрешить точные имена
+хостов или IP-адреса (без схемы и порта):
+
+```env
+JIRA_DC_PRIVATE_HOST_ALLOWLIST=jira.internal.example,10.20.30.40
+```
+
+Generic Webhook остаётся public-only. Loopback, link-local и metadata адреса не
+разрешаются даже через allowlist.
+
+### 5. Откройте приложение
 
 По умолчанию:
 
@@ -193,6 +214,10 @@ http://localhost:3000
 - `LEAVE_REMINDER_SCHEDULER_ENABLED`
 - `LEAVE_REMINDER_SCHEDULER_TIME`
 - `LEAVE_REMINDER_SCHEDULER_TIMEZONE`
+- `EXTERNAL_CONNECTORS_SCHEDULER_ENABLED`
+- `EXTERNAL_CONNECTORS_SCHEDULER_TIME`
+- `EXTERNAL_CONNECTORS_SCHEDULER_TIMEZONE`
+- `JIRA_DC_PRIVATE_HOST_ALLOWLIST`
 
 ## Когда включать `RUN_DB_MIGRATIONS=true`
 
