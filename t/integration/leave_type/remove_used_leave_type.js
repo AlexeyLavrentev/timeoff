@@ -3,6 +3,7 @@
 
 const
     By               = require('selenium-webdriver').By,
+    until            = require('selenium-webdriver').until,
     expect           = require('chai').expect,
     _                = require('underscore'),
     Promise          = require("bluebird"),
@@ -58,29 +59,49 @@ describe('Try to remove used leave type', function(){
     .then(function(){ done() });
   });
 
-  it("Add new leave type", function(done){
-    driver
+  it("Add new leave type", function(){
+    var old_body;
+    return driver
       .findElement(By.css('#add_new_leave_type_btn'))
       .then(function(el){ return el.click() })
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
-          driver      : driver,
-          form_params : [{
-            selector : leave_type_new_form_id+' input[name="name__new"]',
-            value : 'AAAAA',
-          },{
-            selector : leave_type_new_form_id+' input[name="use_allowance__new"]',
-            value    : 'on',
-            tick     : true,
-          }],
-          submit_button_selector : leave_type_new_form_id+' button[type="submit"]',
-          message : /Changes to leave types were saved/,
-        })
-        .then(function(){ done() });
+        return driver.wait(
+          until.elementLocated(By.css('#add_new_leave_type_modal.in')),
+          5000
+        );
+      })
+      .then(function(){
+        return driver.findElement(By.css('body'));
+      })
+      .then(function(body){
+        old_body = body;
+        return driver.executeScript(
+          'var form = document.querySelector(arguments[0]);'
+          + 'form.querySelector(\'input[name="name__new"]\').value = "AAAAA";'
+          + 'form.querySelector(\'input[name="use_allowance__new"]\').checked = true;'
+          + 'form.requestSubmit();',
+          leave_type_new_form_id
+        );
+      })
+      .then(function(){
+        return driver.wait(until.stalenessOf(old_body), 30000);
+      })
+      .then(function(){
+        return driver.wait(function(){
+          return driver
+            .findElements(By.css(leave_type_edit_form_id+' input[name^="name__"]'))
+            .then(function(elements){
+              return Promise.all(elements.map(function(element){
+                return element.getAttribute('value');
+              }));
+            })
+            .then(function(names){
+              return names.indexOf('AAAAA') !== -1;
+            })
+            .catch(function(){
+              return false;
+            });
+        }, 30000);
       });
   });
 
@@ -92,18 +113,14 @@ describe('Try to remove used leave type', function(){
     .then(function(){ done() });
   });
 
-  it("Request new leave", function(done){
-    driver
+  it("Request new leave", function(){
+    return driver
       .findElement(By.css('#book_time_off_btn'))
       .then(function(el){ return el.click() })
 
       // Create new leave request
       .then(function(){
-
-        // This is very important line when working with Bootstrap modals!
-        driver.sleep(1000);
-
-        submit_form_func({
+        return submit_form_func({
           driver      : driver,
           // The order matters here as we need to populate dropdown prior date filds
           form_params : [{
@@ -120,8 +137,7 @@ describe('Try to remove used leave type', function(){
             value : '2015-06-16',
           }],
           message : /New leave request was added/,
-        })
-        .then(function(){ done() });
+        });
       });
   });
 

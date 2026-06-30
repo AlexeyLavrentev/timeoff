@@ -1,7 +1,7 @@
 
 {{> header }}
 
-<a class="sr-only sr-only-focusable" href="#main-content">{{t "common.skipToContent"}}</a>
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
 
 <main id="main-content" tabindex="-1">
 
@@ -29,6 +29,7 @@
 <div class="row">
   <div class="col-md-9">
     <form class="form-horizontal admin-form-card" action="" method="post">
+      <input type="hidden" name="_csrf" value="{{csrf_token}}">
       <div class="form-group">
         <div class="col-md-9 col-md-offset-3">
         <label for="integration_api_enabled" class="control-label">

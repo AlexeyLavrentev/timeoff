@@ -1,0 +1,308 @@
+# Операции с лицензиями LeavePilot
+
+Руководство вендора по выпуску, проверке и развёртыванию лицензий LeavePilot Premium.
+
+## Формат лицензии
+
+Лицензия — это подписанный JSON-конверт:
+
+```json
+{
+  "payload": {
+    "customer": "ООО Ромашка",
+    "plan": "pro",
+    "features": ["sso_authentication", "integration_api", "employee_groups", "work_calendars"],
+    "expires": "2027-12-31"
+  },
+  "algorithm": "RSA-SHA256",
+  "signature": "<base64 RSA-SHA256 подписи канонического JSON payload>"
+}
+```
+
+### Поля payload
+
+| Поле       | Тип     | Обязательно | Описание |
+|------------|---------|-------------|----------|
+| `customer` | string  | да          | Имя клиента |
+| `plan`     | string  | нет         | Имя тарифного плана (информационное) |
+| `features` | string[]| да          | Список включённых фич |
+| `expires`  | string  | нет         | Дата истечения в ISO 8601 (без поля — бессрочно) |
+
+### Алгоритм подписи
+
+- **RSA-SHA256** (продакшн): канонический JSON payload подписывается приватным
+  ключом через `crypto.sign('RSA-SHA256', ...)`. Проверка — через публичный ключ.
+- **HMAC-SHA256** (только dev/test): канонический JSON подписывается общим секретом.
+
+### Ключи
+
+- **Приватный ключ** (`license_private.pem`) — используется только вендором для
+  подписи. Никогда не передаётся клиенту и не коммитится в репозиторий.
+- **Публичный ключ** (`license_public_key.pem`) — передаётся клиенту для проверки
+  подписи в рантайме через `TIMEOFF_LICENSE_PUBLIC_KEY`.
+
+## Тарифные планы
+
+| План        | Описание | Фичи |
+|-------------|----------|------|
+| `starter`   | Базовое управление отпусками | (community defaults) |
+| `pro`       | SSO + API + группы + календари | `sso_authentication`, `integration_api`, `employee_groups`, `work_calendars` |
+| `enterprise`| Все фичи включая премиум-модули | Все из pro + `leave_start_reminders`, `time_balance`, `vacation_planning`, `cis_leave_presets`, `production_calendar`, `leave_orders`, `telegram_notifications` |
+
+Параметр `--features` всегда переопределяет `--plan`. Список доступных фич:
+
+```
+ldap_authentication, sso_authentication, integration_api, employee_groups,
+work_calendars, leave_start_reminders, time_balance, vacation_planning,
+cis_leave_presets, production_calendar, leave_orders, telegram_notifications
+```
+
+## Генерация тестовой пары ключей
+
+```bash
+# Приватный ключ (хранить securely, НЕ коммитить)
+openssl genpkey -algorithm RSA -out license_private.pem -pkeyopt rsa_keygen_bits:2048
+
+# Публичный ключ (передаётся клиенту)
+openssl rsa -in license_private.pem -pubout -out license_public_key.pem
+```
+
+## Создание лицензии
+
+### С планом
+
+```bash
+node bin/sign_license.js \
+  --customer "ООО Ромашка" \
+  --plan pro \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31
+```
+
+### С произвольным списком фич
+
+```bash
+node bin/sign_license.js \
+  --customer "ООО Ромашка" \
+  --features sso_authentication,integration_api,employee_groups \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31
+```
+
+### В формате base64 (для вставки в .env)
+
+```bash
+node bin/sign_license.js \
+  --customer "ООО Ромашка" \
+  --plan enterprise \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --base64 > license.blob
+```
+
+### Сохранение в файл (`--out`)
+
+```bash
+node bin/license.js generate \
+  --customer "ООО Ромашка" \
+  --plan pro \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --out licenses/romashka-pro-2027.json
+```
+
+Лицензия записывается в указанный файл вместо stdout. Путь выводится в stderr.
+
+### Регистр выданных лицензий (`--registry`)
+
+Регистр — локальный JSON-файл вендора для учёта выпущенных лицензий. Это
+прекурсор будущего License Portal MVP: пока без веб-UI и БД, только файл.
+
+```bash
+node bin/license.js generate \
+  --customer "ООО Ромашка" \
+  --plan enterprise \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --out licenses/romashka-enterprise.json \
+  --registry licenses/registry.json
+```
+
+Каждая запись в регистре содержит:
+
+| Поле          | Описание |
+|---------------|----------|
+| `customer`    | Имя клиента |
+| `plan`        | Тарифный план |
+| `features`    | Список фич |
+| `expires`     | Дата истечения |
+| `algorithm`   | Алгоритм подписи |
+| `issuedAt`    | ISO-дата выпуска |
+| `issuedBy`    | Имя системного пользователя |
+| `payloadHash` | SHA-256 канонического payload (hex) |
+| `licenseHash` | SHA-256 полного конверта (hex) |
+| `outputFile`  | Путь к файлу лицензии (если `--out`) |
+
+**Что НЕ хранится в регистре:** приватный ключ, подпись, полный blob лицензии.
+Регистр — только метаданные для отслеживания.
+
+```bash
+# Просмотр содержимого регистра
+node bin/license.js registry --registry licenses/registry.json
+```
+
+> **Важно:** файл регистра — операционная запись вендора. Никогда не передавайте
+> его клиенту и не коммитьте в репозиторий.
+
+## Просмотр лицензии
+
+Не требует приватного ключа. Можно передать строку или путь к файлу:
+
+```bash
+# Из строки
+node bin/license.js inspect '{"payload":{...},"algorithm":"RSA-SHA256","signature":"..."}'
+
+# Из файла
+node bin/license.js inspect license.json
+
+# Из base64
+node bin/license.js inspect "$(cat license.blob)"
+```
+
+Вывод содержит только безопасные поля: `customer`, `plan`, `features`, `expires`, `algorithm`.
+Подпись и ключевой материал не отображаются.
+
+## Проверка лицензии
+
+```bash
+# С публичным ключом из файла
+node bin/license.js verify license.json --public-key-file license_public_key.pem
+
+# С публичным ключом из переменной окружения
+export TIMEOFF_LICENSE_PUBLIC_KEY="$(cat license_public_key.pem)"
+node bin/license.js verify license.json
+```
+
+Результат: JSON с `valid: true` или ненулевой exit code с описанием ошибки.
+
+## Список планов
+
+```bash
+node bin/license.js plans
+```
+
+## Запуск LeavePilot с лицензией в Docker Compose
+
+### 1. Подготовка
+
+```bash
+# Сгенерируйте ключи (один раз)
+openssl genpkey -algorithm RSA -out license_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -in license_private.pem -pubout -out license_public_key.pem
+
+# Выпустите лицензию
+node bin/sign_license.js \
+  --customer "ООО Ромашка" \
+  --plan enterprise \
+  --private-key-file license_private.pem \
+  --expires 2027-12-31 \
+  --base64 > license.blob
+```
+
+### 2. Docker Compose
+
+Используйте `docker-compose.commercial.yml`:
+
+```bash
+export TIMEOFF_LICENSE="$(cat license.blob)"
+export TIMEOFF_LICENSE_PUBLIC_KEY="$(cat license_public_key.pem)"
+
+docker compose -f docker-compose.yml -f docker-compose.commercial.yml up -d
+```
+
+Или добавьте в `.env`:
+
+```env
+TIMEOFF_LICENSE=<содержимое license.blob>
+TIMEOFF_LICENSE_PUBLIC_KEY=<содержимое license_public_key.pem>
+```
+
+### 3. Проверка
+
+```bash
+# Проверить, что приложение запустилось с лицензией
+docker compose logs app | grep -i license
+```
+
+## Устранение проблем
+
+### `Commercial mode requires TIMEOFF_LICENSE`
+
+Переменная `TIMEOFF_LICENSE` не задана или пуста. Проверьте `.env` или `docker-compose.yml`.
+
+### `Commercial mode requires TIMEOFF_LICENSE_PUBLIC_KEY`
+
+Переменная `TIMEOFF_LICENSE_PUBLIC_KEY` не задана. Убедитесь, что публичный ключ
+передаётся в контейнер.
+
+### `Commercial mode requires an RSA-SHA256 signed TIMEOFF_LICENSE`
+
+Лицензия не является RSA-подписанной. Проверьте:
+- Использовали ли `--private-key-file` (не `--secret`) при генерации
+- Не повреждена ли строка лицензии при копировании
+
+### `Commercial license is invalid: expired`
+
+Срок действия лицензии истёк. Выпустите новую с будущей датой `--expires`.
+
+### `Commercial license is invalid: invalid_signature`
+
+Подпись не совпадает. Возможные причины:
+- Публичный ключ не соответствует приватному, которым подписана лицензия
+- Payload был изменён после подписи
+- Лицензия была подписана другим ключом
+
+### `Commercial license is invalid: invalid_format`
+
+Строка лицензии повреждена или не является валидным JSON/base64. Проверьте:
+- Нет ли переносов строк внутри значения
+- Корректно ли закодирован base64
+
+### Unknown feature warnings
+
+Если в `features[]` указано имя, не зарегистрированное в `FEATURE_CATALOG`
+(ни в core, ни в premium-модуле), фича просто не включится. Это не ошибка,
+но проверьте опечатки.
+
+## Предупреждения безопасности
+
+> **Приватный ключ подписи (`license_private.pem`) НИКОГДА не должен:**
+> - Коммититься в git (добавлен в `.gitignore`)
+> - Передаваться клиенту
+> - Храниться в Docker-образе
+> - Передаваться через незашифрованные каналы
+>
+> Храните приватный ключ в защищённом хранилище (KMS, HSM, зашифрованный vault).
+
+## Регистр как прекурсор License Portal
+
+Текущий workflow с `--registry` — это ручная версия того, что в будущем станет
+License Portal MVP:
+
+| Сейчас (Phase 2B-0)           | Portal MVP (Phase 2B)            |
+|-------------------------------|----------------------------------|
+| JSON-файл на диске            | БД (SQLite/Postgres)             |
+| CLI generate + --registry     | Веб-форма + KMS-подпись          |
+| Ручной просмотр registry      | Веб-UI со списком и поиском      |
+| Локальный файл у вендора      | Сервис за SSO/VPN вендора        |
+| SHA-256 хэши для поиска       | Тот же формат + индексы          |
+
+Формат записей регистра совместим: при миграции на Portal достаточно
+импортировать существующий JSON в БД.
+
+## Дополнительные материалы
+
+- [Архитектура лицензирования](licensing-architecture.md) — ADR с обоснованием модели
+- [Проектирование License Portal MVP](license-portal-design.md) — архитектура и план реализации
+- [Premium-модуль](premium-module.md) — установка и конфигурация
+- [Docker Compose](docker-compose.md) — развёртывание

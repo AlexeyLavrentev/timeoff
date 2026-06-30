@@ -31,5 +31,27 @@ describe('Check Email', function(){
 
   });
 
+  it('Can silence fake email payloads during integration tests', async function(){
+    var original_log = console.log;
+    var original_silence_flag = process.env.SILENCE_PRETEND_EMAILS;
+    var logged_messages = [];
+
+    console.log = function(message){
+      logged_messages.push(message);
+    };
+    process.env.SILENCE_PRETEND_EMAILS = 'true';
+
+    try {
+      await new Email().get_send_email()({to: 'test@example.com'});
+      expect(logged_messages).to.deep.equal([]);
+    } finally {
+      console.log = original_log;
+      if (typeof original_silence_flag === 'undefined') {
+        delete process.env.SILENCE_PRETEND_EMAILS;
+      } else {
+        process.env.SILENCE_PRETEND_EMAILS = original_silence_flag;
+      }
+    }
+  });
 
 });

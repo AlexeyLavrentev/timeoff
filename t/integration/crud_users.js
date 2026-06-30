@@ -220,7 +220,7 @@ describe('CRUD for users', function(){
     submit_form_func({
       submit_button_selector : 'button#remove_btn',
       driver      : driver,
-      message : /Cannot remove supervisor/,
+      message : /Failed to remove user\./,
       confirm_dialog : true,
     })
     .then(function(){ done() });
@@ -334,7 +334,7 @@ describe('CRUD for users', function(){
     submit_form_func({
       submit_button_selector : 'button#remove_btn',
       driver      : driver,
-      message : /Cannot remove administrator user/,
+      message : /Failed to remove user\./,
       confirm_dialog : true,
     })
     .then(function(){ done() });

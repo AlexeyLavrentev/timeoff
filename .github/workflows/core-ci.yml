@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - main
+      - "release/**"
       - "inf/**"
 
 jobs:
@@ -43,6 +44,14 @@ jobs:
             t/unit/partial_template_paths.js \
             t/unit/view_engine_paths.js
 
+      - name: Run focused Phase 0 tests (password / migrator / auth_security)
+        run: |
+          ./node_modules/.bin/mocha \
+            t/unit/auth/password.js \
+            t/unit/db_migrator.js \
+            t/unit/middleware/auth_security.js \
+            --timeout 10000
+
       - name: Run all unit tests
         run: |
           node bin/db_update.js
@@ -77,3 +86,120 @@ jobs:
           SESSION_SECRET: ci-session-secret
           CRYPTO_SECRET: ci-crypto-secret
           TIMEOFF_PREMIUM_MODULE_HOST_PATH: ../timeoff-premium
+
+      - name: Validate portal compose
+        run: |
+          mkdir -p /tmp/portal-secrets
+          openssl genpkey -algorithm RSA -out /tmp/portal-secrets/license_private.pem -pkeyopt rsa_keygen_bits:2048 2>/dev/null
+          openssl rsa -in /tmp/portal-secrets/license_private.pem -pubout -out /tmp/portal-secrets/license_public_key.pem 2>/dev/null
+          docker compose -f docker-compose.portal.yml config --quiet
+        env:
+          PORTAL_SESSION_SECRET: ci-portal-session-secret
+          PORTAL_PRIVATE_KEY_FILE: /tmp/portal-secrets/license_private.pem
+          PORTAL_PUBLIC_KEY_FILE: /tmp/portal-secrets/license_public_key.pem
+
+  docker-build:
+    name: Docker image build (runtime target)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build community runtime image
+        run: docker build --target runtime -t leavepilot-ce:ci .
+
+  portal-docker-build:
+    name: Portal Docker image build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build portal image
+        run: docker build -f Dockerfile.portal -t leavepilot-portal:ci .
+
+  mysql-migration-smoke:
+    name: Fresh MySQL 8 migration smoke test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Start disposable MySQL 8
+        run: |
+          docker run -d --name lp-mysql \
+            -e MYSQL_ROOT_PASSWORD=rootpw \
+            -e MYSQL_DATABASE=lp_test \
+            -p 3306:3306 \
+            mysql:8.0 --default-authentication-plugin=mysql_native_password
+          echo "Waiting for MySQL to become healthy..."
+          for i in $(seq 1 60); do
+            if docker exec lp-mysql mysqladmin ping -h127.0.0.1 -uroot -prootpw >/dev/null 2>&1; then
+              echo "MySQL ready (attempt $i)"; exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become ready in time"; docker logs lp-mysql; exit 1
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          CHROMEDRIVER_SKIP_DOWNLOAD: 'true'
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+      - name: Migrate fresh DB (run #1) and dump schema
+        run: |
+          node bin/db_update.js | tee run1.log
+          grep -q "Fresh database" run1.log
+          node bin/dump_schema.js > schema-fresh-mysql.sql
+          echo "---- fresh schema (first 40 lines) ----"
+          head -40 schema-fresh-mysql.sql
+        env:
+          NODE_ENV: test
+          DB_DIALECT: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_NAME: lp_test
+          DB_USER: root
+          DB_PASSWORD: rootpw
+
+      - name: Migrate again (run #2) and assert no-op + identical schema
+        run: |
+          node bin/db_update.js | tee run2.log
+          grep -q "Applied migrations: none" run2.log
+          if grep -q "Fresh database" run2.log; then
+            echo "ERROR: second run re-bootstrapped the database"; exit 1
+          fi
+          node bin/dump_schema.js > schema-after-rerun.sql
+          if ! diff -u schema-fresh-mysql.sql schema-after-rerun.sql; then
+            echo "ERROR: schema changed between migration runs (not idempotent)"; exit 1
+          fi
+          echo "Idempotent: second run is a no-op and schema is unchanged."
+        env:
+          NODE_ENV: test
+          DB_DIALECT: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3306'
+          DB_NAME: lp_test
+          DB_USER: root
+          DB_PASSWORD: rootpw
+
+      - name: Upload fresh MySQL schema artifact (for offline prod comparison)
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-fresh-mysql
+          path: schema-fresh-mysql.sql
+          if-no-files-found: error
+
+      - name: Stop disposable MySQL
+        if: always()
+        run: docker rm -f lp-mysql || true

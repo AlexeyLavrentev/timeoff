@@ -91,6 +91,12 @@ describe('auth security middleware', function() {
     ]);
   });
 
+  it('compares CSRF tokens safely for delayed multipart parsing', function() {
+    expect(authSecurity.tokensMatch('expected-token', 'expected-token')).to.equal(true);
+    expect(authSecurity.tokensMatch('expected-token', 'invalid-token')).to.equal(false);
+    expect(authSecurity.tokensMatch('expected-token', undefined)).to.equal(false);
+  });
+
   it('limits repeated auth attempts by client ip', function() {
     const limiter = authSecurity.createAuthRateLimit({
       max: 1,
@@ -120,5 +126,36 @@ describe('auth security middleware', function() {
     expect(req.session.flash.errors).to.deep.equal([
       'Too many authentication attempts. Please try again in 60 seconds.',
     ]);
+  });
+
+  it('keys rate limiting on req.ip so a spoofed X-Forwarded-For cannot bypass it', function() {
+    const limiter = authSecurity.createAuthRateLimit({
+      max: 2,
+      windowMs: 60 * 1000,
+      keyPrefix: 'test-spoof',
+    });
+
+    // Same real client (req.ip), attacker rotates X-Forwarded-For each request.
+    function attempt(spoofedXff) {
+      const req = createReq({
+        ip: '10.0.0.5',
+        headers: { 'x-forwarded-for': spoofedXff },
+      });
+      const res = createRes();
+      let allowed = false;
+
+      limiter(req, res, function() {
+        allowed = true;
+      });
+
+      return { allowed: allowed, res: res };
+    }
+
+    expect(attempt('1.1.1.1').allowed).to.equal(true);
+    expect(attempt('2.2.2.2').allowed).to.equal(true);
+
+    const third = attempt('3.3.3.3');
+    expect(third.allowed).to.equal(false);
+    expect(third.res.headers['Retry-After']).to.equal('60');
   });
 });
