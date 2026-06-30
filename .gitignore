@@ -15,3 +15,14 @@ license_private.pem
 # Agent/tooling scratch — must not be committed
 .supergoal/
 AGENTS.md
+
+# Local dev/test artifacts — must not be committed
+*.sqlite3
+cookies*.txt
+*cookies.txt
+*.bak
+_debug_*.js
+_e2e_*
+_start_*
+docker-compose.e2e.yml
+docker-compose.testing.yml
