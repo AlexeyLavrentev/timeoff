@@ -10,15 +10,16 @@ describe("Test runner logging", function() {
       path.join(__dirname, "../../bin/test.js"),
       "utf8"
     );
-    const app = fs.readFileSync(
-      path.join(__dirname, "../../app.js"),
+    const requestIdMiddleware = fs.readFileSync(
+      path.join(__dirname, "../../lib/middleware/request_id.js"),
       "utf8"
     );
 
     expect(testRunner).to.contain("SILENCE_PRETEND_EMAILS: 'true'");
     expect(testRunner).to.contain("SILENCE_HTTP_LOGS: 'true'");
+    expect(testRunner).to.contain("LOG_LEVEL: 'error'");
     expect(testRunner).to.contain('Running integration batch');
     expect(testRunner).to.contain("'--recursive', 't/unit'");
-    expect(app).to.contain("process.env.SILENCE_HTTP_LOGS !== 'true'");
+    expect(requestIdMiddleware).to.contain("process.env.SILENCE_HTTP_LOGS === 'true'");
   });
 });

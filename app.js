@@ -3,7 +3,6 @@ var express      = require('express');
 var os           = require('os');
 var path         = require('path');
 var favicon      = require('serve-favicon');
-var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
@@ -76,9 +75,10 @@ app.set('db_model', dbModel);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
-if (process.env.SILENCE_HTTP_LOGS !== 'true') {
-  app.use(logger('dev'));
-}
+// Correlation must wrap every application response, including manifest, static,
+// 404, and error responses. Successful static assets are filtered by middleware.
+const requestIdMiddleware = require('./lib/middleware/request_id');
+app.use(requestIdMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -107,10 +107,6 @@ app.get('/manifest.webmanifest', function(req, res) {
   });
 });
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Request ID + structured logger
-const requestIdMiddleware = require('./lib/middleware/request_id');
-app.use(requestIdMiddleware);
 
 const i18next = initI18next();
 app.use(i18nextMiddleware.handle(i18next));
@@ -344,26 +340,9 @@ app.use(function(req, res, next) {
 
 var structuredLogger = require('./lib/middleware/request_logger');
 
-// Catch synchronous exceptions and unhandled promise rejections so the process
-// logs them cleanly instead of crashing silently.
-process.on('uncaughtException', function(err) {
-  structuredLogger.error('uncaught_exception', {
-    message: err && err.message || String(err),
-    stack  : err && err.stack  || undefined,
-  });
-});
-
-process.on('unhandledRejection', function(reason, promise) {
-  structuredLogger.error('unhandled_rejection', {
-    reason: reason && reason.message ? reason.message : String(reason),
-    stack : reason && reason.stack  || undefined,
-  });
-});
-
 function logError(err, req) {
   var meta = {
-    message : err && err.message || String(err),
-    stack   : err && err.stack   || undefined,
+    error: err,
   };
 
   if (req) {
