@@ -14,7 +14,7 @@ var emailTemplatePaths = require('./lib/email_template_paths');
 var partialTemplatePaths = require('./lib/partial_template_paths');
 var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
-const i18nextMiddleware = require('i18next-express-middleware');
+const i18nextMiddleware = require('i18next-http-middleware');
 const { initI18next } = require('./lib/i18n');
 
 var app = express();
@@ -168,7 +168,8 @@ app.use(function(req,res,next){
 app.use(function(req,res,next){
     res.locals.custom_java_script = [
       '/js/bootstrap-datepicker.js',
-      '/js/global.js'
+      '/js/global.js',
+      '/js/leave_forecast.js'
     ];
     res.locals.custom_css = [
       '/css/bootstrap-datepicker3.standalone.css'

@@ -24,6 +24,9 @@
       <caption class="sr-only">{{t "requests.toApproveTitle"}}</caption>
       <thead>
         <tr>
+          <th class="bulk-select-cell">
+            <input type="checkbox" class="bulk-select-all" aria-label="{{t "requests.selectAll"}}">
+          </th>
           <th>{{t "requests.employee"}}</th>
           <th>{{t "requests.department"}}</th>
           <th>{{t "requests.requestDate"}}</th>
@@ -37,6 +40,9 @@
       <tbody>
         {{#each to_be_approved_leaves }}
         <tr vpp="pending_for__{{this.user.email}}">
+          <td class="bulk-select-cell">
+            <input type="checkbox" class="bulk-request-checkbox" name="request" value="{{this.id}}" form="bulk-action-form" aria-label="{{t "requests.selectRow"}}">
+          </td>
           <td>{{#with this.user}}{{this.full_name}}
             <i class="fa fa-question-circle user-details-summary-trigger" data-user-id="{{this.id}}" aria-hidden="true"></i>{{/with}}
           </td>
@@ -70,6 +76,13 @@
       </tbody>
     </table>
     </div>
+
+    <form id="bulk-action-form" class="bulk-action-bar" method="POST" action="/requests/bulk/approve/" style="margin-top: 10px;">
+      <input type="hidden" name="_csrf" value="{{@root.csrf_token}}">
+      <button type="submit" formaction="/requests/bulk/approve/" class="btn btn-success bulk-approve-btn" disabled>{{t "requests.approveSelected"}}</button>
+      <button type="submit" formaction="/requests/bulk/reject/" class="btn btn-warning bulk-reject-btn" disabled>{{t "requests.rejectSelected"}}</button>
+      <span class="text-muted bulk-selected-count" aria-live="polite"></span>
+    </form>
   </div>
   {{/unless}}
 </div>
@@ -84,4 +97,50 @@
 {{> user_requests_grouped grouped_leaves=my_leaves_grouped logged_user=logged_user }}
 
 </main>
+
+<script>
+(function() {
+  var form = document.getElementById('bulk-action-form');
+  if (!form) { return; }
+
+  var selectAll = document.querySelector('.bulk-select-all');
+  var checkboxes = [].slice.call(document.querySelectorAll('.bulk-request-checkbox'));
+  var approveBtn = form.querySelector('.bulk-approve-btn');
+  var rejectBtn = form.querySelector('.bulk-reject-btn');
+  var counter = form.querySelector('.bulk-selected-count');
+  var countTemplate = "{{t "requests.selectedCount"}}";
+
+  function selectedCount() {
+    return checkboxes.filter(function(cb) { return cb.checked; }).length;
+  }
+
+  function refresh() {
+    var count = selectedCount();
+    var hasSelection = count > 0;
+
+    approveBtn.disabled = !hasSelection;
+    rejectBtn.disabled = !hasSelection;
+    counter.textContent = hasSelection ? countTemplate.replace('{count}', count) : '';
+
+    if (selectAll) {
+      selectAll.checked = count > 0 && count === checkboxes.length;
+      selectAll.indeterminate = count > 0 && count < checkboxes.length;
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+      refresh();
+    });
+  }
+
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', refresh);
+  });
+
+  refresh();
+})();
+</script>
+
 {{>footer}}
