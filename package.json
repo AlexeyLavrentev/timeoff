@@ -1,6 +1,6 @@
 {
   "name": "TimeOff.Management",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": false,
   "description": "LeavePilot is an open-source leave management system for small and medium-sized businesses",
   "engines": {
