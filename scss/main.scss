@@ -1039,6 +1039,76 @@ textarea.form-control {
   grid-column: 2;
 }
 
+.feed-card-url {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  margin-top: $space-2;
+}
+
+.feed-card-url code {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 12px;
+  word-break: break-all;
+  background: $surface-muted;
+  border: 1px solid $border-color;
+  border-radius: $radius-sm;
+  color: $text-strong;
+}
+
+.feed-copy-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.feeds-instructions {
+  max-width: 850px;
+  margin-top: $space-5;
+  padding: $space-5;
+  background: $surface-color;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+}
+
+.feeds-instructions h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.feeds-instructions-group {
+  margin-top: $space-4;
+  padding-top: $space-4;
+  border-top: 1px solid $border-color;
+}
+
+.feeds-instructions-group:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: $space-3;
+}
+
+.feeds-instructions-group h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: $space-2;
+}
+
+.feeds-instructions-group h3 .fa {
+  margin-right: 7px;
+  color: $brand-blue;
+}
+
+.feeds-instructions-group ol {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.feeds-instructions-group li {
+  margin-bottom: $space-1;
+  line-height: 1.5;
+}
+
 .audit-layout {
   display: flex;
   align-items: flex-start;
