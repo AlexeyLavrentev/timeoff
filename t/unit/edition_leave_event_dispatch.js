@@ -59,10 +59,11 @@ describe('Leave event dispatch', function() {
   it('dispatchLeaveEvent swallows rejected promise from dispatcher', function(done) {
     var edition = require('../../lib/edition');
     var registry = edition.getRegistry();
-    var origError = console.error;
+    var logger = require('../../lib/middleware/request_logger');
+    var origError = logger.error;
     var logged = [];
 
-    console.error = function(msg) { logged.push(msg); };
+    logger.error = function(msg, meta) { logged.push({msg: msg, meta: meta}); };
 
     registry.registerLeaveEventDispatcher({
       dispatch: function() {
@@ -76,10 +77,10 @@ describe('Leave event dispatch', function() {
 
     // Give the unhandled rejection handler time to fire
     setTimeout(function() {
-      console.error = origError;
+      logger.error = origError;
       // The error was logged (swallowed), not thrown
-      var found = logged.some(function(msg) {
-        return msg.indexOf('async boom') !== -1;
+      var found = logged.some(function(entry) {
+        return entry.meta && entry.meta.message && entry.meta.message.indexOf('async boom') !== -1;
       });
       expect(found).to.equal(true);
 
