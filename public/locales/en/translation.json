@@ -255,6 +255,11 @@
     "approve": "Approve",
     "allAbsences": "All my absences",
     "deductedFromAllowance": "Days would be deducted from allowance",
+    "selectAll": "Select all",
+    "selectRow": "Select this request",
+    "approveSelected": "Approve selected",
+    "rejectSelected": "Reject selected",
+    "selectedCount": "{count} selected",
     "messages": {
       "processed": "Request from {{name}} was processed",
       "approveFailed": "Failed to approve request",
@@ -263,7 +268,10 @@
       "cancelFailed": "Failed to cancel leave request",
       "revokeFailed": "Failed to revoke leave request",
       "revokeRequested": "You have requested leave to be revoked.",
-      "revokeRequestedNeedsApproval": "You have requested leave to be revoked. Your supervisor needs to approve it."
+      "revokeRequestedNeedsApproval": "You have requested leave to be revoked. Your supervisor needs to approve it.",
+      "bulkNoneSelected": "Please select at least one request first.",
+      "bulkProcessed": "{{count}} request(s) were processed ({{action}}).",
+      "bulkFailed": "{{count}} request(s) could not be processed."
     }
   },
   "leaveRequest": {
@@ -426,7 +434,25 @@
     "teamViewFeed": "Team view feed",
     "openFeed": "Open calendar feed",
     "regenerate": "Regenerate link",
-    "regenerateHelp": "Regenerating invalidates the previous feed link."
+    "regenerateHelp": "Regenerating invalidates the previous feed link.",
+    "copyUrl": "Copy URL",
+    "copied": "Copied!",
+    "copyFailed": "Copy failed",
+    "instructionsTitle": "How to add to your calendar",
+    "instructionsHelp": "Click the feed link above to open it in your default calendar app, or copy the feed URL and add it manually using the instructions below.",
+    "yandexTitle": "Yandex Calendar",
+    "yandexStep1": "Open Yandex Calendar (calendar.yandex.ru).",
+    "yandexStep2": "Click the \"+\" button next to a calendar list and select \"Add calendar → From URL\".",
+    "yandexStep3": "Paste the copied feed URL into the \"Calendar link\" field.",
+    "yandexStep4": "Click \"Add\" — events will appear within a few hours and update automatically.",
+    "googleTitle": "Google Calendar",
+    "googleStep1": "Open Google Calendar (calendar.google.com).",
+    "googleStep2": "Next to \"Other calendars\" click the \"+\" and select \"From URL\".",
+    "googleStep3": "Paste the copied feed URL and click \"Add calendar\".",
+    "outlookTitle": "Outlook / Office 365",
+    "outlookStep1": "Open Outlook on the web (outlook.live.com or outlook.office.com).",
+    "outlookStep2": "Go to Calendar → \"Add calendar\" → \"Subscribe from web\".",
+    "outlookStep3": "Paste the copied feed URL, name the calendar, and click \"Import\"."
   },
   "leave": {
     "newAbsence": "New absence",
@@ -436,7 +462,13 @@
     "morning": "Morning",
     "afternoon": "Afternoon",
     "commentOptional": "Comment (optional):",
-    "leaveSummary": "Leave summary"
+    "leaveSummary": "Leave summary",
+    "forecast": {
+      "summary": "{deducted} day(s) would be deducted — you would have {remaining} of {available} days left.",
+      "exceed": "Not enough allowance: this needs {deducted} day(s) but only {available} are left.",
+      "noAllowance": "This leave type does not draw from your allowance.",
+      "spansYears": "Figures shown are for the start year."
+    }
   },
   "leaveWarnings": {
     "missingMinimumBlock": "Reminder: in {{year}} you still need to schedule at least {{days}} consecutive days of {{leaveType}}.",
