@@ -14,7 +14,7 @@ var emailTemplatePaths = require('./lib/email_template_paths');
 var partialTemplatePaths = require('./lib/partial_template_paths');
 var features     = require('./lib/features');
 const createSessionMiddleware = require('./lib/middleware/withSession');
-const i18nextMiddleware = require('i18next-express-middleware');
+const i18nextMiddleware = require('i18next-http-middleware');
 const { initI18next } = require('./lib/i18n');
 
 var app = express();
