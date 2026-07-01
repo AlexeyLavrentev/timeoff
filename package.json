@@ -62,6 +62,7 @@
     "db-update": "node bin/db_update.js",
     "sso-secret-backfill": "node bin/sso_secret_backfill.js",
     "dump-schema": "node bin/dump_schema.js",
+    "diagnostics": "node bin/diagnostics.js",
     "carry-over-allowance": "node bin/calculate_carry_over_allowance_for_all_users.js",
     "send-upcoming-leave-reminders": "node bin/send_upcoming_leave_reminders.js",
     "compile-sass": "sass scss/main.scss public/css/style.css",
