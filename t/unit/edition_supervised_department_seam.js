@@ -65,9 +65,10 @@ describe('Supervised department seam', function() {
     it('returns [] when provider returns rejected promise', function() {
       var edition = require('../../lib/edition');
       var registry = edition.getRegistry();
-      var origError = console.error;
+      var logger = require('../../lib/middleware/request_logger');
+      var origError = logger.error;
       var logged = [];
-      console.error = function(msg) { logged.push(msg); };
+      logger.error = function(msg, meta) { logged.push({msg: msg, meta: meta}); };
 
       registry.registerSupervisedDepartmentProvider({
         getDepartmentIds: function() {
@@ -77,10 +78,10 @@ describe('Supervised department seam', function() {
 
       return edition.getSupervisedDepartmentIds({user: {id: 1}})
         .then(function(result) {
-          console.error = origError;
+          logger.error = origError;
           expect(result).to.deep.equal([]);
-          var found = logged.some(function(msg) {
-            return msg.indexOf('async boom') !== -1;
+          var found = logged.some(function(entry) {
+            return entry.meta && entry.meta.message && entry.meta.message.indexOf('async boom') !== -1;
           });
           expect(found).to.equal(true);
           registry._supervisedDepartmentProvider = null;

@@ -108,6 +108,10 @@ app.get('/manifest.webmanifest', function(req, res) {
 });
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Request ID + structured logger
+const requestIdMiddleware = require('./lib/middleware/request_id');
+app.use(requestIdMiddleware);
+
 const i18next = initI18next();
 app.use(i18nextMiddleware.handle(i18next));
 
@@ -332,11 +336,49 @@ app.use(function(req, res, next) {
 
 
 // error handlers
+//
+// All uncaught route errors end up here. We log them through the structured
+// logger (so each error gets a requestId when available) and render an
+// appropriate response. Stack traces are never sent to clients in production.
 
-// development error handler
-// will print stacktrace
+var structuredLogger = require('./lib/middleware/request_logger');
+
+// Catch synchronous exceptions and unhandled promise rejections so the process
+// logs them cleanly instead of crashing silently.
+process.on('uncaughtException', function(err) {
+  structuredLogger.error('uncaught_exception', {
+    message: err && err.message || String(err),
+    stack  : err && err.stack  || undefined,
+  });
+});
+
+process.on('unhandledRejection', function(reason, promise) {
+  structuredLogger.error('unhandled_rejection', {
+    reason: reason && reason.message ? reason.message : String(reason),
+    stack : reason && reason.stack  || undefined,
+  });
+});
+
+function logError(err, req) {
+  var meta = {
+    message : err && err.message || String(err),
+    stack   : err && err.stack   || undefined,
+  };
+
+  if (req) {
+    meta.requestId = req.requestId;
+    meta.method    = req.method;
+    meta.path      = req.originalUrl || req.url;
+    meta.ip        = req.ip;
+  }
+
+  structuredLogger.error('unhandled_request_error', meta);
+}
+
+// development error handler — will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
+        logError(err, req);
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -345,9 +387,9 @@ if (app.get('env') === 'development') {
     });
 }
 
-// production error handler
-// no stacktraces leaked to user
+// production error handler — no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+    logError(err, req);
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,
