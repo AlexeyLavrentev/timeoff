@@ -4,6 +4,7 @@ var expect   = require('chai').expect;
 var http     = require('http');
 var express  = require('express');
 var requestMiddleware = require('../../../lib/middleware/request_id');
+var logger = require('../../../lib/middleware/request_logger');
 
 /**
  * Helper: create a minimal Express app with only the request-id middleware
@@ -84,6 +85,20 @@ describe('Request ID + HTTP logging middleware', function() {
       var body = JSON.parse(res.body);
       expect(body.requestId).to.equal('client-supplied-id-123');
     });
+
+    it('replaces invalid and oversized request IDs', async function() {
+      server = createTestServer();
+      var invalid = await httpRequest(server.address().port, {
+        headers: { 'X-Request-Id': 'bad id with spaces' },
+      });
+      var oversized = await httpRequest(server.address().port, {
+        headers: { 'X-Request-Id': 'x'.repeat(129) },
+      });
+
+      expect(invalid.headers['x-request-id']).to.not.equal('bad id with spaces');
+      expect(oversized.headers['x-request-id']).to.not.equal('x'.repeat(129));
+      expect(invalid.headers['x-request-id']).to.match(/^[0-9a-f-]{36}$/);
+    });
   });
 
   describe('req.log child logger', function() {
@@ -113,10 +128,24 @@ describe('Request ID + HTTP logging middleware', function() {
 
     it('logs request on res finish event', function() {
       var originalStdout = process.stdout.write.bind(process.stdout);
+      var originalLevel = logger._getLevel();
+      var originalSilenceHttpLogs = process.env.SILENCE_HTTP_LOGS;
       var captured = [];
+
+      function restore() {
+        process.stdout.write = originalStdout;
+        logger._setLevel(originalLevel);
+        if (originalSilenceHttpLogs === undefined) {
+          delete process.env.SILENCE_HTTP_LOGS;
+        } else {
+          process.env.SILENCE_HTTP_LOGS = originalSilenceHttpLogs;
+        }
+      }
 
       return new Promise(function(resolve, reject) {
         // Capture stdout
+        logger._setLevel(20);
+        delete process.env.SILENCE_HTTP_LOGS;
         process.stdout.write = function(chunk) {
           captured.push(chunk);
           return true;
@@ -137,7 +166,7 @@ describe('Request ID + HTTP logging middleware', function() {
             res.on('end', function() {
               // Give the finish event handler a tick to run
               setTimeout(function() {
-                process.stdout.write = originalStdout;
+                restore();
                 server.close();
 
                 try {
@@ -145,7 +174,7 @@ describe('Request ID + HTTP logging middleware', function() {
                     .map(function(c) { return c.toString(); })
                     .filter(function(s) { return s.indexOf('http_request') !== -1; });
 
-                  expect(httpLogs.length).to.be.greaterThan(0);
+                  expect(httpLogs.length).to.equal(1);
 
                   var parsed = JSON.parse(httpLogs[httpLogs.length - 1]);
                   expect(parsed.msg).to.equal('http_request');
@@ -161,7 +190,10 @@ describe('Request ID + HTTP logging middleware', function() {
               }, 50);
             });
             res.resume();
-          }).on('error', reject).end();
+          }).on('error', function(error) {
+            restore();
+            reject(error);
+          }).end();
         });
       });
     });

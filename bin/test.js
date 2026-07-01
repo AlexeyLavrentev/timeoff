@@ -21,6 +21,7 @@ const baseTestEnv = Object.assign({}, process.env, {
   DISABLE_NOTIFICATIONS_POLLING: 'true',
   SILENCE_PRETEND_EMAILS: 'true',
   SILENCE_HTTP_LOGS: 'true',
+  LOG_LEVEL: 'error',
   TIMEOFF_FEATURES: 'all',
 });
 const serverEnv = Object.assign({}, baseTestEnv, {
@@ -66,7 +67,7 @@ const runMochaSuite = () => {
   const configuredBatchSize = Number(process.env.TEST_INTEGRATION_BATCH_SIZE);
   const batchSize = Number.isInteger(configuredBatchSize) && configuredBatchSize > 0
     ? configuredBatchSize
-    : 15;
+    : 8;
   const batches = [];
   for (let offset = 0; offset < integrationFiles.length; offset += batchSize) {
     batches.push(integrationFiles.slice(offset, offset + batchSize));

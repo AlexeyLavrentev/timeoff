@@ -2,6 +2,7 @@
 
 var expect = require('chai').expect;
 var logger = require('../../../lib/middleware/request_logger');
+var requestContext = require('../../../lib/middleware/request_context');
 
 describe('Structured logger (request_logger)', function() {
 
@@ -62,9 +63,45 @@ describe('Structured logger (request_logger)', function() {
       var line = logger._format('info', 42);
       expect(JSON.parse(line).msg).to.equal('42');
     });
+
+    it('redacts nested secrets and safely serializes difficult values', function() {
+      var circular = {password: 'hidden', count: 10n};
+      circular.self = circular;
+      var parsed = JSON.parse(logger._format('error', 'safe', {
+        authorization: 'Bearer token-value',
+        nested: circular,
+        error: new Error('boom'),
+      }));
+
+      expect(parsed.authorization).to.equal('[REDACTED]');
+      expect(parsed.nested.password).to.equal('[REDACTED]');
+      expect(parsed.nested.count).to.equal('10');
+      expect(parsed.nested.self).to.equal('[Circular]');
+      expect(parsed.error.message).to.equal('boom');
+      expect(JSON.stringify(parsed)).to.not.contain('token-value');
+      expect(JSON.stringify(parsed)).to.not.contain('hidden');
+    });
+
+    it('retains request context across asynchronous boundaries', async function() {
+      var parsed = await requestContext.run({requestId: 'async-request-1'}, async function() {
+        await new Promise(resolve => setTimeout(resolve, 1));
+        return JSON.parse(logger._format('info', 'async_event'));
+      });
+      expect(parsed.requestId).to.equal('async-request-1');
+    });
   });
 
   describe('child logger', function() {
+    var originalLevel;
+
+    beforeEach(function() {
+      originalLevel = logger._getLevel();
+      logger._setLevel(20);
+    });
+
+    afterEach(function() {
+      logger._setLevel(originalLevel);
+    });
 
     it('attaches metadata to every log call', function() {
       var originalWrite = process.stdout.write.bind(process.stdout);
@@ -89,7 +126,7 @@ describe('Structured logger (request_logger)', function() {
       }
     });
 
-    it('allows extra metadata to override child metadata', function() {
+    it('allows ordinary extra metadata to override child metadata but locks requestId', function() {
       var originalWrite = process.stdout.write.bind(process.stdout);
       var captured = [];
 
@@ -100,7 +137,7 @@ describe('Structured logger (request_logger)', function() {
 
       try {
         var child = logger.child({ requestId: 'base-id', tag: 'original' });
-        child.info('msg', { tag: 'overridden' });
+        child.info('msg', { tag: 'overridden', requestId: 'forged-id' });
 
         var parsed = JSON.parse(captured[captured.length - 1]);
         expect(parsed.tag).to.equal('overridden');

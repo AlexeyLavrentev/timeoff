@@ -371,3 +371,24 @@ docker compose down -v
 Это удалит данные MySQL и Redis внутри docker volumes.
 
 Используйте `-v` только если готовы потерять данные контейнеров.
+# Диагностика для поддержки
+
+Снимок состояния формируется локально и никуда не отправляется автоматически:
+
+```bash
+docker compose exec app npm run diagnostics > leavepilot-diagnostics.json
+```
+
+Соберите ограниченный интервал логов вокруг ошибки:
+
+```bash
+docker compose logs --since 30m --timestamps app > leavepilot-app.log
+```
+
+Каждый HTTP-ответ содержит `X-Request-Id`. Для поиска всей цепочки конкретного запроса:
+
+```bash
+docker compose logs --since 30m app | grep 'REQUEST_ID_FROM_RESPONSE'
+```
+
+Передавайте поддержке снимок, небольшой интервал логов, время ошибки и request ID. Снимок исключает секреты и пользовательские записи; передача всегда выполняется вручную.
