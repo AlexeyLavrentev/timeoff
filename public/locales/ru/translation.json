@@ -532,8 +532,10 @@
     "confirmPassword": "Подтвердите пароль",
     "country": "Страна",
     "countryPlaceholder": "Название страны",
+    "countryHelp": "Определяет региональные праздники и дефолты компании (формат даты, часовой пояс, тип отпуска).",
     "timezone": "Часовой пояс",
-    "timezonePlaceholder": "Часовой пояс"
+    "timezonePlaceholder": "Часовой пояс",
+    "timezoneHelp": "Используется для расчёта рабочих дней и времени отправки уведомлений."
   },
   "home": {
     "title": "LeavePilot",

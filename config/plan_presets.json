@@ -25,7 +25,13 @@
       "cis_leave_presets",
       "production_calendar",
       "leave_orders",
-      "telegram_notifications"
+      "approval_delegation",
+      "telegram_notifications",
+      "conflict_rules",
+      "external_connectors",
+      "deputy_assignments",
+      "wellbeing_reports",
+      "pending_approval_reminders"
     ]
   }
 }

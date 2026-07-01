@@ -527,8 +527,10 @@
     "confirmPassword": "Confirm Password",
     "country": "Country",
     "countryPlaceholder": "Country name",
+    "countryHelp": "Determines regional holidays and company defaults (date format, timezone, leave type).",
     "timezone": "Time zone",
-    "timezonePlaceholder": "Time zone"
+    "timezonePlaceholder": "Time zone",
+    "timezoneHelp": "Used to calculate working days and notification send times."
   },
   "home": {
     "title": "LeavePilot",
