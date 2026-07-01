@@ -92,22 +92,6 @@
     <span class="help-block">{{t "departments.accruedAllowanceHelp"}}</span>
   </div>
 
-  <div class="form-group">
-    <label for="notify_leave_start_reminder_inp" class="control-label">
-      <input class="" id="notify_leave_start_reminder_inp" name="notify_leave_start_reminder" type="checkbox" {{# if department.notify_leave_start_reminder}} checked="checked" {{/if}} >
-      {{t "departments.notifyLeaveStartReminder"}}
-    </label>
-    <span class="help-block">{{t "departments.notifyLeaveStartReminderHelp" days=14}}</span>
-  </div>
-
-  <div class="form-group">
-    <label for="notify_leave_start_reminder_to_employee_inp" class="control-label">
-      <input class="" id="notify_leave_start_reminder_to_employee_inp" name="notify_leave_start_reminder_to_employee" type="checkbox" {{# if department.notify_leave_start_reminder_to_employee}} checked="checked" {{/if}} >
-      {{t "departments.notifyLeaveStartReminderToEmployee"}}
-    </label>
-    <span class="help-block">{{t "departments.notifyLeaveStartReminderToEmployeeHelp" days=14}}</span>
-  </div>
-
 </div>
 
 <div class="admin-form-actions">
