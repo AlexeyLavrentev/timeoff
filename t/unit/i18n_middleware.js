@@ -13,5 +13,7 @@ describe('i18n HTTP middleware compatibility', function() {
     expect(middleware.handle).to.be.a('function');
     expect(i18next.services.languageUtils).to.exist;
     expect(i18next.services.languageUtils.isWhitelisted).to.equal(undefined);
+    expect(i18next.hasResourceBundle('en', 'translation')).to.equal(true);
+    expect(i18next.t('login.title', {lng: 'en'})).to.not.equal('login.title');
   });
 });
