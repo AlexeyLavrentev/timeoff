@@ -467,7 +467,13 @@
     "morning": "Утро",
     "afternoon": "Вторая половина дня",
     "commentOptional": "Комментарий (необязательно):",
-    "leaveSummary": "Сводка по отпуску"
+    "leaveSummary": "Сводка по отпуску",
+    "forecast": {
+      "summary": "Будет списано дней: {deducted} — останется {remaining} из {available}.",
+      "exceed": "Недостаточно дней: требуется {deducted}, а доступно только {available}.",
+      "noAllowance": "Этот тип отсутствия не списывается из вашего лимита.",
+      "spansYears": "Показаны данные за год начала отпуска."
+    }
   },
   "leaveWarnings": {
     "missingMinimumBlock": "Напоминание: в {{year}} нужно запланировать минимум {{days}} последовательных дней для типа «{{leaveType}}».",
