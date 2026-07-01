@@ -3,7 +3,6 @@ var express      = require('express');
 var os           = require('os');
 var path         = require('path');
 var favicon      = require('serve-favicon');
-var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var moment       = require('moment');
@@ -76,9 +75,10 @@ app.set('db_model', dbModel);
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
-if (process.env.SILENCE_HTTP_LOGS !== 'true') {
-  app.use(logger('dev'));
-}
+// Correlation must wrap every application response, including manifest, static,
+// 404, and error responses. Successful static assets are filtered by middleware.
+const requestIdMiddleware = require('./lib/middleware/request_id');
+app.use(requestIdMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -333,11 +333,32 @@ app.use(function(req, res, next) {
 
 
 // error handlers
+//
+// All uncaught route errors end up here. We log them through the structured
+// logger (so each error gets a requestId when available) and render an
+// appropriate response. Stack traces are never sent to clients in production.
 
-// development error handler
-// will print stacktrace
+var structuredLogger = require('./lib/middleware/request_logger');
+
+function logError(err, req) {
+  var meta = {
+    error: err,
+  };
+
+  if (req) {
+    meta.requestId = req.requestId;
+    meta.method    = req.method;
+    meta.path      = req.originalUrl || req.url;
+    meta.ip        = req.ip;
+  }
+
+  structuredLogger.error('unhandled_request_error', meta);
+}
+
+// development error handler — will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
+        logError(err, req);
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -346,9 +367,9 @@ if (app.get('env') === 'development') {
     });
 }
 
-// production error handler
-// no stacktraces leaked to user
+// production error handler — no stacktraces leaked to user
 app.use(function(err, req, res, next) {
+    logError(err, req);
     res.status(err.status || 500);
     res.render('error', {
         message: err.message,

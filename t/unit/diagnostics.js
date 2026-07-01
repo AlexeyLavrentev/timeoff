@@ -58,6 +58,9 @@ describe('Operational diagnostics', function() {
     });
 
     expect(snapshot.environment.nodeEnv).to.equal('production');
+    expect(snapshot.application.version).to.be.a('string');
+    expect(snapshot.runtime.nodeVersion).to.match(/^v22\./);
+    expect(snapshot.runtime.uptimeSeconds).to.be.a('number');
     expect(snapshot.license.valid).to.equal(true);
     expect(snapshot.enabledFeatures.time_balance).to.equal(true);
     expect(snapshot.edition.premium.loaded).to.equal(true);
@@ -112,6 +115,7 @@ describe('Operational diagnostics', function() {
           return Promise.resolve([{
             name: 'unsafe-module',
             signature: 'signature-value',
+            accessToken: 'access-token-value',
             nested: {
               secret: 'license-secret-value',
               token: 'token-value',
@@ -130,6 +134,7 @@ describe('Operational diagnostics', function() {
     expect(serialized).to.not.contain('token-value');
     expect(serialized).to.not.contain('public-key-value');
     expect(serialized).to.not.contain('private-key-value');
+    expect(serialized).to.not.contain('access-token-value');
     expect(snapshot.license.raw).to.equal(undefined);
     expect(snapshot.license.signature).to.equal(undefined);
     expect(snapshot.moduleDiagnostics[0].nested).to.deep.equal({});

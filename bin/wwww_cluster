@@ -3,6 +3,8 @@
 var debug = require('debug')('vacation-tracker');
 var app   = require('../app');
 var edition = require('../lib/edition');
+var runtimeShutdown = require('../lib/runtime_shutdown');
+var structuredLogger = require('../lib/middleware/request_logger');
 
 var cluster = require('cluster');
 
@@ -10,7 +12,7 @@ if (cluster.isMaster ) {
 
   cluster.on('exit', function(worker, code){
     if(code != 0 && !worker.suicide) {
-      console.log('>>>>>> Worker crashed. Starting a new worker');
+      structuredLogger.warn('cluster_worker_restarting', {workerId: worker.id, exitCode: code});
       cluster.fork();
     }
   });
@@ -28,11 +30,16 @@ if (cluster.isMaster ) {
       });
 
       var server = app.listen(app.get('port'), function() {
-        console.log('Started to listen on port ' + server.address().port);
+        structuredLogger.info('server_listening', {port: server.address().port});
+      });
+      runtimeShutdown.installProcessHandlers({
+        server: server,
+        db: app.get('db_model').sequelize,
+        exit: function(code) { process.exit(code); },
       });
     })
     .catch(function(error) {
-      console.error(error && error.stack || error);
+      structuredLogger.error('startup_failed', {error: error});
       process.exit(1);
     });
 

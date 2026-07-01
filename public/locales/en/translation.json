@@ -68,6 +68,8 @@
     "featuresSection": "Enabled features",
     "snapshotSection": "Safe diagnostic snapshot",
     "snapshotHelp": "This JSON omits raw licenses, signatures, secrets, tokens, and keys.",
+    "download": "Download diagnostic snapshot",
+    "supportHelp": "Send this snapshot, the approximate incident time, and the X-Request-Id shown in the response to support. Sharing is always manual.",
     "empty": "None",
     "fields": {
       "valid": "Valid",
