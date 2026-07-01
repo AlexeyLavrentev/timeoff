@@ -167,6 +167,29 @@ LEAVE_REMINDER_SCHEDULER_TIMEZONE=UTC
 
 Если scheduler включён, отдельный cron для reminder-уведомлений не требуется.
 
+### Внешние коннекторы Premium
+
+Встроенный scheduler внешних коннекторов по умолчанию выключен. Для ежедневной
+синхронизации задайте:
+
+```bash
+EXTERNAL_CONNECTORS_SCHEDULER_ENABLED=true
+EXTERNAL_CONNECTORS_SCHEDULER_TIME=08:00
+EXTERNAL_CONNECTORS_SCHEDULER_TIMEZONE=Asia/Yekaterinburg
+```
+
+Jira Data Center часто доступна только во внутренней сети. Такие адреса
+запрещены по умолчанию. Оператор развёртывания может разрешить точные имена
+хостов или IP-адреса через запятую, например:
+
+```bash
+JIRA_DC_PRIVATE_HOST_ALLOWLIST=jira.internal.example,10.20.30.40
+```
+
+Не добавляйте в allowlist loopback, metadata или link-local адреса: они всегда
+блокируются. Настройка доступна только оператору контейнера и не управляется из
+интерфейса компании.
+
 ### Шаг 4. Откройте приложение
 
 Откройте в браузере:
