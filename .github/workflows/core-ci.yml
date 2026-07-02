@@ -140,7 +140,7 @@ jobs:
             -e MYSQL_ROOT_PASSWORD=rootpw \
             -e MYSQL_DATABASE=lp_test \
             -p 3306:3306 \
-            mysql:8.0 --default-authentication-plugin=mysql_native_password
+            mysql:8.0
           echo "Waiting for MySQL to become healthy..."
           for i in $(seq 1 60); do
             if docker exec lp-mysql mysqladmin ping -h127.0.0.1 -uroot -prootpw >/dev/null 2>&1; then
@@ -203,3 +203,27 @@ jobs:
       - name: Stop disposable MySQL
         if: always()
         run: docker rm -f lp-mysql || true
+
+  security:
+    name: Security gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Dependency audit (production deps, high+)
+        run: npm audit --omit=dev --audit-level=high

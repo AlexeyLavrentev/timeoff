@@ -37,11 +37,20 @@ const printUsageAndExit = () => {
     '  --plan            Plan preset (alternative to --features):',
     ...planLines,
     '  --features        Comma-separated feature list (alternative to --plan)',
-    '  --expires         Expiry date in ISO format (optional)',
+    '  --expires         Expiry date in ISO format (optional; stored as expiresAt in v2)',
     '  --private-key-file  Path to RSA private key PEM file',
     '  --private-key     Private key PEM string (prefer --private-key-file)',
     '  --secret          HMAC secret (legacy, prefer RSA)',
     '  --base64          Output as base64 instead of JSON',
+    '',
+    'Schema v2 options (v2 is the default; pass --schema 1 for legacy payloads):',
+    '  --license-id      Unique license id (default: generated UUID)',
+    '  --customer-id     Stable customer identifier (CRM/portal id)',
+    '  --not-before      License is not valid before this ISO date',
+    '  --maintenance-until  End of updates/support entitlement (ISO date)',
+    '  --max-active-users   Licensed active user count (soft limit, informational)',
+    '  --allowed-major-versions  Comma-separated core major versions, e.g. "2,3"',
+    '  --key-id          Signing key identifier for key-ring rotation',
     '',
     'Available features:',
     `  ${AVAILABLE_FEATURES.join(', ')}`,
@@ -76,6 +85,8 @@ if (!argv.customer || (!licenseFeatures && !resolvedPlan) || (!secret && !privat
   printUsageAndExit();
 }
 
+const schemaVersion = Number(argv.schema || 2);
+
 const payload = {
   customer: argv.customer,
   features: licenseFeatures,
@@ -85,7 +96,36 @@ if (resolvedPlan) {
   payload.plan = resolvedPlan;
 }
 
-if (argv.expires) {
+if (schemaVersion >= 2) {
+  const { randomUUID } = require('crypto');
+
+  payload.schemaVersion = schemaVersion;
+  payload.licenseId = String(argv['license-id'] || randomUUID());
+  payload.customerName = argv.customer;
+  payload.issuedAt = new Date().toISOString();
+
+  if (argv['customer-id']) {
+    payload.customerId = String(argv['customer-id']);
+  }
+  if (argv['not-before']) {
+    payload.notBefore = argv['not-before'];
+  }
+  if (argv.expires) {
+    payload.expiresAt = argv.expires;
+  }
+  if (argv['maintenance-until']) {
+    payload.maintenanceUntil = argv['maintenance-until'];
+  }
+  if (argv['max-active-users']) {
+    payload.maxActiveUsers = Number(argv['max-active-users']);
+  }
+  if (argv['allowed-major-versions']) {
+    payload.allowedMajorVersions = parseList(argv['allowed-major-versions']).map(Number);
+  }
+  if (argv['key-id']) {
+    payload.keyId = String(argv['key-id']);
+  }
+} else if (argv.expires) {
   payload.expires = argv.expires;
 }
 

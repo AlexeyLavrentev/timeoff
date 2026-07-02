@@ -18,6 +18,8 @@ describe('Feature licensing', function() {
     'ALLOW_UNLICENSED_FEATURE_OVERRIDES',
     'ALLOW_UNSIGNED_LICENSES',
     'ALLOW_CONFIG_LICENSED_FEATURES',
+    'TIMEOFF_LICENSE_PUBLIC_KEYS',
+    'TIMEOFF_LICENSE_GRACE_DAYS',
   ];
   const originalConfig = {
     licensedFeatures: config.get('licensed_features'),
@@ -137,14 +139,14 @@ describe('Feature licensing', function() {
     });
 
     expect(features.isEnabled('time_balance')).to.equal(true);
-    expect(features.getLicenseStatus()).to.deep.equal({
+    expect(features.getLicenseStatus()).to.deep.include({
       valid: true,
       reason: 'valid',
       source: 'env',
       customer: 'Example Ltd',
-      features: ['time_balance'],
       expires: null,
     });
+    expect(features.getLicenseStatus().features).to.deep.equal(['time_balance']);
   });
 
   it('rejects RSA signed TIMEOFF_LICENSE payloads without a public key', function() {
@@ -182,14 +184,14 @@ describe('Feature licensing', function() {
     });
 
     expect(features.isEnabled('time_balance')).to.equal(true);
-    expect(features.getLicenseStatus()).to.deep.equal({
+    expect(features.getLicenseStatus()).to.deep.include({
       valid: true,
       reason: 'valid',
       source: 'env',
       customer: 'Example Ltd',
-      features: ['time_balance'],
       expires: '2999-12-31T23:59:59.000Z',
     });
+    expect(features.getLicenseStatus().features).to.deep.equal(['time_balance']);
   });
 
   it('rejects signed TIMEOFF_LICENSE payloads with past expiry', function() {
@@ -434,6 +436,186 @@ describe('Feature licensing', function() {
       error: 'feature_disabled',
       feature: 'time_balance',
       message: 'features.messages.disabled',
+    });
+  });
+
+  describe('License schema v2 and grace period', function() {
+    function rsaEnvFor(payload) {
+      const keyPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+      const privateKey = keyPair.privateKey.export({type: 'pkcs1', format: 'pem'});
+      const publicKey = keyPair.publicKey.export({type: 'pkcs1', format: 'pem'});
+
+      process.env.NODE_ENV = 'production';
+      process.env.TIMEOFF_LICENSE_PUBLIC_KEY = publicKey;
+      process.env.TIMEOFF_LICENSE = JSON.stringify({
+        payload,
+        algorithm: 'RSA-SHA256',
+        signature: features.signLicensePayloadWithPrivateKey(payload, privateKey),
+      });
+
+      return {privateKey, publicKey};
+    }
+
+    function isoDaysFromNow(days) {
+      return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+    }
+
+    it('accepts a valid v2 payload and exposes its metadata in status', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-001',
+        customerId: 'cust-42',
+        customerName: 'Example Ltd',
+        plan: 'enterprise',
+        features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-1),
+        expiresAt: isoDaysFromNow(365),
+        maintenanceUntil: isoDaysFromNow(365),
+        maxActiveUsers: 150,
+      });
+
+      const status = features.getLicenseStatus();
+      expect(status.valid).to.equal(true);
+      expect(status.schemaVersion).to.equal(2);
+      expect(status.licenseId).to.equal('lic-001');
+      expect(status.customer).to.equal('Example Ltd');
+      expect(status.customerId).to.equal('cust-42');
+      expect(status.plan).to.equal('enterprise');
+      expect(status.maxActiveUsers).to.equal(150);
+      expect(status.daysUntilExpiry).to.be.within(364, 366);
+      expect(features.isEnabled('time_balance')).to.equal(true);
+    });
+
+    it('rejects v2 payloads without licenseId', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        customerName: 'Example Ltd',
+        features: ['time_balance'],
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('missing_license_id');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+    });
+
+    it('rejects licenses that are not yet valid (notBefore in future)', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-nb',
+        features: ['time_balance'],
+        notBefore: isoDaysFromNow(5),
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('not_yet_valid');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+    });
+
+    it('rejects licenses for a different core major version', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-major',
+        features: ['time_balance'],
+        allowedMajorVersions: [1],
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('unsupported_major_version');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+    });
+
+    it('keeps features enabled during the post-expiry grace period', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-grace',
+        features: ['time_balance'],
+        expiresAt: isoDaysFromNow(-3),
+      });
+
+      const status = features.getLicenseStatus();
+      expect(status.valid).to.equal(true);
+      expect(status.inGrace).to.equal(true);
+      expect(status.reason).to.equal('expired_in_grace');
+      expect(features.isEnabled('time_balance')).to.equal(true);
+    });
+
+    it('disables features after the grace period without blocking startup', function() {
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-dead',
+        features: ['time_balance'],
+        expiresAt: isoDaysFromNow(-30),
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('expired');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+
+      // assertCommercialLicense must not throw for pure expiry
+      const originalError = console.error;
+      console.error = function() {};
+      try {
+        const status = features.assertCommercialLicense();
+        expect(status.valid).to.equal(false);
+        expect(status.reason).to.equal('expired');
+      } finally {
+        console.error = originalError;
+      }
+    });
+
+    it('honours TIMEOFF_LICENSE_GRACE_DAYS override', function() {
+      process.env.TIMEOFF_LICENSE_GRACE_DAYS = '0';
+
+      rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-nograce',
+        features: ['time_balance'],
+        expiresAt: isoDaysFromNow(-1),
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('expired');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+    });
+
+    it('selects the public key from the key ring by keyId', function() {
+      const oldPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+      const newPair = crypto.generateKeyPairSync('rsa', {modulusLength: 2048});
+      const payload = {
+        schemaVersion: 2,
+        licenseId: 'lic-ring',
+        features: ['time_balance'],
+        keyId: 'k2',
+      };
+
+      process.env.NODE_ENV = 'production';
+      // Primary env key is the OLD key; ring provides the NEW one under k2.
+      process.env.TIMEOFF_LICENSE_PUBLIC_KEY = oldPair.publicKey.export({type: 'pkcs1', format: 'pem'});
+      process.env.TIMEOFF_LICENSE_PUBLIC_KEYS = JSON.stringify({
+        k2: newPair.publicKey.export({type: 'pkcs1', format: 'pem'}),
+      });
+      process.env.TIMEOFF_LICENSE = JSON.stringify({
+        payload,
+        algorithm: 'RSA-SHA256',
+        signature: features.signLicensePayloadWithPrivateKey(
+          payload,
+          newPair.privateKey.export({type: 'pkcs1', format: 'pem'})
+        ),
+      });
+
+      const status = features.getLicenseStatus();
+      expect(status.valid).to.equal(true);
+      expect(status.keyId).to.equal('k2');
+      expect(features.isEnabled('time_balance')).to.equal(true);
+    });
+
+    it('keeps v1 payloads working unchanged (backward compatibility)', function() {
+      rsaEnvFor({
+        customer: 'Legacy Ltd',
+        features: ['time_balance'],
+        expires: isoDaysFromNow(100),
+      });
+
+      const status = features.getLicenseStatus();
+      expect(status.valid).to.equal(true);
+      expect(status.schemaVersion).to.equal(1);
+      expect(status.customer).to.equal('Legacy Ltd');
+      expect(features.isEnabled('time_balance')).to.equal(true);
     });
   });
 });

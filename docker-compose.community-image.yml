@@ -1,7 +1,6 @@
 services:
   db:
     image: mysql:8.0.45
-    command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-timeoff}
