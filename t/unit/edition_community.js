@@ -19,17 +19,24 @@ describe('Community edition module', function() {
         this.notificationProviders.push(provider);
       },
       registerSsoProvider: function() {},
+      registerScheduler: function(scheduler) {
+        this.schedulers.push(scheduler);
+      },
+      schedulers: [],
     };
   }
 
-  it('does not register extracted premium implementations directly', function() {
+  it('registers only community implementations', function() {
     var registry = createRegistry();
     var result = community.register({registry: registry});
 
     expect(result.name).to.equal('community');
-    expect(registry.routes).to.deep.equal([]);
+    expect(registry.routes.map(function(route) { return route.name; }))
+      .to.deep.equal(['reminder-schedules-settings', 'reminder-schedules-api']);
+    expect(registry.schedulers.map(function(scheduler) { return scheduler.name; }))
+      .to.deep.equal(['leave-start-reminders']);
     expect(registry.notificationProviders).to.deep.equal([]);
     expect(registry.navigationItems.map(function(item) { return item.name; }))
-      .to.deep.equal(['auth-config']);
+      .to.deep.equal(['auth-config', 'reminder-schedules']);
   });
 });

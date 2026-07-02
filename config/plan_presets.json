@@ -13,13 +13,12 @@
     ]
   },
   "enterprise": {
-    "description": "All features including reminders and premium modules",
+    "description": "All features including premium modules",
     "features": [
       "sso_authentication",
       "integration_api",
       "employee_groups",
       "work_calendars",
-      "leave_start_reminders",
       "time_balance",
       "vacation_planning",
       "cis_leave_presets",
