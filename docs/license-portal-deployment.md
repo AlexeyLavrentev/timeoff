@@ -111,7 +111,7 @@ PORTAL_ADMIN_PASSWORD=$(openssl rand -base64 16) node bin/portal_admin.js create
   --email admin@example.com --password-env PORTAL_ADMIN_PASSWORD
 
 # Создать с указанием роли и.actor
-PORTAL_ADMIN_PASSWORD=secret12345678 node bin/portal_admin.js create \
+PORTAL_ADMIN_PASSWORD=$(openssl rand -base64 16) node bin/portal_admin.js create \
   --email issuer@example.com --password-env PORTAL_ADMIN_PASSWORD \
   --role issuer --actor-email ops@example.com
 
@@ -122,7 +122,7 @@ node bin/portal_admin.js list
 node bin/portal_admin.js disable --email admin@example.com --actor-email ops@example.com
 
 # Сбросить пароль
-NEW_PASSWORD=newsecret12345678 node bin/portal_admin.js reset-password \
+NEW_PASSWORD=$(openssl rand -base64 16) node bin/portal_admin.js reset-password \
   --email admin@example.com --password-env NEW_PASSWORD --actor-email ops@example.com
 ```
 

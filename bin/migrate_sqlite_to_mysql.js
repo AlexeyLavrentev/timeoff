@@ -2,7 +2,7 @@
 
 var fs = require('fs');
 var path = require('path');
-var mysql = require('mysql');
+var mysql = require('mysql2');
 var moment = require('moment');
 var sqlite3 = require('sqlite3').verbose();
 

@@ -73,7 +73,9 @@ describe('License CLI', function() {
       expect(envelope.payload.features).to.include('integration_api');
       expect(envelope.payload.features).to.include('employee_groups');
       expect(envelope.payload.features).to.include('work_calendars');
-      expect(envelope.payload.expires).to.equal('2027-12-31');
+      expect(envelope.payload.expiresAt).to.equal('2027-12-31');
+      expect(envelope.payload.schemaVersion).to.equal(2);
+      expect(envelope.payload.licenseId).to.be.a('string').and.not.empty;
     });
 
     it('generates a license with --plan enterprise', function() {

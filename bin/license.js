@@ -68,7 +68,9 @@ const safePayloadView = envelope => {
     customer: p.customer || null,
     plan: p.plan || null,
     features: Array.isArray(p.features) ? p.features : [],
-    expires: p.expires || null,
+    expires: p.expiresAt || p.expires || null,
+    licenseId: p.licenseId || null,
+    schemaVersion: p.schemaVersion || 1,
     algorithm: envelope.algorithm || 'HMAC-SHA256',
   };
 };
@@ -245,7 +247,8 @@ const appendRegistry = (licenseOutput, outFilePath) => {
     customer: payload.customer || null,
     plan: payload.plan || null,
     features: Array.isArray(payload.features) ? payload.features : [],
-    expires: payload.expires || null,
+    expires: payload.expiresAt || payload.expires || null,
+    licenseId: payload.licenseId || null,
     algorithm: envelope.algorithm || 'HMAC-SHA256',
     issuedAt: new Date().toISOString(),
     issuedBy: process.env.USER || process.env.LOGNAME || 'unknown',
