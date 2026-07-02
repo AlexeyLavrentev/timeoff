@@ -22,7 +22,8 @@
     "login": "Вход",
     "me": "Профиль",
     "authConfig": "Аутентификация",
-    "diagnostics": "Диагностика"
+    "diagnostics": "Диагностика",
+    "reminderSchedules": "Напоминания об отпуске"
   },
   "language": {
     "label": "Язык",
@@ -216,13 +217,13 @@
       "importNone": "Новых праздничных дней нет",
       "importFailed": "Не удалось импортировать праздничные дни",
       "removeWrongParams": "Нельзя удалить праздничный день: неверные параметры",
-    "removed": "Праздничный день успешно удалён",
-    "nameRequired": "Укажите название для {{name}}",
-    "dateInvalid": "Новая дата для {{name}} должна быть корректной",
+      "removed": "Праздничный день успешно удалён",
+      "nameRequired": "Укажите название для {{name}}",
+      "dateInvalid": "Новая дата для {{name}} должна быть корректной",
       "dayTypeInvalid": "Некорректный тип дня для {{name}}",
-    "calendarNameRequired": "Укажите название календаря филиала",
-    "calendarNameDuplicate": "Календарь филиала с таким названием уже существует",
-    "calendarCreated": "Календарь филиала «{{name}}» создан",
+      "calendarNameRequired": "Укажите название календаря филиала",
+      "calendarNameDuplicate": "Календарь филиала с таким названием уже существует",
+      "calendarCreated": "Календарь филиала «{{name}}» создан",
       "calendarCreateFailed": "Не удалось создать календарь филиала",
       "calendarRemoveWrongParams": "Нельзя удалить календарь филиала: неверные параметры",
       "calendarRemoveHasDepartments": "Нельзя удалить календарь филиала, пока он назначен отделам",
@@ -645,6 +646,56 @@
       "requestorBody": "Ваша заявка была отменена",
       "subjectSupervisor": "Отмена заявки",
       "noAction": "Действия не требуются."
+    },
+    "leaveStartReminder": {
+      "subjectSupervisor": "Отпуск сотрудника начинается через {{daysBefore}} дней",
+      "subjectEmployee": "Ваш отпуск начинается через {{daysBefore}} дней",
+      "supervisorBody": "У сотрудника {{employee}} отпуск начинается через {{daysBefore}} дней:",
+      "supervisorAction": "Пожалуйста, напомните сотруднику подать заявление на отпуск и пройти все внутренние процедуры, принятые в отделе {{department}}.",
+      "openEmployeeProfile": "Открыть карточку сотрудника:",
+      "employeeProfileLink": "Данные сотрудника",
+      "employeeBody": "Ваш отпуск начинается через {{daysBefore}} дней:",
+      "employeeAction": "Пожалуйста, заранее подайте заявление на отпуск и выполните все внутренние процедуры, принятые для отдела {{department}}.",
+      "openCalendar": "Открыть календарь:",
+      "calendarLink": "Мой календарь"
+    },
+    "reminderSchedules": {
+      "title": "Напоминания об отпуске",
+      "description": "Настройте автоматические напоминания перед началом отпуска для сотрудников и руководителей.",
+      "addSchedule": "Добавить расписание",
+      "addFirstSchedule": "Добавить первое расписание",
+      "emptyTitle": "Нет настроенных напоминаний",
+      "emptyDescription": "Добавьте расписание чтобы автоматически напоминать о скорых отпусках.",
+      "allTypes": "Все типы",
+      "daysBefore": "Дней до начала",
+      "daysBeforeHint": "За сколько дней до начала отпуска отправить напоминание.",
+      "recipients": "Получатели",
+      "recipientsBoth": "Сотрудник и руководитель",
+      "recipientsEmployee": "Только сотрудник",
+      "recipientsSupervisor": "Только руководитель",
+      "recipientsRequired": "Должен быть выбран хотя бы один получатель.",
+      "useCustomTemplate": "Использовать свой шаблон письма",
+      "customSubject": "Тема письма (опционально)",
+      "customBody": "Текст письма (опционально)",
+      "defaultSubject": "Отпуск {{employee}} начинается через {{daysBefore}} дней",
+      "defaultBody": "Здравствуйте!\n\nНапоминаем, что отпуск начинается через {{daysBefore}} дней.",
+      "availableVariables": "Доступные переменные",
+      "active": "Активно",
+      "inactive": "Неактивно",
+      "editSchedule": "Изменить",
+      "deleteTitle": "Удалить расписание",
+      "deleteConfirm": "Вы уверены что хотите удалить это расписание?",
+      "schedule": "Расписание",
+      "customTemplate": "Кастомный шаблон",
+      "createdAt": "Создано",
+      "testSend": "Тестовая отправка",
+      "testSendDescription": "Отправьте тестовое письмо чтобы проверить работу напоминаний.",
+      "selectLeave": "Выберите отпуск для теста",
+      "sendTest": "Отправить тест",
+      "leaveType": "Тип отсутствия",
+      "actions": "Действия",
+      "saved": "Расписание напоминаний сохранено.",
+      "deleted": "Расписание напоминаний удалено."
     }
   },
   "teamView": {
@@ -695,7 +746,7 @@
       "removeFailed": "Не удалось удалить пользователя.",
       "invalidSearchEmail": "Указанный email выглядит неверно: \"{{email}}\""
     },
-  "validation": {
+    "validation": {
       "nameRequired": "Укажите имя сотрудника",
       "lastNameRequired": "Укажите фамилию сотрудника",
       "emailInvalid": "Новый email для {{itemName}} должен быть корректным адресом",
@@ -831,9 +882,9 @@
       "ssoEmailDomainInvalid": "Некорректный SSO email-домен: {{domain}}."
     },
     "leaveTypes": {
-    "validation": {
-      "nameDuplicate": "Название типа отсутствия «{{name}}» уже используется",
-      "colorInvalid": "Новый цвет для {{name}} должен быть корректным CSS-классом",
+      "validation": {
+        "nameDuplicate": "Название типа отсутствия «{{name}}» уже используется",
+        "colorInvalid": "Новый цвет для {{name}} должен быть корректным CSS-классом",
         "limitInvalid": "Новый лимит для {{name}} должен быть числом",
         "limitNonNegative": "Новый лимит для {{name}} должен быть положительным числом или 0",
         "minimumInvalid": "Минимальное количество подряд идущих дней для {{name}} должно быть числом",
@@ -884,10 +935,10 @@
     "addSupervisorsSuffix": "",
     "addSelectedEmployees": "Добавить выбранных сотрудников",
     "noAvailableSupervisors": "Нет сотрудников, которых можно добавить как дополнительных руководителей.",
-  "messages": {
-    "nameRequired": "Укажите название отдела",
-    "duplicateName": "Отдел с таким названием уже существует",
-    "allowanceNumeric": "Новый лимит для {{department}} должен быть числом",
+    "messages": {
+      "nameRequired": "Укажите название отдела",
+      "duplicateName": "Отдел с таким названием уже существует",
+      "allowanceNumeric": "Новый лимит для {{department}} должен быть числом",
       "allowanceRange": "Новый лимит для {{department}} должен быть от 0,5 до 50 дней",
       "bossNumeric": "Идентификатор руководителя для {{department}} должен быть числом",
       "bossUnknown": "Руководитель для {{department}} не найден",

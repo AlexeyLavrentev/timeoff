@@ -22,7 +22,8 @@
     "login": "Login",
     "me": "Me",
     "authConfig": "Authentication",
-    "diagnostics": "Diagnostics"
+    "diagnostics": "Diagnostics",
+    "reminderSchedules": "Leave reminders"
   },
   "language": {
     "label": "Language",
@@ -211,13 +212,13 @@
       "importNone": "No more new bank holidays exist",
       "importFailed": "Failed to import bank holidays",
       "removeWrongParams": "Cannot remove bank holiday: wrong parameters",
-    "removed": "Bank holiday was successfully removed",
-    "nameRequired": "Name for {{name}} is required",
-    "dateInvalid": "New day for {{name}} should be date",
+      "removed": "Bank holiday was successfully removed",
+      "nameRequired": "Name for {{name}} is required",
+      "dateInvalid": "New day for {{name}} should be date",
       "dayTypeInvalid": "Day type for {{name}} is invalid",
-    "calendarNameRequired": "Branch calendar name is required",
-    "calendarNameDuplicate": "A branch calendar with this name already exists",
-    "calendarCreated": "Branch calendar {{name}} was created",
+      "calendarNameRequired": "Branch calendar name is required",
+      "calendarNameDuplicate": "A branch calendar with this name already exists",
+      "calendarCreated": "Branch calendar {{name}} was created",
       "calendarCreateFailed": "Failed to create branch calendar",
       "calendarRemoveWrongParams": "Cannot remove branch calendar: wrong parameters",
       "calendarRemoveHasDepartments": "Cannot remove branch calendar while it is assigned to departments",
@@ -640,6 +641,56 @@
       "requestorBody": "Your leave request was cancelled",
       "subjectSupervisor": "Cancel leave request",
       "noAction": "No actions are needed."
+    },
+    "leaveStartReminder": {
+      "subjectSupervisor": "Employee leave starts in {{daysBefore}} days",
+      "subjectEmployee": "Your leave starts in {{daysBefore}} days",
+      "supervisorBody": "{{employee}} is scheduled to start leave in {{daysBefore}} days:",
+      "supervisorAction": "Please remind the employee to submit the required leave application and complete the procedures used in {{department}}.",
+      "openEmployeeProfile": "Open employee profile:",
+      "employeeProfileLink": "Employee details",
+      "employeeBody": "Your leave is scheduled to start in {{daysBefore}} days:",
+      "employeeAction": "Please make sure you submit the required leave application and complete all internal procedures for {{department}}.",
+      "openCalendar": "Open your calendar:",
+      "calendarLink": "My calendar"
+    },
+    "reminderSchedules": {
+      "title": "Leave Reminders",
+      "description": "Configure automatic reminders before leave starts for employees and supervisors.",
+      "addSchedule": "Add schedule",
+      "addFirstSchedule": "Add first schedule",
+      "emptyTitle": "No reminders configured",
+      "emptyDescription": "Add a schedule to automatically remind about upcoming leaves.",
+      "allTypes": "All types",
+      "daysBefore": "Days before start",
+      "daysBeforeHint": "How many days before leave start to send reminder.",
+      "recipients": "Recipients",
+      "recipientsBoth": "Employee and supervisor",
+      "recipientsEmployee": "Employee only",
+      "recipientsSupervisor": "Supervisor only",
+      "recipientsRequired": "At least one recipient must be selected.",
+      "useCustomTemplate": "Use custom email template",
+      "customSubject": "Email subject (optional)",
+      "customBody": "Email body (optional)",
+      "defaultSubject": "{{employee}} leave starts in {{daysBefore}} days",
+      "defaultBody": "Hello!\n\nThis is a reminder that leave starts in {{daysBefore}} days.",
+      "availableVariables": "Available variables",
+      "active": "Active",
+      "inactive": "Inactive",
+      "editSchedule": "Edit",
+      "deleteTitle": "Delete schedule",
+      "deleteConfirm": "Are you sure you want to delete this schedule?",
+      "schedule": "Schedule",
+      "customTemplate": "Custom template",
+      "createdAt": "Created",
+      "testSend": "Test send",
+      "testSendDescription": "Send a test email to verify reminders work correctly.",
+      "selectLeave": "Select leave for test",
+      "sendTest": "Send test",
+      "leaveType": "Leave type",
+      "actions": "Actions",
+      "saved": "Reminder schedule saved.",
+      "deleted": "Reminder schedule deleted."
     }
   },
   "teamView": {
@@ -690,7 +741,7 @@
       "removeFailed": "Failed to remove user.",
       "invalidSearchEmail": "Provided email does not look like valid one: \"{{email}}\""
     },
-  "validation": {
+    "validation": {
       "nameRequired": "Employee first name is required",
       "lastNameRequired": "Employee last name is required",
       "emailInvalid": "New email of {{itemName}} should be valid email address",
@@ -826,9 +877,9 @@
       "ssoEmailDomainInvalid": "SSO email domain {{domain}} is invalid."
     },
     "leaveTypes": {
-    "validation": {
-      "nameDuplicate": "Leave type name {{name}} is already in use",
-      "colorInvalid": "New color for {{name}} should be valid css class",
+      "validation": {
+        "nameDuplicate": "Leave type name {{name}} is already in use",
+        "colorInvalid": "New color for {{name}} should be valid css class",
         "limitInvalid": "New limit for {{name}} should be a valid number",
         "limitNonNegative": "New limit for {{name}} should be positive number or 0",
         "minimumInvalid": "Minimum consecutive days for {{name}} should be a valid number",
@@ -879,10 +930,10 @@
     "addSupervisorsSuffix": "department",
     "addSelectedEmployees": "Add selected employees",
     "noAvailableSupervisors": "No employees available to be added as secondary supervisors.",
-  "messages": {
-    "nameRequired": "Department name is required",
-    "duplicateName": "A department with this name already exists",
-    "allowanceNumeric": "New allowance for {{department}} should be numeric",
+    "messages": {
+      "nameRequired": "Department name is required",
+      "duplicateName": "A department with this name already exists",
+      "allowanceNumeric": "New allowance for {{department}} should be numeric",
       "allowanceRange": "New allowance for {{department}} should be between 0.5 and 50 days",
       "bossNumeric": "New boss reference for {{department}} should be numeric",
       "bossUnknown": "New boss for {{department}} is unknown",
