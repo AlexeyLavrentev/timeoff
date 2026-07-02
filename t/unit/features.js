@@ -20,6 +20,8 @@ describe('Feature licensing', function() {
     'ALLOW_CONFIG_LICENSED_FEATURES',
     'TIMEOFF_LICENSE_PUBLIC_KEYS',
     'TIMEOFF_LICENSE_GRACE_DAYS',
+    'TIMEOFF_LICENSE_REVOCATION_LIST',
+    'TIMEOFF_LICENSE_REVOCATION_PUBLIC_KEY',
   ];
   const originalConfig = {
     licensedFeatures: config.get('licensed_features'),
@@ -501,7 +503,9 @@ describe('Feature licensing', function() {
       rsaEnvFor({
         schemaVersion: 2,
         licenseId: 'lic-nb',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-1),
         notBefore: isoDaysFromNow(5),
       });
 
@@ -513,7 +517,9 @@ describe('Feature licensing', function() {
       rsaEnvFor({
         schemaVersion: 2,
         licenseId: 'lic-major',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-1),
         allowedMajorVersions: [1],
       });
 
@@ -525,7 +531,9 @@ describe('Feature licensing', function() {
       rsaEnvFor({
         schemaVersion: 2,
         licenseId: 'lic-grace',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-30),
         expiresAt: isoDaysFromNow(-3),
       });
 
@@ -540,7 +548,9 @@ describe('Feature licensing', function() {
       rsaEnvFor({
         schemaVersion: 2,
         licenseId: 'lic-dead',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-60),
         expiresAt: isoDaysFromNow(-30),
       });
 
@@ -565,7 +575,9 @@ describe('Feature licensing', function() {
       rsaEnvFor({
         schemaVersion: 2,
         licenseId: 'lic-nograce',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-30),
         expiresAt: isoDaysFromNow(-1),
       });
 
@@ -579,7 +591,9 @@ describe('Feature licensing', function() {
       const payload = {
         schemaVersion: 2,
         licenseId: 'lic-ring',
+        customerName: 'Example Ltd',
         features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-1),
         keyId: 'k2',
       };
 
@@ -615,6 +629,62 @@ describe('Feature licensing', function() {
       expect(status.valid).to.equal(true);
       expect(status.schemaVersion).to.equal(1);
       expect(status.customer).to.equal('Legacy Ltd');
+      expect(features.isEnabled('time_balance')).to.equal(true);
+    });
+
+    it('disables a license listed in a valid signed revocation list', function() {
+      const pair = rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-revoked',
+        customerName: 'Example Ltd',
+        features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-2),
+        expiresAt: isoDaysFromNow(100),
+      });
+      const crlPayload = {
+        schemaVersion: 1,
+        issuedAt: isoDaysFromNow(-1),
+        expiresAt: isoDaysFromNow(30),
+        revokedLicenseIds: ['lic-revoked'],
+      };
+
+      process.env.TIMEOFF_LICENSE_REVOCATION_PUBLIC_KEY = pair.publicKey;
+      process.env.TIMEOFF_LICENSE_REVOCATION_LIST = JSON.stringify({
+        payload: crlPayload,
+        algorithm: 'RSA-SHA256',
+        signature: features.signLicensePayloadWithPrivateKey(crlPayload, pair.privateKey),
+      });
+
+      expect(features.getLicenseStatus().reason).to.equal('revoked');
+      expect(features.isEnabled('time_balance')).to.equal(false);
+    });
+
+    it('keeps an unlisted license enabled with a valid signed revocation list', function() {
+      const pair = rsaEnvFor({
+        schemaVersion: 2,
+        licenseId: 'lic-active',
+        customerName: 'Example Ltd',
+        features: ['time_balance'],
+        issuedAt: isoDaysFromNow(-2),
+        expiresAt: isoDaysFromNow(100),
+      });
+      const crlPayload = {
+        schemaVersion: 1,
+        issuedAt: isoDaysFromNow(-1),
+        expiresAt: isoDaysFromNow(30),
+        revokedLicenseIds: ['lic-other'],
+      };
+
+      process.env.TIMEOFF_LICENSE_REVOCATION_PUBLIC_KEY = pair.publicKey;
+      process.env.TIMEOFF_LICENSE_REVOCATION_LIST = JSON.stringify({
+        payload: crlPayload,
+        algorithm: 'RSA-SHA256',
+        signature: features.signLicensePayloadWithPrivateKey(crlPayload, pair.privateKey),
+      });
+
+      const status = features.getLicenseStatus();
+      expect(status.valid).to.equal(true);
+      expect(status.revocationListExpiresAt).to.equal(crlPayload.expiresAt);
       expect(features.isEnabled('time_balance')).to.equal(true);
     });
   });

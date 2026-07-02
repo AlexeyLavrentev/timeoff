@@ -87,6 +87,43 @@ if (!argv.customer || (!licenseFeatures && !resolvedPlan) || (!secret && !privat
 
 const schemaVersion = Number(argv.schema || 2);
 
+if (![1, 2].includes(schemaVersion)) {
+  process.stderr.write('Error: --schema must be 1 or 2.\n');
+  process.exit(1);
+}
+
+const requireValidDate = (name, value) => {
+  if (value && Number.isNaN(Date.parse(value))) {
+    process.stderr.write(`Error: --${name} must be a valid ISO date.\n`);
+    process.exit(1);
+  }
+};
+
+requireValidDate('expires', argv.expires);
+requireValidDate('not-before', argv['not-before']);
+requireValidDate('maintenance-until', argv['maintenance-until']);
+
+const maxActiveUsers = argv['max-active-users'] === undefined
+  ? null
+  : Number(argv['max-active-users']);
+
+if (maxActiveUsers !== null
+    && (!Number.isSafeInteger(maxActiveUsers) || maxActiveUsers < 1)) {
+  process.stderr.write('Error: --max-active-users must be a positive integer.\n');
+  process.exit(1);
+}
+
+const allowedMajorVersions = argv['allowed-major-versions']
+  ? parseList(argv['allowed-major-versions']).map(Number)
+  : null;
+
+if (allowedMajorVersions
+    && (!allowedMajorVersions.length
+      || allowedMajorVersions.some(version => !Number.isSafeInteger(version) || version < 1))) {
+  process.stderr.write('Error: --allowed-major-versions must contain positive integers.\n');
+  process.exit(1);
+}
+
 const payload = {
   customer: argv.customer,
   features: licenseFeatures,
@@ -116,11 +153,11 @@ if (schemaVersion >= 2) {
   if (argv['maintenance-until']) {
     payload.maintenanceUntil = argv['maintenance-until'];
   }
-  if (argv['max-active-users']) {
-    payload.maxActiveUsers = Number(argv['max-active-users']);
+  if (maxActiveUsers !== null) {
+    payload.maxActiveUsers = maxActiveUsers;
   }
-  if (argv['allowed-major-versions']) {
-    payload.allowedMajorVersions = parseList(argv['allowed-major-versions']).map(Number);
+  if (allowedMajorVersions) {
+    payload.allowedMajorVersions = allowedMajorVersions;
   }
   if (argv['key-id']) {
     payload.keyId = String(argv['key-id']);

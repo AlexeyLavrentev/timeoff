@@ -659,4 +659,33 @@ describe('License CLI', function() {
       expect(result.stdout).to.contain('enterprise');
     });
   });
+
+  describe('sign_revocation_list.js', function() {
+    it('generates a signed offline revocation list', function() {
+      const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const result = runCli('sign_revocation_list.js', [
+        '--revoked', 'lic-b,lic-a,lic-a',
+        '--expires', expires,
+        '--private-key', privateKey,
+      ]);
+
+      expect(result.status).to.equal(0);
+      const envelope = JSON.parse(result.stdout);
+      expect(envelope.algorithm).to.equal('RSA-SHA256');
+      expect(envelope.payload.schemaVersion).to.equal(1);
+      expect(envelope.payload.revokedLicenseIds).to.deep.equal(['lic-a', 'lic-b']);
+      expect(envelope.payload.expiresAt).to.equal(expires);
+      expect(envelope.signature).to.be.a('string').and.not.empty;
+    });
+
+    it('rejects an expired revocation list', function() {
+      const result = runCli('sign_revocation_list.js', [
+        '--expires', '2000-01-01T00:00:00.000Z',
+        '--private-key', privateKey,
+      ]);
+
+      expect(result.status).to.not.equal(0);
+      expect(result.stderr).to.contain('future ISO date');
+    });
+  });
 });
