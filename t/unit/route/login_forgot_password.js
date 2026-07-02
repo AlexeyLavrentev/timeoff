@@ -18,6 +18,12 @@ FakeEmailTransport.prototype.promise_reset_password_email = function() {
   return Promise.resolve();
 };
 
+// Swap the email transport for a fake only while the login route factory is
+// being required, then restore the real module. Leaving the fake in
+// require.cache poisons any later lazy require('lib/email') in the same
+// mocha process (e.g. the reminder schedules test-send route).
+const originalEmailModule = require.cache[emailModulePath];
+
 require.cache[emailModulePath] = {
   id: emailModulePath,
   filename: emailModulePath,
@@ -27,6 +33,13 @@ require.cache[emailModulePath] = {
 
 delete require.cache[loginRoutePath];
 const loginRouterFactory = require('../../../lib/route/login');
+
+if (originalEmailModule) {
+  require.cache[emailModulePath] = originalEmailModule;
+} else {
+  delete require.cache[emailModulePath];
+}
+delete require.cache[loginRoutePath];
 
 function getRouteHandler(router, path, method) {
   const layer = router.stack.find(item =>
