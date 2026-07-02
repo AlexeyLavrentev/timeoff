@@ -1,0 +1,209 @@
+{{> header }}
+
+<a class="sr-only sr-only-focusable" href="#main-content">{{t "nav.skipToMainContent"}}</a>
+
+<main id="main-content" tabindex="-1">
+  <div class="row admin-page-header">
+    <div class="col-sm-8">
+      <h1>{{t "emails.reminderSchedules.title"}}</h1>
+      <p class="lead">{{t "emails.reminderSchedules.description"}}</p>
+    </div>
+    <div class="col-sm-4 admin-page-actions">
+      <button class="btn btn-info" id="add-schedule" type="button">
+        <span class="fa fa-plus" aria-hidden="true"></span>
+        {{t "emails.reminderSchedules.addSchedule"}}
+      </button>
+    </div>
+  </div>
+
+  <div id="schedule-feedback" class="alert hidden" role="status" aria-live="polite"></div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading"><strong>{{t "emails.reminderSchedules.schedule"}}</strong></div>
+    <div class="table-responsive">
+      <table class="table table-hover" id="schedule-table">
+        <thead>
+          <tr>
+            <th>{{t "emails.reminderSchedules.daysBefore"}}</th>
+            <th>{{t "emails.reminderSchedules.leaveType"}}</th>
+            <th>{{t "emails.reminderSchedules.recipients"}}</th>
+            <th>{{t "emails.reminderSchedules.active"}}</th>
+            <th><span class="sr-only">{{t "emails.reminderSchedules.actions"}}</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="panel-body hidden" id="schedule-empty">
+      <h3 class="h4">{{t "emails.reminderSchedules.emptyTitle"}}</h3>
+      <p>{{t "emails.reminderSchedules.emptyDescription"}}</p>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading"><strong>{{t "emails.reminderSchedules.testSend"}}</strong></div>
+    <div class="panel-body">
+      <p>{{t "emails.reminderSchedules.testSendDescription"}}</p>
+      <form class="form-inline" id="test-send-form">
+        <label class="sr-only" for="test-leave">{{t "emails.reminderSchedules.selectLeave"}}</label>
+        <select class="form-control" id="test-leave" required>
+          <option value="">{{t "emails.reminderSchedules.selectLeave"}}</option>
+          {{#each recentLeaves}}<option value="{{id}}">{{label}}</option>{{/each}}
+        </select>
+        <label for="test-days">T−</label>
+        <input class="form-control" id="test-days" type="number" min="1" max="365" value="7" required>
+        <button class="btn btn-default" type="submit">{{t "emails.reminderSchedules.sendTest"}}</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="schedule-modal" tabindex="-1" role="dialog" aria-labelledby="schedule-modal-title">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form id="schedule-form">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'common.close'}}"><span aria-hidden="true">&times;</span></button>
+            <h2 class="modal-title h4" id="schedule-modal-title">{{t "emails.reminderSchedules.addSchedule"}}</h2>
+          </div>
+          <div class="modal-body">
+            <input id="schedule-id" type="hidden">
+            <div class="form-group">
+              <label for="schedule-leave-type">{{t "emails.reminderSchedules.leaveType"}}</label>
+              <select class="form-control" id="schedule-leave-type">
+                <option value="">{{t "emails.reminderSchedules.allTypes"}}</option>
+                {{#each leaveTypes}}<option value="{{id}}">{{name}}</option>{{/each}}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="schedule-days">{{t "emails.reminderSchedules.daysBefore"}}</label>
+              <input class="form-control" id="schedule-days" type="number" min="1" max="365" required>
+              <p class="help-block">{{t "emails.reminderSchedules.daysBeforeHint"}}</p>
+            </div>
+            <fieldset>
+              <legend class="h5">{{t "emails.reminderSchedules.recipients"}}</legend>
+              <div class="checkbox"><label><input id="recipient-employee" type="checkbox"> {{t "emails.reminderSchedules.recipientsEmployee"}}</label></div>
+              <div class="checkbox"><label><input id="recipient-supervisor" type="checkbox"> {{t "emails.reminderSchedules.recipientsSupervisor"}}</label></div>
+            </fieldset>
+            <div class="checkbox"><label><input id="schedule-active" type="checkbox" checked> {{t "emails.reminderSchedules.active"}}</label></div>
+            <div class="form-group">
+              <label for="schedule-subject">{{t "emails.reminderSchedules.customSubject"}}</label>
+              <input class="form-control" id="schedule-subject" type="text" maxlength="500">
+            </div>
+            <div class="form-group">
+              <label for="schedule-body">{{t "emails.reminderSchedules.customBody"}}</label>
+              <textarea class="form-control" id="schedule-body" rows="4"></textarea>
+              <p class="help-block">{{t "emails.reminderSchedules.availableVariables"}}: {employee}, {supervisor}, {daysBefore}, {leaveType}, {startDate}, {endDate}</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-link" type="button" data-dismiss="modal">{{t "common.cancel"}}</button>
+            <button class="btn btn-success" type="submit">{{t "common.save"}}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+  var csrf = {{{json csrfToken}}};
+  var schedules = [];
+  var tableBody = document.querySelector('#schedule-table tbody');
+  var emptyState = document.getElementById('schedule-empty');
+  var feedback = document.getElementById('schedule-feedback');
+
+  function text(value) { return document.createTextNode(value == null ? '' : String(value)); }
+  function showFeedback(message, isError) {
+    feedback.className = 'alert ' + (isError ? 'alert-danger' : 'alert-success');
+    feedback.textContent = message;
+  }
+  async function request(url, options) {
+    options = options || {};
+    options.headers = Object.assign({'X-CSRF-Token': csrf, 'Content-Type': 'application/json'}, options.headers || {});
+    var response = await fetch(url, options);
+    var payload = response.status === 204 ? {} : await response.json();
+    if (!response.ok) throw new Error(payload.error || '{{t "errors.requestFailed"}}');
+    return payload;
+  }
+  function recipientLabel(schedule) {
+    if (schedule.recipientEmployee && schedule.recipientSupervisor) return '{{t "emails.reminderSchedules.recipientsBoth"}}';
+    return schedule.recipientEmployee
+      ? '{{t "emails.reminderSchedules.recipientsEmployee"}}'
+      : '{{t "emails.reminderSchedules.recipientsSupervisor"}}';
+  }
+  function render() {
+    tableBody.textContent = '';
+    emptyState.classList.toggle('hidden', schedules.length !== 0);
+    schedules.forEach(function(schedule) {
+      var row = document.createElement('tr');
+      if (!schedule.isActive) row.className = 'text-muted';
+      [
+        'T−' + schedule.daysBefore,
+        schedule.leaveTypeName || '{{t "emails.reminderSchedules.allTypes"}}',
+        recipientLabel(schedule),
+        schedule.isActive ? '{{t "emails.reminderSchedules.active"}}' : '{{t "emails.reminderSchedules.inactive"}}'
+      ].forEach(function(value) { var cell = document.createElement('td'); cell.appendChild(text(value)); row.appendChild(cell); });
+      var actions = document.createElement('td');
+      var edit = document.createElement('button');
+      edit.type = 'button'; edit.className = 'btn btn-link btn-xs'; edit.textContent = '{{t "emails.reminderSchedules.editSchedule"}}';
+      edit.addEventListener('click', function() { openForm(schedule); });
+      var remove = document.createElement('button');
+      remove.type = 'button'; remove.className = 'btn btn-link btn-xs text-danger'; remove.textContent = '{{t "common.delete"}}';
+      remove.addEventListener('click', function() { deleteSchedule(schedule); });
+      actions.appendChild(edit); actions.appendChild(remove); row.appendChild(actions); tableBody.appendChild(row);
+    });
+  }
+  async function load() {
+    try { schedules = (await request('/api/reminder-schedules')).schedules; render(); }
+    catch (error) { showFeedback(error.message, true); }
+  }
+  function openForm(schedule) {
+    schedule = schedule || {};
+    document.getElementById('schedule-id').value = schedule.id || '';
+    document.getElementById('schedule-leave-type').value = schedule.leaveTypeId || '';
+    document.getElementById('schedule-days').value = schedule.daysBefore || 7;
+    document.getElementById('recipient-employee').checked = schedule.recipientEmployee !== false;
+    document.getElementById('recipient-supervisor').checked = schedule.recipientSupervisor !== false;
+    document.getElementById('schedule-active').checked = schedule.isActive !== false;
+    document.getElementById('schedule-subject').value = schedule.emailSubjectCustom || '';
+    document.getElementById('schedule-body').value = schedule.emailBodyCustom || '';
+    document.getElementById('schedule-modal-title').textContent = schedule.id ? '{{t "emails.reminderSchedules.editSchedule"}}' : '{{t "emails.reminderSchedules.addSchedule"}}';
+    $('#schedule-modal').modal('show');
+  }
+  document.getElementById('add-schedule').addEventListener('click', function() { openForm(null); });
+  document.getElementById('schedule-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    var id = document.getElementById('schedule-id').value;
+    var payload = {
+      leaveTypeId: document.getElementById('schedule-leave-type').value || null,
+      daysBefore: Number(document.getElementById('schedule-days').value),
+      recipientEmployee: document.getElementById('recipient-employee').checked,
+      recipientSupervisor: document.getElementById('recipient-supervisor').checked,
+      isActive: document.getElementById('schedule-active').checked,
+      emailSubjectCustom: document.getElementById('schedule-subject').value.trim() || null,
+      emailBodyCustom: document.getElementById('schedule-body').value.trim() || null
+    };
+    try {
+      await request(id ? '/api/reminder-schedules/' + id : '/api/reminder-schedules', {method: id ? 'PUT' : 'POST', body: JSON.stringify(payload)});
+      $('#schedule-modal').modal('hide'); await load(); showFeedback('{{t "emails.reminderSchedules.saved"}}', false);
+    } catch (error) { showFeedback(error.message, true); }
+  });
+  async function deleteSchedule(schedule) {
+    if (!window.confirm('{{t "emails.reminderSchedules.deleteConfirm"}}')) return;
+    try { await request('/api/reminder-schedules/' + schedule.id, {method: 'DELETE'}); await load(); showFeedback('{{t "emails.reminderSchedules.deleted"}}', false); }
+    catch (error) { showFeedback(error.message, true); }
+  }
+  document.getElementById('test-send-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    try {
+      var result = await request('/api/reminder-schedules/test-send', {method: 'POST', body: JSON.stringify({leaveId: document.getElementById('test-leave').value, daysBefore: Number(document.getElementById('test-days').value)})});
+      showFeedback(result.message, false);
+    } catch (error) { showFeedback(error.message, true); }
+  });
+  load();
+})();
+</script>
+
+{{> footer }}

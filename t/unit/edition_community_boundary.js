@@ -19,10 +19,6 @@ describe('Edition community boundary', function() {
     'VacationPlan',
     'pendingTimeBalanceRequest',
     'pendingVacationPlan',
-    // Reminders
-    'LeaveNotification',
-    'leaveStartReminder',
-    'UpcomingLeaveReminder',
   ];
   var scannedPaths = [
     'app.js',
@@ -94,20 +90,23 @@ describe('Edition community boundary', function() {
     expect(output).to.equal('false,false,nav.timeBalance');
   });
 
-  it('registers no routes in the community edition registry', function() {
+  it('registers only community routes in the community edition registry', function() {
     var output = runNode([
       "delete process.env.TIMEOFF_PREMIUM_MODULE;",
       "const edition = require('./lib/edition');",
       "edition.initialize({});",
-      "const routes = edition.getRegistry().getRoutes().map(r => r.path);",
+      "const routes = edition.getRegistry().getRoutes().map(r => r.name);",
       "console.log(JSON.stringify(routes));",
       "process.exit(0);",
     ].join(''));
 
-    expect(JSON.parse(output)).to.deep.equal([]);
+    expect(JSON.parse(output)).to.deep.equal([
+      'reminder-schedules-settings',
+      'reminder-schedules-api',
+    ]);
   });
 
-  it('registers no schedulers in the community edition registry', function() {
+  it('registers only community schedulers in the community edition registry', function() {
     var output = runNode([
       "delete process.env.TIMEOFF_PREMIUM_MODULE;",
       "const edition = require('./lib/edition');",
@@ -117,7 +116,7 @@ describe('Edition community boundary', function() {
       "process.exit(0);",
     ].join(''));
 
-    expect(JSON.parse(output)).to.deep.equal([]);
+    expect(JSON.parse(output)).to.deep.equal(['leave-start-reminders']);
   });
 
   it('uses the SSO stub (SSO disabled) in community mode', function() {

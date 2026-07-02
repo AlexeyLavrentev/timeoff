@@ -35,8 +35,12 @@ describe('Edition initialization', function() {
       }).trim();
       var result = JSON.parse(output);
 
-      expect(result.routes).to.deep.equal(['premium']);
-      expect(result.navigation).to.deep.equal(['auth-config']);
+      expect(result.routes).to.deep.equal([
+        'reminder-schedules-settings',
+        'reminder-schedules-api',
+        'premium',
+      ]);
+      expect(result.navigation).to.deep.equal(['auth-config', 'reminder-schedules']);
     } finally {
       fs.rmSync(tempDir, {recursive: true, force: true});
     }
