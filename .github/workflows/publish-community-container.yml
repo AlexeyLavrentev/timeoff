@@ -145,7 +145,7 @@ jobs:
           upload-release-assets: false
 
       - name: Set up Cosign
-        uses: sigstore/cosign-installer@v4
+        uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign platform image and attest SBOM
         shell: bash
@@ -260,7 +260,7 @@ jobs:
           echo "Published manifest: ${IMAGE}@${digest}"
 
       - name: Set up Cosign
-        uses: sigstore/cosign-installer@v4
+        uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign multi-platform manifest
         shell: bash
