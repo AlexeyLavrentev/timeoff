@@ -75,6 +75,37 @@
 одновременно на период ротации (см.
 [license-key-compromise.md](license-key-compromise.md)).
 
+### Отзыв лицензий в offline-инсталляциях
+
+Отзыв выполняется подписанным списком CRL, не требует замены публичного ключа
+и работает без сети. Выпустите список отдельным revocation-ключом:
+
+```sh
+npm run sign-revocation-list -- \
+  --revoked LICENSE_ID_1,LICENSE_ID_2 \
+  --expires 2027-01-31T23:59:59.000Z \
+  --private-key-file revocation_private.pem \
+  --base64
+```
+
+Передайте результат оператору и установите:
+
+```sh
+TIMEOFF_LICENSE_REVOCATION_LIST=PASTE_SIGNED_CRL
+TIMEOFF_LICENSE_REVOCATION_PUBLIC_KEY=PASTE_REVOCATION_PUBLIC_KEY
+```
+
+Если отдельный публичный ключ не задан, используется основной лицензионный
+ключ. Отдельный ключ рекомендуется: компрометация signing key и управление
+отзывом остаются независимыми. CRL содержит `issuedAt`, `expiresAt` и массив
+`revokedLicenseIds`. Неверная подпись, некорректный или просроченный CRL
+считается ошибкой доверия и блокирует Premium. Отозванная лицензия отключает
+Premium без остановки Community и без потери доступа к данным.
+
+Оператор connected-инсталляции может обновлять ту же переменную/secret
+автоматически. Air-gapped клиент импортирует новый подписанный CRL вручную до
+истечения текущего списка.
+
 ### Алгоритм подписи
 
 - **RSA-SHA256** (продакшн): канонический JSON payload подписывается приватным

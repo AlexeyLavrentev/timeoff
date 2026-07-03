@@ -53,10 +53,37 @@ const issueLicense = async (models, signingProvider, options) => {
   }
 
   const features = featuresOverride || (plan ? plan.features : []);
+  const normalizedFeatures = [...features].sort();
+  const existingCandidates = await License.findAll({
+    where: {
+      customerId: customer.id,
+      planId: plan ? plan.id : null,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+    },
+  });
+  const duplicate = existingCandidates.some(candidate =>
+    JSON.stringify([...(candidate.features || [])].sort()) === JSON.stringify(normalizedFeatures));
+
+  if (duplicate && !(metadata && metadata.replacementOfLicenseId)) {
+    throw Object.assign(
+      new Error('License with the same customer, plan, features and expiry already exists'),
+      { code: 'DUPLICATE_LICENSE' }
+    );
+  }
+
+  const licenseId = crypto.randomUUID();
+  const issuedAt = new Date();
+  const coreMajorVersion = Number(String(require('../../package.json').version).split('.')[0]);
 
   const payload = {
+    schemaVersion: 2,
+    licenseId,
+    customerId: String(customer.id),
+    customerName: customer.name,
     customer: customer.name,
     features,
+    issuedAt: issuedAt.toISOString(),
+    allowedMajorVersions: [coreMajorVersion],
   };
 
   if (plan) {
@@ -64,7 +91,15 @@ const issueLicense = async (models, signingProvider, options) => {
   }
 
   if (expiresAt) {
-    payload.expires = expiresAt;
+    payload.expiresAt = new Date(expiresAt).toISOString();
+  }
+
+  if (metadata && metadata.seats) {
+    payload.maxActiveUsers = metadata.seats;
+  }
+
+  if (process.env.LICENSE_SIGNING_KEY_ID) {
+    payload.keyId = process.env.LICENSE_SIGNING_KEY_ID;
   }
 
   const envelope = await signingProvider.sign(payload);
@@ -75,6 +110,7 @@ const issueLicense = async (models, signingProvider, options) => {
 
   try {
     const license = await License.create({
+      id: licenseId,
       customerId: customer.id,
       planId: plan ? plan.id : null,
       features,
@@ -83,7 +119,7 @@ const issueLicense = async (models, signingProvider, options) => {
       payloadHash,
       licenseHash,
       licensePayload: JSON.stringify(envelope),
-      issuedAt: new Date(),
+      issuedAt,
       actorName,
       metadata: metadata || null,
     }, { transaction });
