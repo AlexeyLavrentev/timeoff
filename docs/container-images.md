@@ -41,6 +41,8 @@ The workflow:
 4. checks the LeavePilot branding and Community/Premium boundary against the
    `amd64` digest;
 5. combines both verified digests into the versioned multi-platform tags.
+6. generates and attests an SPDX JSON SBOM for each platform digest;
+7. signs each platform digest and the final manifest with keyless Cosign.
 
 The first GHCR package is private by default. After its first successful
 publication, change `leavepilot-community` visibility to **Public** in the
@@ -54,6 +56,28 @@ docker buildx imagetools inspect \
 ```
 
 The output must include both `linux/amd64` and `linux/arm64`.
+
+Verify release identity and SBOM attestation with Cosign:
+
+```sh
+IMAGE=ghcr.io/alexeylavrentev/leavepilot-community:2.1.0
+IDENTITY='^https://github.com/AlexeyLavrentev/timeoff/.github/workflows/publish-community-container.yml@refs/(tags/v[0-9]+\.[0-9]+\.[0-9]+|heads/master)$'
+ISSUER='https://token.actions.githubusercontent.com'
+
+cosign verify "$IMAGE" \
+  --certificate-identity-regexp "$IDENTITY" \
+  --certificate-oidc-issuer "$ISSUER"
+
+# Copy the required amd64 or arm64 digest from `imagetools inspect`.
+PLATFORM_IMAGE=ghcr.io/alexeylavrentev/leavepilot-community@sha256:PLATFORM_DIGEST
+
+cosign verify-attestation "$PLATFORM_IMAGE" \
+  --type spdxjson \
+  --certificate-identity-regexp "$IDENTITY" \
+  --certificate-oidc-issuer "$ISSUER"
+```
+
+Always verify a versioned tag or immutable digest, never `latest`.
 
 ## Premium delivery
 
