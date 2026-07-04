@@ -33,6 +33,12 @@ const getPortalConfig = () => {
     privateKeyPem: process.env.PORTAL_LICENSE_PRIVATE_KEY || null,
     publicKeyPath: process.env.PORTAL_LICENSE_PUBLIC_KEY_FILE || null,
     publicKeyPem: process.env.PORTAL_LICENSE_PUBLIC_KEY || null,
+
+    trialEnabled: process.env.PORTAL_TRIAL_ENABLED === 'true',
+    trialBaseUrl: process.env.PORTAL_PUBLIC_BASE_URL || null,
+    trialSmtpUrl: process.env.PORTAL_TRIAL_SMTP_URL || null,
+    trialEmailFrom: process.env.PORTAL_TRIAL_EMAIL_FROM || null,
+    trialIpHashSecret: process.env.PORTAL_TRIAL_IP_HASH_SECRET || null,
   };
 
   return config;
@@ -70,6 +76,30 @@ const validateProductionConfig = (config) => {
 
     if (!config.publicKeyPath && !config.publicKeyPem) {
       errors.push('PORTAL_LICENSE_PUBLIC_KEY_FILE or PORTAL_LICENSE_PUBLIC_KEY is required');
+    }
+  }
+
+  if (config.trialEnabled) {
+    if (!config.trialBaseUrl) {
+      errors.push('PORTAL_PUBLIC_BASE_URL is required when self-service trials are enabled');
+    } else {
+      try {
+        const url = new URL(config.trialBaseUrl);
+        if (url.protocol !== 'https:') {
+          errors.push('PORTAL_PUBLIC_BASE_URL must use https in production');
+        }
+      } catch (_error) {
+        errors.push('PORTAL_PUBLIC_BASE_URL must be a valid URL');
+      }
+    }
+    if (!config.trialSmtpUrl) {
+      errors.push('PORTAL_TRIAL_SMTP_URL is required when self-service trials are enabled');
+    }
+    if (!config.trialEmailFrom) {
+      errors.push('PORTAL_TRIAL_EMAIL_FROM is required when self-service trials are enabled');
+    }
+    if (!config.trialIpHashSecret || config.trialIpHashSecret.length < 32) {
+      errors.push('PORTAL_TRIAL_IP_HASH_SECRET must contain at least 32 characters');
     }
   }
 

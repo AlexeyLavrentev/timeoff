@@ -26,6 +26,11 @@
         </form>
       </nav>
       {{/if}}
+      {{#unless user}}
+        {{#if trialEnabled}}
+        <nav class="nav nav-public"><a href="/trial">Получить Trial</a></nav>
+        {{/if}}
+      {{/unless}}
     </div>
   </header>
   <main class="main">

@@ -7,6 +7,7 @@ const { createSessionMiddleware } = require('../auth/session');
 const { createWebRoutes } = require('./routes');
 const { setPortalSecurityHeaders } = require('./security_headers');
 const { createPortalRouter, createAuthRouter } = require('../api/router');
+const { createTrialRoutes } = require('../trial/routes');
 
 const PORTAL_API_PREFIX = '/api/v1';
 
@@ -45,6 +46,19 @@ const createPortalWebApp = (options = {}) => {
   }));
 
   app.use('/static', express.static(path.join(__dirname, 'static')));
+
+  app.use((req, res, next) => {
+    res.locals.trialEnabled = options.trialConfig && options.trialConfig.trialEnabled === true;
+    next();
+  });
+
+  if (options.trialConfig && options.trialConfig.trialEnabled === true) {
+    app.use('/trial', createTrialRoutes(models, {
+      signingProvider,
+      mailer: options.trialMailer,
+      config: options.trialConfig,
+    }));
+  }
 
   if (options.apiEnabled === true) {
     app.use(PORTAL_API_PREFIX + '/auth', createAuthRouter(models));

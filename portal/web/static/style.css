@@ -51,3 +51,8 @@ a { color: #1a1a2e; }
 .metadata-section legend { font-weight: 600; font-size: 0.95rem; }
 .pagination { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; }
 .flash--warning { background: #ffc; color: #856404; border: 1px solid #ffc107; }
+.nav-public { margin-left: auto; }
+.trial-card { max-width: 620px; margin: 2rem auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.trial-card > p { margin: 0 0 1.25rem; line-height: 1.5; }
+.trial-note, .trial-link { margin-top: 1rem; }
+.honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
