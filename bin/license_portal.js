@@ -59,9 +59,9 @@ const run = async () => {
     console.log(`License Portal listening on http://${config.host}:${config.port}`);
     console.log(`Environment: ${config.nodeEnv}`);
     console.log(`Self-service Trial: ${config.trialEnabled ? 'enabled' : 'disabled'}`);
-    if (!config.trialEnabled) {
-      console.log('WARNING: Do not expose this service to the public internet.');
-    }
+    console.log(config.trialEnabled
+      ? 'WARNING: Expose only /trial, /static and /healthz; protect all operator routes.'
+      : 'WARNING: Do not expose this service to the public internet.');
   });
 };
 

@@ -8,6 +8,7 @@ const { seedPlans } = require('../../../portal/seeders/seed_plans');
 const { FileSigningProvider } = require('../../../portal/signing/file_signing_provider');
 const { createPortalWebApp } = require('../../../portal/web/app');
 const { createPersistentStore } = require('../../../portal/auth/session_store');
+const { createTrialMailer } = require('../../../portal/trial/mailer');
 const { listen, close } = require('./http_test_helpers');
 
 const get = (port, path, cookie) => new Promise((resolve, reject) => {
@@ -129,6 +130,37 @@ describe('Portal self-service Trial', function() {
     expect(await models.TrialRequest.count()).to.equal(0);
   });
 
+  it('returns 403 instead of throwing for same-character multibyte CSRF input', async function() {
+    const page = await get(port, '/trial');
+    const response = await post(port, '/trial', {
+      _csrf: 'я'.repeat(csrfFrom(page.body).length),
+      organizationName: 'Example',
+      email: 'hr@example.test',
+    }, page.cookie);
+    expect(response.status).to.equal(403);
+    expect(await models.TrialRequest.count()).to.equal(0);
+  });
+
+  it('does not include user-controlled organization content in email body', async function() {
+    let message;
+    const mailer = createTrialMailer({
+      trialEnabled: true,
+      trialSmtpUrl: 'smtp://unused.example.test',
+      trialEmailFrom: 'trial@example.test',
+      trialBaseUrl: 'https://portal.example.test',
+      trialIpHashSecret: 'a'.repeat(32),
+    }, {
+      transport: { sendMail: async value => { message = value; } },
+    });
+    await mailer.sendVerification({
+      email: 'victim@example.test',
+      organizationName: 'Click https://evil.example now',
+      verificationUrl: 'https://portal.example.test/trial/verify?token=safe',
+    });
+    expect(message.text).to.not.contain('evil.example');
+    expect(message.text).to.contain('portal.example.test');
+  });
+
   it('emails a one-time link and stores only its hash', async function() {
     const { response } = await requestTrial();
     expect(response.status).to.equal(200);
@@ -241,5 +273,20 @@ describe('Portal self-service Trial', function() {
     const blocked = await requestTrial('hr5@example.test');
     expect(blocked.response.status).to.equal(429);
     expect(sent).to.have.length(5);
+  });
+
+  it('counts every resend attempt for the same email against the IP limit', async function() {
+    for (let i = 0; i < 5; i += 1) {
+      const result = await requestTrial('same@example.test');
+      expect(result.response.status).to.equal(200);
+      await (await models.TrialRequest.findOne()).update({
+        status: 'expired',
+        tokenExpiresAt: new Date(Date.now() - 1000),
+      });
+    }
+    const blocked = await requestTrial('same@example.test');
+    expect(blocked.response.status).to.equal(429);
+    expect(sent).to.have.length(5);
+    expect((await models.TrialRateLimit.findOne()).attempts).to.equal(5);
   });
 });

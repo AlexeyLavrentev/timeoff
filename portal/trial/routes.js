@@ -13,10 +13,12 @@ const csrfToken = req => {
 const csrfProtect = (req, res, next) => {
   const submitted = String(req.body && req.body._csrf || '');
   const expected = String(req.session && req.session.csrfToken || '');
-  if (!submitted || !expected || submitted.length !== expected.length) {
+  const submittedBuffer = Buffer.from(submitted);
+  const expectedBuffer = Buffer.from(expected);
+  if (!submitted || !expected || submittedBuffer.length !== expectedBuffer.length) {
     return res.status(403).send('CSRF token mismatch');
   }
-  if (!crypto.timingSafeEqual(Buffer.from(submitted), Buffer.from(expected))) {
+  if (!crypto.timingSafeEqual(submittedBuffer, expectedBuffer)) {
     return res.status(403).send('CSRF token mismatch');
   }
   next();
