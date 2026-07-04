@@ -2,7 +2,7 @@
 
 const nodemailer = require('nodemailer');
 
-const createTrialMailer = config => {
+const createTrialMailer = (config, options = {}) => {
   if (!config.trialEnabled) return null;
 
   if (!config.trialSmtpUrl || !config.trialEmailFrom
@@ -10,16 +10,16 @@ const createTrialMailer = config => {
     throw new Error('Trial delivery configuration is incomplete');
   }
 
-  const transport = nodemailer.createTransport(config.trialSmtpUrl);
+  const transport = options.transport || nodemailer.createTransport(config.trialSmtpUrl);
 
   return {
-    async sendVerification({ email, organizationName, verificationUrl }) {
+    async sendVerification({ email, verificationUrl }) {
       await transport.sendMail({
         from: config.trialEmailFrom,
         to: email,
         subject: 'Подтвердите 30-дневный LeavePilot Trial',
         text: [
-          `Здравствуйте! Для организации «${organizationName}» запрошена пробная лицензия LeavePilot.`,
+          'Здравствуйте! Запрошена пробная лицензия LeavePilot.',
           '',
           'Подтвердите email и получите лицензию:',
           verificationUrl,

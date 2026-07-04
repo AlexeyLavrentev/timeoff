@@ -41,6 +41,29 @@ const hashIp = (ip, secret) => crypto
   .update(String(ip || 'unknown'))
   .digest('hex');
 
+const consumeRateLimit = async (models, ipHash, now) => {
+  const { TrialRateLimit, Sequelize } = models;
+  const windowStartedAt = new Date(Math.floor(now.getTime() / 3600000) * 3600000);
+  const bucketId = sha256(`${ipHash}:${windowStartedAt.toISOString()}`);
+
+  await TrialRateLimit.findOrCreate({
+    where: { id: bucketId },
+    defaults: { id: bucketId, requestIpHash: ipHash, windowStartedAt, attempts: 0 },
+  });
+
+  const [affected] = await TrialRateLimit.update(
+    { attempts: Sequelize.literal('attempts + 1') },
+    { where: { id: bucketId, attempts: { [Op.lt]: REQUESTS_PER_IP_PER_HOUR } } }
+  );
+  if (affected !== 1) {
+    throw Object.assign(new Error('Слишком много запросов. Повторите позднее.'), { code: 'RATE_LIMITED' });
+  }
+
+  await TrialRateLimit.destroy({
+    where: { windowStartedAt: { [Op.lt]: new Date(now.getTime() - 48 * 60 * 60 * 1000) } },
+  });
+};
+
 const verificationUrl = (baseUrl, token) => {
   const url = new URL('/trial/verify', baseUrl);
   url.searchParams.set('token', token);
@@ -59,16 +82,7 @@ const requestTrial = async (models, mailer, config, input, requestContext = {}) 
   const { TrialRequest, AuditLog } = models;
   const now = new Date();
   const ipHash = hashIp(requestContext.ip, config.trialIpHashSecret);
-  const recentCount = await TrialRequest.count({
-    where: {
-      requestIpHash: ipHash,
-      createdAt: { [Op.gte]: new Date(now.getTime() - 60 * 60 * 1000) },
-    },
-  });
-
-  if (recentCount >= REQUESTS_PER_IP_PER_HOUR) {
-    throw Object.assign(new Error('Слишком много запросов. Повторите позднее.'), { code: 'RATE_LIMITED' });
-  }
+  await consumeRateLimit(models, ipHash, now);
 
   const existing = await TrialRequest.findOne({
     where: { normalizedEmail: validation.value.email },
@@ -104,7 +118,6 @@ const requestTrial = async (models, mailer, config, input, requestContext = {}) 
   try {
     await mailer.sendVerification({
       email: validation.value.email,
-      organizationName: validation.value.organizationName,
       verificationUrl: verificationUrl(config.trialBaseUrl, token),
     });
   } catch (error) {
@@ -236,4 +249,5 @@ module.exports = {
   redeemTrialRequest,
   requestTrial,
   validateRequest,
+  consumeRateLimit,
 };

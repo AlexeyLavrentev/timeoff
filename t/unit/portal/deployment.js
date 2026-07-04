@@ -434,4 +434,10 @@ describe('Portal deployment isolation', function() {
   it('ensureDbDirectory skips :memory:', function() {
     expect(() => ensureDbDirectory(':memory:')).to.not.throw();
   });
+
+  it('warns that operator routes need protection when public Trial is enabled', function() {
+    const entrypoint = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'bin', 'license_portal.js'), 'utf8');
+    expect(entrypoint).to.contain('Expose only /trial, /static and /healthz');
+    expect(entrypoint).to.contain('protect all operator routes');
+  });
 });
