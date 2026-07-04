@@ -1,6 +1,7 @@
 # Развёртывание License Portal
 
-Руководство по запуску License Portal как отдельного внутреннего сервиса вендора.
+Руководство по запуску License Portal как отдельного сервиса вендора. Панель
+операторов остаётся закрытой; публично можно открыть только self-service Trial.
 
 ## Быстрый старт (development)
 
@@ -30,6 +31,11 @@ node bin/license_portal.js
 | `PORTAL_LICENSE_PRIVATE_KEY` | alt | Приватный ключ PEM через env (не рекомендуется) |
 | `PORTAL_LICENSE_PUBLIC_KEY_FILE` | в production | Путь к публичному ключу PEM |
 | `PORTAL_LICENSE_PUBLIC_KEY` | alt | Публичный ключ PEM через env |
+| `PORTAL_TRIAL_ENABLED` | нет | `true` включает публичную выдачу 30-дневного Trial; default `false` |
+| `PORTAL_PUBLIC_BASE_URL` | при Trial | Публичный HTTPS URL портала, например `https://licenses.example.com` |
+| `PORTAL_TRIAL_SMTP_URL` | при Trial | SMTP/SMTPS URL для писем подтверждения; хранить как secret |
+| `PORTAL_TRIAL_EMAIL_FROM` | при Trial | From-адрес писем Trial |
+| `PORTAL_TRIAL_IP_HASH_SECRET` | при Trial | Отдельный случайный секрет от 32 символов для необратимого IP hash |
 
 В production **все обязательные переменные должны быть установлены** — портал
 не запустится без них.
@@ -49,6 +55,36 @@ node bin/license_portal.js
 `PORTAL_LICENSE_PUBLIC_KEY_FILE`.
 
 Приватный ключ **никогда не хранится в БД** и не передаётся клиенту.
+
+## Self-service Trial
+
+Trial выключен по умолчанию. После включения доступен публичный маршрут
+`/trial`:
+
+1. Клиент вводит организацию, имя и рабочий email.
+2. Portal сохраняет только hash одноразового token и HMAC-hash IP.
+3. Ссылка подтверждения действует 30 минут.
+4. После подтверждения выпускается одна Enterprise-лицензия на 30 дней с
+   лимитом 25 активных сотрудников.
+5. Клиент скачивает license JSON и public key из подтверждённой сессии.
+
+Один email может получить только один Trial. Дополнительно работают CSRF,
+honeypot и persistent rate limit: не более пяти запросов с одного IP в час.
+Ответ на повторный email намеренно не раскрывает, существовал ли запрос.
+
+Пример production-конфигурации:
+
+```env
+PORTAL_TRIAL_ENABLED=true
+PORTAL_PUBLIC_BASE_URL=https://licenses.example.com
+PORTAL_TRIAL_SMTP_URL=smtps://smtp-user:smtp-password@smtp.example.com:465
+PORTAL_TRIAL_EMAIL_FROM=LeavePilot <trial@example.com>
+PORTAL_TRIAL_IP_HASH_SECRET=<отдельная-случайная-строка-минимум-32-символа>
+```
+
+SMTP URL передавайте через secret manager/CI secret, не коммитьте в `.env`.
+На reverse proxy разрешите публично `/trial`, `/static` и `/healthz`, а
+операторские маршруты ограничьте VPN, SSO gateway или allowlist.
 
 ## Docker Compose
 
@@ -263,7 +299,7 @@ docker compose -f docker-compose.portal.yml start portal
 - [ ] `NODE_ENV=production`
 - [ ] Persistent session store активен (автоматически в production)
 - [ ] Приватный ключ смонтирован read-only
-- [ ] Портал не экспонирован в публичный интернет
+- [ ] Операторские маршруты портала не доступны из публичного интернета
 - [ ] HTTPS/reverse proxy настроен
 - [ ] `PORTAL_SESSION_SECURE=true`
 - [ ] `PORTAL_TRUST_PROXY` соответствует реальному числу proxy hops
@@ -273,6 +309,8 @@ docker compose -f docker-compose.portal.yml start portal
 - [ ] Секреты не в git
 - [ ] Логи не содержат секретов
 - [ ] `/healthz` возвращает `ok: true`
+- [ ] Если Trial включён: публичен только необходимый route set, SMTP secret защищён
+- [ ] Если Trial включён: `PORTAL_TRIAL_IP_HASH_SECRET` отдельный и ротируемый
 
 ## CI
 

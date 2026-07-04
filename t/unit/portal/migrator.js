@@ -18,12 +18,13 @@ describe('Portal migrator', function() {
         '001-initial-schema.js',
         '002-license-metadata.js',
         '003-admin-auth-revision.js',
+        '004-self-service-trials.js',
       ]);
 
       const tables = await models.sequelize.getQueryInterface().showAllTables();
       [
         'admin_users', 'audit_logs', 'customers', 'import_batches', 'licenses',
-        'plans', 'portal_sessions', 'signing_key_references', META_TABLE,
+        'plans', 'portal_sessions', 'signing_key_references', 'trial_requests', META_TABLE,
       ].forEach(table => expect(tables).to.include(table));
 
       const licenseColumns = await models.sequelize.getQueryInterface().describeTable('licenses');
@@ -47,6 +48,7 @@ describe('Portal migrator', function() {
         '001-initial-schema.js',
         '002-license-metadata.js',
         '003-admin-auth-revision.js',
+        '004-self-service-trials.js',
       ]);
       expect(second).to.deep.equal([]);
       expect(columns.metadata).to.not.equal(undefined);

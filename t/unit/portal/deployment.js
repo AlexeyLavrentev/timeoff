@@ -42,6 +42,7 @@ describe('Portal config', function() {
       expect(config.sessionSecure).to.equal(false);
       expect(config.trustProxy).to.equal(false);
       expect(config.apiEnabled).to.equal(false);
+      expect(config.trialEnabled).to.equal(false);
     } finally {
       Object.assign(process.env, origEnv);
     }
@@ -64,6 +65,39 @@ describe('Portal config', function() {
 
   it('passes with all required production vars', function() {
     const config = { isProduction: true, sessionSecret: 's', sessionSecure: true, trustProxy: 1, privateKeyPath: '/k', publicKeyPath: '/p' };
+    expect(() => validateProductionConfig(config)).to.not.throw();
+  });
+
+  it('requires secure public delivery config when self-service Trial is enabled', function() {
+    const config = {
+      isProduction: true,
+      sessionSecret: 's',
+      sessionSecure: true,
+      trustProxy: 1,
+      privateKeyPath: '/k',
+      publicKeyPath: '/p',
+      trialEnabled: true,
+    };
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_PUBLIC_BASE_URL');
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_TRIAL_SMTP_URL');
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_TRIAL_EMAIL_FROM');
+    expect(() => validateProductionConfig(config)).to.throw('PORTAL_TRIAL_IP_HASH_SECRET');
+  });
+
+  it('accepts complete self-service Trial production config', function() {
+    const config = {
+      isProduction: true,
+      sessionSecret: 's',
+      sessionSecure: true,
+      trustProxy: 1,
+      privateKeyPath: '/k',
+      publicKeyPath: '/p',
+      trialEnabled: true,
+      trialBaseUrl: 'https://portal.example.test',
+      trialSmtpUrl: 'smtps://user:pass@mail.example.test',
+      trialEmailFrom: 'LeavePilot <trial@example.test>',
+      trialIpHashSecret: 'a'.repeat(32),
+    };
     expect(() => validateProductionConfig(config)).to.not.throw();
   });
 

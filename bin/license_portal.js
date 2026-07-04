@@ -9,6 +9,7 @@ const { seedPlans } = require('../portal/seeders/seed_plans');
 const { createSigningProvider } = require('../portal/signing/provider_factory');
 const { createPortalWebApp } = require('../portal/web/app');
 const { createPersistentStore } = require('../portal/auth/session_store');
+const { createTrialMailer } = require('../portal/trial/mailer');
 
 const run = async () => {
   const config = getPortalConfig();
@@ -28,6 +29,7 @@ const run = async () => {
 
   const signingProvider = createSigningProvider(config);
   console.log('Signing provider: ' + signingProvider.getInfo().type);
+  const trialMailer = createTrialMailer(config);
 
   let sessionStore = null;
   if (config.isProduction) {
@@ -46,6 +48,8 @@ const run = async () => {
     trustProxy: config.trustProxy,
     nodeEnv: config.nodeEnv,
     apiEnabled: config.apiEnabled,
+    trialConfig: config,
+    trialMailer,
   });
 
   const healthRoute = require('../portal/web/health');
@@ -54,7 +58,10 @@ const run = async () => {
   app.listen(config.port, config.host, () => {
     console.log(`License Portal listening on http://${config.host}:${config.port}`);
     console.log(`Environment: ${config.nodeEnv}`);
-    console.log('WARNING: Do not expose this service to the public internet.');
+    console.log(`Self-service Trial: ${config.trialEnabled ? 'enabled' : 'disabled'}`);
+    if (!config.trialEnabled) {
+      console.log('WARNING: Do not expose this service to the public internet.');
+    }
   });
 };
 
