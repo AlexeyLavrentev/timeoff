@@ -50,12 +50,14 @@
     "chai": "^6.2.2",
     "chromedriver": "^146.0.5",
     "mocha": "^10.8.2",
+    "nyc": "^18.0.0",
     "puppeteer": "^24.40.0",
     "sass": "^1.101.0",
     "selenium-webdriver": "^4.0.0"
   },
   "scripts": {
     "test": "node bin/test.js",
+    "test:coverage": "nyc mocha --recursive t/unit --timeout 10000",
     "start": "node bin/wwww",
     "start:dev": "node --watch bin/wwww",
     "db-update": "node bin/db_update.js",

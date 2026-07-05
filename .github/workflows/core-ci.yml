@@ -52,14 +52,15 @@ jobs:
             t/unit/middleware/auth_security.js \
             --timeout 10000
 
-      - name: Run all unit tests
+      - name: Run all unit tests and enforce coverage baseline
         run: |
           node bin/db_update.js
-          ./node_modules/.bin/mocha --recursive t/unit/ --timeout 10000
+          npm run test:coverage
         env:
           NODE_ENV: test
           DB_DIALECT: sqlite
           DB_STORAGE: /tmp/unit-test.sqlite
+          TIMEOFF_FEATURES: all
 
       - name: Validate community compose
         run: docker compose config --quiet

@@ -26,3 +26,5 @@ _e2e_*
 _start_*
 docker-compose.e2e.yml
 docker-compose.testing.yml
+.nyc_output/
+coverage/
