@@ -66,6 +66,45 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+#manager-dashboard-content {
+  .manager-dashboard-period {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    .form-group {
+      margin: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+  }
+
+  .manager-dashboard-summary {
+    margin-bottom: 28px;
+  }
+
+  > section {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  #manager-dashboard-content .manager-dashboard-period {
+    align-items: stretch;
+
+    .form-group,
+    .form-control,
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
 .app-container {
   width: 100%;
   max-width: 1920px;
