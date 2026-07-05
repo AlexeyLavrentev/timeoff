@@ -425,7 +425,9 @@ $(document).ready(function(){
 
     // Ensure "required" fields are populated
     var formIsValid = true;
-    $(form).find('[required]').each(function(el){formIsValid = formIsValid && !! el.val()});
+    $(form).find('[required]').each(function(){
+      formIsValid = formIsValid && !!$(this).val();
+    });
     if (formIsValid) {
       e.stopPropagation();
     } else {
