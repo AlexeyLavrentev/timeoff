@@ -99,9 +99,6 @@
     "details": "Открыть диагностику"
   },
   "notifications": {
-    "pendingRequest": "{{count}} заявка на отпуск",
-    "pendingRequest_2": "{{count}} заявки на отпуск",
-    "pendingRequest_5": "{{count}} заявок на отпуск",
     "pendingRequest_one": "{{count}} заявка на отпуск",
     "pendingRequest_few": "{{count}} заявки на отпуск",
     "pendingRequest_many": "{{count}} заявок на отпуск",
