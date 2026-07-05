@@ -248,10 +248,9 @@ app.use(function(req, res, next) {
     return next();
   }
 
-  // Multipart bodies are parsed by formidable inside the import route, after
-  // this global middleware. That route performs the same token comparison as
-  // soon as fields are available.
-  if (req.path === "/users/import/" && req.is("multipart/form-data")) {
+  // Registered multipart routes parse their body after this middleware and
+  // perform the same constant-time token comparison as soon as fields exist.
+  if (authSecurity.shouldDeferMultipartCsrf(req, edition.isMultipartRoute)) {
     return next();
   }
 

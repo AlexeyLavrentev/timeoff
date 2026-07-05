@@ -97,6 +97,22 @@ describe('auth security middleware', function() {
     expect(authSecurity.tokensMatch('expected-token', undefined)).to.equal(false);
   });
 
+  it('defers CSRF only for an exact registered multipart POST route', function() {
+    const registered = function(method, path) {
+      return method === 'POST' && path === '/users/import/';
+    };
+    const request = createReq({
+      method: 'POST',
+      path: '/users/import/',
+      is: function(type) { return type === 'multipart/form-data' ? 'multipart/form-data' : false; },
+    });
+
+    expect(authSecurity.shouldDeferMultipartCsrf(request, registered)).to.equal(true);
+    expect(authSecurity.shouldDeferMultipartCsrf(Object.assign({}, request, {path: '/users/import'}), registered)).to.equal(false);
+    expect(authSecurity.shouldDeferMultipartCsrf(Object.assign({}, request, {method: 'GET'}), registered)).to.equal(false);
+    expect(authSecurity.shouldDeferMultipartCsrf(Object.assign({}, request, {is: function() { return false; }}), registered)).to.equal(false);
+  });
+
   it('limits repeated auth attempts by client ip', function() {
     const limiter = authSecurity.createAuthRateLimit({
       max: 1,

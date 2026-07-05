@@ -1493,6 +1493,21 @@ textarea.form-control {
   text-align: center;
 }
 
+.zup-import-page {
+  min-width: 0;
+}
+
+.zup-import-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zup-import-table-wrap .table {
+  min-width: 680px;
+  margin-bottom: 0;
+}
+
 .premium-balance-summary .table {
   min-width: 420px;
 }

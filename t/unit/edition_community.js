@@ -19,10 +19,14 @@ describe('Community edition module', function() {
         this.notificationProviders.push(provider);
       },
       registerSsoProvider: function() {},
+      registerMultipartRoute: function(route) {
+        this.multipartRoutes.push(route);
+      },
       registerScheduler: function(scheduler) {
         this.schedulers.push(scheduler);
       },
       schedulers: [],
+      multipartRoutes: [],
     };
   }
 
@@ -38,5 +42,8 @@ describe('Community edition module', function() {
     expect(registry.notificationProviders).to.deep.equal([]);
     expect(registry.navigationItems.map(function(item) { return item.name; }))
       .to.deep.equal(['auth-config', 'reminder-schedules']);
+    expect(registry.multipartRoutes).to.deep.equal([
+      {method: 'POST', path: '/users/import/'},
+    ]);
   });
 });

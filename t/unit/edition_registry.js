@@ -151,6 +151,38 @@ describe('Edition registry', function() {
     expect(registry.getSchedulers()[0].name).to.equal('premium-scheduler');
   });
 
+  it('registers exact multipart POST routes without exposing mutable state', function() {
+    var registry = new EditionRegistry();
+
+    registry.registerMultipartRoute({method: 'POST', path: '/settings/import/'});
+
+    expect(registry.isMultipartRoute('POST', '/settings/import/')).to.equal(true);
+    expect(registry.isMultipartRoute('POST', '/settings/import')).to.equal(false);
+    expect(registry.isMultipartRoute('GET', '/settings/import/')).to.equal(false);
+
+    var routes = registry.getMultipartRoutes();
+    routes[0].path = '/mutated/';
+    expect(registry.getMultipartRoutes()[0].path).to.equal('/settings/import/');
+  });
+
+  it('rejects invalid and duplicate multipart route declarations', function() {
+    var registry = new EditionRegistry();
+
+    [
+      null,
+      {method: 'GET', path: '/settings/import/'},
+      {method: 'POST', path: 'settings/import/'},
+      {method: 'POST', path: '/settings/import'},
+    ].forEach(function(route) {
+      expect(function() { registry.registerMultipartRoute(route); }).to.throw(/multipart route requires/);
+    });
+
+    registry.registerMultipartRoute({method: 'POST', path: '/settings/import/'});
+    expect(function() {
+      registry.registerMultipartRoute({method: 'POST', path: '/settings/import/'});
+    }).to.throw(/already registered/);
+  });
+
   it('validates and filters navigation items by feature', function() {
     var registry = new EditionRegistry();
 
