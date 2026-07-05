@@ -42,6 +42,6 @@
   "premium_module_required": false,
   "locale_code_for_sorting": "en",
   "default_language": "en",
-  "supported_languages": ["en", "ru", "uk", "be"],
+  "supported_languages": ["en", "ru", "uk", "be", "kk"],
   "force_to_explicitly_select_type_when_requesting_new_leave": false
 }
