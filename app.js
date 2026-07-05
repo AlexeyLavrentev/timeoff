@@ -144,6 +144,11 @@ app.use(function(req,res,next){
   res.locals.requested_path = req.originalUrl;
   res.locals.locale = req.language || 'en';
   res.locals.supported_languages = config.get('supported_languages') || ['en'];
+  res.locals.supported_language_options = res.locals.supported_languages.map(code => ({
+    code,
+    labelKey: `language.names.${code}`,
+  }));
+  res.locals.current_language_label_key = `language.names.${res.locals.locale}`;
   res.locals.default_language = config.get('default_language') || 'en';
   res.locals.branding = branding.get();
   res.locals.features = features.getEnabledMap();

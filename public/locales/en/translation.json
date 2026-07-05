@@ -27,8 +27,11 @@
   },
   "language": {
     "label": "Language",
-    "english": "English",
-    "russian": "Russian"
+    "names": {
+      "en": "English",
+      "ru": "Русский",
+      "uk": "Українська"
+    }
   },
   "theme": {
     "label": "Theme",
