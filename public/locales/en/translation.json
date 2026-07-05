@@ -99,8 +99,8 @@
     "details": "View diagnostics"
   },
   "notifications": {
-    "pendingRequest": "{{count}} leave request to process",
-    "pendingRequest_plural": "{{count}} leave requests to process"
+    "pendingRequest_one": "{{count}} leave request to process",
+    "pendingRequest_other": "{{count}} leave requests to process"
   },
   "errors": {
     "requestFailed": "Request failed.",
