@@ -49,12 +49,13 @@
         <li class="dropdown hidden-xs">
           <a href="#" class="dropdown-toggle nav-icon-link" data-toggle="dropdown" role="button" aria-expanded="false" aria-label="{{t "language.label"}}" title="{{t "language.label"}}">
             <span class="fa fa-language" aria-hidden="true"></span>
-            <span class="sr-only">{{t "language.label"}}: {{#if_equal locale "ru"}}{{t "language.russian"}}{{else}}{{t "language.english"}}{{/if_equal}}</span>
+            <span class="sr-only">{{t "language.label"}}: {{t current_language_label_key}}</span>
             <span class="caret" aria-hidden="true"></span>
           </a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="/language/en"><span class="fa fa-language nav-menu-icon" aria-hidden="true"></span>{{t "language.english"}}</a></li>
-            <li><a href="/language/ru"><span class="fa fa-language nav-menu-icon" aria-hidden="true"></span>{{t "language.russian"}}</a></li>
+            {{#each supported_language_options}}
+              <li><a href="/language/{{this.code}}"><span class="fa fa-language nav-menu-icon" aria-hidden="true"></span>{{t this.labelKey}}</a></li>
+            {{/each}}
           </ul>
         </li>
         {{#if logged_user }}
