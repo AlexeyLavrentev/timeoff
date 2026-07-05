@@ -31,7 +31,8 @@
       "deputy_assignments",
       "wellbeing_reports",
       "pending_approval_reminders",
-      "manager_dashboard"
+      "manager_dashboard",
+      "zup_import"
     ]
   }
 }
