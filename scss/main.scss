@@ -2088,6 +2088,122 @@ textarea.form-control {
     border: 1px solid $border-color;
   }
 
+  .mobile-card-table-container {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mobile-card-table,
+  .mobile-card-table > tbody,
+  .mobile-card-table > tbody > tr,
+  .mobile-card-table > tbody > tr > td {
+    display: block;
+    width: 100%;
+  }
+
+  .mobile-card-table {
+    background: transparent;
+  }
+
+  .mobile-card-table > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .mobile-card-table > tbody > tr {
+    margin-bottom: $space-3;
+    overflow: hidden;
+    background: $surface-color;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+  }
+
+  .mobile-card-table.table-striped > tbody > tr:nth-of-type(odd),
+  .mobile-card-table.table-hover > tbody > tr:hover {
+    background: $surface-color;
+  }
+
+  .mobile-card-table > tbody > tr > td {
+    display: grid;
+    grid-template-columns: minmax(105px, 0.42fr) minmax(0, 0.58fr);
+    gap: $space-3;
+    align-items: start;
+    padding: 11px 14px;
+    overflow-wrap: anywhere;
+    border-top: 1px solid $border-color;
+    text-align: right;
+  }
+
+  .mobile-card-table > tbody > tr > td:first-child {
+    border-top: 0;
+  }
+
+  .mobile-card-table > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    color: $text-muted;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .mobile-card-table > tbody > tr > .mobile-card-select {
+    display: block;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .mobile-card-table > tbody > tr > .mobile-card-action {
+    display: block;
+    text-align: left;
+  }
+
+  .mobile-card-action form,
+  .mobile-card-action .btn,
+  .mobile-card-action input[type="submit"] {
+    width: 100%;
+  }
+
+  .mobile-card-action form {
+    display: block !important;
+    margin-top: $space-2;
+  }
+
+  .mobile-card-value {
+    min-width: 0;
+  }
+
+  .mobile-card-detail {
+    display: block;
+    margin-top: 3px;
+  }
+
+  .bulk-action-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-2;
+  }
+
+  .bulk-action-bar .btn {
+    width: 100%;
+  }
+
+  .deputy-date-range > div {
+    margin-bottom: $space-2;
+  }
+
+  .deputy-date-separator {
+    line-height: 1;
+  }
+
   .panel-body {
     padding: 15px;
   }
