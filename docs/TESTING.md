@@ -117,6 +117,22 @@ npm test -- tests/email/
 npm test -- tests/api/
 ```
 
+### Покрытие кода
+
+```bash
+# Community/core unit-suite и coverage gate
+NODE_ENV=test DB_DIALECT=sqlite DB_STORAGE=/tmp/coverage.sqlite \
+  npm run test:coverage
+
+# Premium: запускать из каталога timeoff-premium рядом с timeoff
+npm run test:coverage
+```
+
+Пороги находятся в `.nycrc.json` каждого репозитория и фиксируют текущий
+baseline. CI не позволяет снизить statements, branches, functions или lines.
+После добавления тестов пороги следует поднимать до нового фактического
+значения. Миграции исключены: они проверяются отдельными migration smoke tests.
+
 ## 🐛 Устранение проблем
 
 ### Keycloak не запускается
