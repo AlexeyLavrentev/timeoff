@@ -30,7 +30,8 @@
       "external_connectors",
       "deputy_assignments",
       "wellbeing_reports",
-      "pending_approval_reminders"
+      "pending_approval_reminders",
+      "manager_dashboard"
     ]
   }
 }
