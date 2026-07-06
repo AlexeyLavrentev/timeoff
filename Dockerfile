@@ -73,6 +73,11 @@ USER root
 ARG PREMIUM_MODULE_TARGET=/opt/timeoff-premium
 COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
 
+# Premium owns its runtime dependencies. Keep them inside the module so normal
+# Node resolution works without leaking private dependencies into Community.
+RUN cd "${PREMIUM_MODULE_TARGET}" && \
+    npm ci --omit=dev --legacy-peer-deps --no-audit --no-fund
+
 # Install SSO packages into a temp dir (no package.json = no devDeps bleed),
 # then merge into the app's node_modules.
 RUN mkdir -p /tmp/sso-deps && \
