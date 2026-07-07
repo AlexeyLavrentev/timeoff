@@ -8,6 +8,7 @@ function createReq(overrides) {
   const req = Object.assign({
     body: {},
     headers: {},
+    app: {get: function() { return null; }},
     path: '/login',
     session: {},
     t(key, params) {
@@ -33,12 +34,22 @@ function createRes() {
     headers: {},
     locals: {},
     redirects: [],
+    statusCode: 200,
+    body: null,
     setHeader(name, value) {
       this.headers[name] = value;
     },
     redirect_with_session(location) {
       this.redirects.push(location);
       return location;
+    },
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(body) {
+      this.body = body;
+      return body;
     },
   };
 }
@@ -113,7 +124,7 @@ describe('auth security middleware', function() {
     expect(authSecurity.shouldDeferMultipartCsrf(Object.assign({}, request, {is: function() { return false; }}), registered)).to.equal(false);
   });
 
-  it('limits repeated auth attempts by client ip', function() {
+  it('limits repeated auth attempts by client ip', async function() {
     const limiter = authSecurity.createAuthRateLimit({
       max: 1,
       windowMs: 60 * 1000,
@@ -128,11 +139,11 @@ describe('auth security middleware', function() {
     const secondRes = createRes();
     let firstAllowed = false;
 
-    limiter(req, firstRes, function() {
+    await limiter(req, firstRes, function() {
       firstAllowed = true;
     });
 
-    limiter(req, secondRes, function() {
+    await limiter(req, secondRes, function() {
       throw new Error('second request should be blocked');
     });
 
@@ -144,7 +155,7 @@ describe('auth security middleware', function() {
     ]);
   });
 
-  it('keys rate limiting on req.ip so a spoofed X-Forwarded-For cannot bypass it', function() {
+  it('keys rate limiting on req.ip so a spoofed X-Forwarded-For cannot bypass it', async function() {
     const limiter = authSecurity.createAuthRateLimit({
       max: 2,
       windowMs: 60 * 1000,
@@ -152,7 +163,7 @@ describe('auth security middleware', function() {
     });
 
     // Same real client (req.ip), attacker rotates X-Forwarded-For each request.
-    function attempt(spoofedXff) {
+    async function attempt(spoofedXff) {
       const req = createReq({
         ip: '10.0.0.5',
         headers: { 'x-forwarded-for': spoofedXff },
@@ -160,18 +171,56 @@ describe('auth security middleware', function() {
       const res = createRes();
       let allowed = false;
 
-      limiter(req, res, function() {
+      await limiter(req, res, function() {
         allowed = true;
       });
 
       return { allowed: allowed, res: res };
     }
 
-    expect(attempt('1.1.1.1').allowed).to.equal(true);
-    expect(attempt('2.2.2.2').allowed).to.equal(true);
+    expect((await attempt('1.1.1.1')).allowed).to.equal(true);
+    expect((await attempt('2.2.2.2')).allowed).to.equal(true);
 
-    const third = attempt('3.3.3.3');
+    const third = await attempt('3.3.3.3');
     expect(third.allowed).to.equal(false);
     expect(third.res.headers['Retry-After']).to.equal('60');
+  });
+
+  it('returns JSON 429 for repeated bearer API requests', async function() {
+    const limiter = authSecurity.createApiRateLimit({max: 1, windowMs: 60000});
+    const req = createReq({
+      ip: '10.0.0.8',
+      headers: {authorization: 'Bearer secret-token'},
+    });
+
+    await limiter(req, createRes(), function() {});
+    const blocked = createRes();
+    await limiter(req, blocked, function() {
+      throw new Error('second API request should be blocked');
+    });
+
+    expect(blocked.statusCode).to.equal(429);
+    expect(blocked.body).to.deep.equal({ok: false, error: 'rate_limit_exceeded'});
+    expect(blocked.headers['Retry-After']).to.equal('60');
+  });
+
+  it('cannot bypass API limit by rotating bearer credentials', async function() {
+    const limiter = authSecurity.createApiRateLimit({max: 1, windowMs: 60000});
+    const first = createReq({
+      ip: '10.0.0.9',
+      headers: {authorization: 'Bearer first-token'},
+    });
+    const rotated = createReq({
+      ip: '10.0.0.9',
+      headers: {authorization: 'Bearer rotated-token'},
+    });
+
+    await limiter(first, createRes(), function() {});
+    const blocked = createRes();
+    await limiter(rotated, blocked, function() {
+      throw new Error('rotated token should still hit IP limit');
+    });
+
+    expect(blocked.statusCode).to.equal(429);
   });
 });
