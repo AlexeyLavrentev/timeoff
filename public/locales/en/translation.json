@@ -757,6 +757,7 @@
       "lastAdmin": "This is last admin within company. Cannot revoke admin rights.",
       "detailsUpdated": "Details for {{name}} were updated",
       "saveFailed": "Failed to save changes.",
+      "seatLimitReached": "The licensed limit of {{count}} active users has been reached. Deactivate an employee or update the license.",
       "recordsRemoved": "Employee records were removed from the system",
       "removeFailed": "Failed to remove user.",
       "invalidSearchEmail": "Provided email does not look like valid one: \"{{email}}\""
