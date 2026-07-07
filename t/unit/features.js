@@ -10,6 +10,7 @@ describe('Feature licensing', function() {
   const originalEnv = {};
   const envKeys = [
     'NODE_ENV',
+    'TIMEOFF_EDITION',
     'TIMEOFF_FEATURES',
     'TIMEOFF_LICENSE',
     'TIMEOFF_LICENSE_SECRET',
@@ -78,6 +79,25 @@ describe('Feature licensing', function() {
   it('ignores unlicensed TIMEOFF_FEATURES in production-like environments', function() {
     process.env.NODE_ENV = 'production';
     process.env.TIMEOFF_FEATURES = 'time_balance';
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('ignores unlicensed overrides in commercial edition outside production', function() {
+    process.env.NODE_ENV = 'development';
+    process.env.TIMEOFF_EDITION = 'commercial';
+    process.env.TIMEOFF_FEATURES = 'time_balance';
+    process.env.ALLOW_UNLICENSED_FEATURE_OVERRIDES = 'true';
+    process.env.FEATURE_TIME_BALANCE = 'true';
+
+    expect(features.isEnabled('time_balance')).to.equal(false);
+  });
+
+  it('rejects unsigned licenses in commercial edition outside production', function() {
+    process.env.NODE_ENV = 'development';
+    process.env.TIMEOFF_EDITION = 'commercial';
+    process.env.ALLOW_UNSIGNED_LICENSES = 'true';
+    process.env.TIMEOFF_LICENSE = JSON.stringify({features: ['time_balance']});
 
     expect(features.isEnabled('time_balance')).to.equal(false);
   });

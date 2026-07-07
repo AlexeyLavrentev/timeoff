@@ -15,6 +15,7 @@ describe('Premium edition loader', function() {
 
   var envKeys = [
     'NODE_ENV',
+    'TIMEOFF_EDITION',
     'TIMEOFF_PREMIUM_MODULE',
     'TIMEOFF_PREMIUM_MODULE_REQUIRED',
     'TIMEOFF_LICENSE',
@@ -195,6 +196,37 @@ describe('Premium edition loader', function() {
         registry: createRegistry(),
         logger: { warn: function() {} },
       });
+    }).to.throw(/Commercial mode requires TIMEOFF_LICENSE/);
+  });
+
+  it('requires a valid license for a required module outside production', function() {
+    var modulePath = writeModule('required-development-module.js', [
+      "'use strict';",
+      "module.exports = function() {};",
+    ].join('\n'));
+
+    process.env.NODE_ENV = 'development';
+    process.env.TIMEOFF_PREMIUM_MODULE = modulePath;
+    process.env.TIMEOFF_PREMIUM_MODULE_REQUIRED = 'true';
+
+    expect(function() {
+      premiumLoader.load({registry: createRegistry()});
+    }).to.throw(/Commercial mode requires TIMEOFF_LICENSE/);
+  });
+
+  it('requires a valid license when commercial edition overrides required flag', function() {
+    var modulePath = writeModule('commercial-edition-module.js', [
+      "'use strict';",
+      "module.exports = function() {};",
+    ].join('\n'));
+
+    process.env.NODE_ENV = 'development';
+    process.env.TIMEOFF_EDITION = 'commercial';
+    process.env.TIMEOFF_PREMIUM_MODULE = modulePath;
+    process.env.TIMEOFF_PREMIUM_MODULE_REQUIRED = 'false';
+
+    expect(function() {
+      premiumLoader.load({registry: createRegistry()});
     }).to.throw(/Commercial mode requires TIMEOFF_LICENSE/);
   });
 
