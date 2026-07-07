@@ -59,9 +59,17 @@ describePremium('Enable/disable Integration APIs', function(){
     .then(() => done());
   });
 
-  it('Read the key and try to invoke the API with that key: ensure the end point is blocked', done => {
-    driver
+  it('Generate the key and try to invoke the API with that key: ensure the end point is blocked', done => {
+    submitFormFunc({
+      driver,
+      form_params : [],
+      submit_button_selector: '#regenerate_token_btn',
+      should_be_successful: true,
+      message: /Settings were saved/,
+    })
+      .then(() => driver
       .findElement(By.css('input#token-value'))
+      )
       .then(el => el.getAttribute('value'))
       .then(v => Promise.resolve(oldToken=v))
       .then(() => fetch(`${applicationHost}integration/v1/report/absence`,{
