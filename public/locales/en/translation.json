@@ -579,6 +579,8 @@
     "accessKey": "API access key",
     "tokenHelp": "Token that allows access to {{company}}'s data.",
     "keepSecret": "Keep it secret.",
+    "tokenHidden": "Stored securely. Regenerate it to obtain a new token.",
+    "tokenShownOnce": "Copy it now. It will not be shown again.",
     "regenerate": "Regenerate token",
     "save": "Save integration API configuration"
   },

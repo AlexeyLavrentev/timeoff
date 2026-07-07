@@ -47,10 +47,14 @@
       <div class="form-group">
         <label for="token" class="col-md-3 control-label">{{t "integrationApi.accessKey"}}</label>
         <div class="col-md-5">
-          <input class="form-control" readonly value="{{company.integration_api_token}}" aria-describedby="token_help" type="text" id="token-value">
+          {{#if accessToken}}
+            <input class="form-control" readonly value="{{accessToken}}" aria-describedby="token_help" type="text" id="token-value">
+          {{else}}
+            <p class="form-control-static" id="token-value-hidden">{{t "integrationApi.tokenHidden"}}</p>
+          {{/if}}
         </div>
         <div class="col-md-4">
-          <span id="token_help" class="help-block">{{t "integrationApi.tokenHelp" company=company.name}} <span class="danger">{{t "integrationApi.keepSecret"}}</span></span>
+          <span id="token_help" class="help-block">{{t "integrationApi.tokenHelp" company=company.name}} <span class="danger">{{#if accessToken}}{{t "integrationApi.tokenShownOnce"}}{{else}}{{t "integrationApi.keepSecret"}}{{/if}}</span></span>
         </div>
       </div>
       <div class="admin-form-actions">
