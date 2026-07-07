@@ -33,6 +33,8 @@ ENV NODE_ENV=development
 
 FROM base AS runtime
 
+ENV NODE_ENV=production
+
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs --create-home appuser
 
@@ -69,6 +71,11 @@ CMD ["/bin/sh", "./docker/entrypoint.sh"]
 FROM runtime AS commercial
 
 USER root
+
+ENV TIMEOFF_EDITION=commercial
+
+RUN touch /app/.timeoff-commercial \
+  && chown appuser:nodejs /app/.timeoff-commercial
 
 ARG PREMIUM_MODULE_TARGET=/opt/timeoff-premium
 COPY --from=timeoff_premium --chown=appuser:nodejs . ${PREMIUM_MODULE_TARGET}
