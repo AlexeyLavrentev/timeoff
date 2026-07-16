@@ -7,10 +7,40 @@
 // переименовала отдел, тип отсутствия, праздник или сменила формат даты —
 // её данные не трогаем.
 
-var models = require('../lib/model/db');
 var moment = require('moment');
 
 var COUNTRIES = ['KZ', 'RU'];
+
+function findCompanies(queryInterface, Sequelize) {
+  var table = queryInterface.queryGenerator.quoteTable('Companies');
+  var id = queryInterface.queryGenerator.quoteIdentifier('id');
+  var country = queryInterface.queryGenerator.quoteIdentifier('country');
+  var dateFormat = queryInterface.queryGenerator.quoteIdentifier('date_format');
+  return queryInterface.sequelize.query(
+    'SELECT ' + id + ', ' + country + ', ' + dateFormat + ' FROM ' + table
+      + ' WHERE ' + country + ' IN (:countries)',
+    {
+      replacements: { countries: COUNTRIES },
+      type: Sequelize.QueryTypes.SELECT,
+    }
+  );
+}
+
+function findBankHolidays(queryInterface, Sequelize, companyId) {
+  var table = queryInterface.queryGenerator.quoteTable('BankHolidays');
+  var id = queryInterface.queryGenerator.quoteIdentifier('id');
+  var name = queryInterface.queryGenerator.quoteIdentifier('name');
+  var date = queryInterface.queryGenerator.quoteIdentifier('date');
+  var company = queryInterface.queryGenerator.quoteIdentifier('companyId');
+  return queryInterface.sequelize.query(
+    'SELECT ' + id + ', ' + name + ', ' + date + ', ' + company + ' FROM ' + table
+      + ' WHERE ' + company + ' = :companyId',
+    {
+      replacements: { companyId: companyId },
+      type: Sequelize.QueryTypes.SELECT,
+    }
+  );
+}
 
 // Дата -> { en: старое англ. имя, ru: новое рус. имя } для праздников 2026.
 // Используется для переименования только нетронутых записей.
@@ -101,8 +131,7 @@ function dateKey(value) {
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return models.Company
-      .findAll({ where: { country: COUNTRIES } })
+    return findCompanies(queryInterface, Sequelize)
       .then(function (companies) {
         return companies.reduce(function (chain, company) {
           var cc = company.country;
@@ -112,21 +141,26 @@ module.exports = {
 
             // 1. Формат даты — только если остался исходный дефолт.
             if (company.date_format === 'YYYY-MM-DD') {
-              company.date_format = 'DD.MM.YYYY';
-              tasks.push(company.save());
+              tasks.push(queryInterface.bulkUpdate(
+                'Companies',
+                { date_format: 'DD.MM.YYYY' },
+                { id: company.id }
+              ));
             }
 
             // 2. Название отдела — только нетронутый дефолт.
-            tasks.push(models.Department.update(
+            tasks.push(queryInterface.bulkUpdate(
+              'Departments',
               { name: DEPARTMENT_RENAME.ru },
-              { where: { companyId: company.id, name: DEPARTMENT_RENAME.en } }
+              { companyId: company.id, name: DEPARTMENT_RENAME.en }
             ));
 
             // 3. Названия типов отсутствий — только нетронутые дефолты.
             LEAVE_TYPE_RENAME.forEach(function (map) {
-              tasks.push(models.LeaveType.update(
+              tasks.push(queryInterface.bulkUpdate(
+                'LeaveTypes',
                 { name: map.ru },
-                { where: { companyId: company.id, name: map.en } }
+                { companyId: company.id, name: map.en }
               ));
             });
 
@@ -134,7 +168,7 @@ module.exports = {
           })
           // 4. Праздники: переименование 2026 + добавление 2027.
           .then(function () {
-            return models.BankHoliday.findAll({ where: { companyId: company.id } });
+            return findBankHolidays(queryInterface, Sequelize, company.id);
           })
           .then(function (holidays) {
             var renameMap = RENAME_2026[cc] || {};
@@ -147,19 +181,29 @@ module.exports = {
 
               var expected = renameMap[key];
               if (expected && bh.name === expected.en) {
-                bh.name = expected.ru;
-                renameTasks.push(bh.save());
+                renameTasks.push(queryInterface.bulkUpdate(
+                  'BankHolidays',
+                  { name: expected.ru },
+                  { id: bh.id }
+                ));
               }
             });
 
             var toAdd = (ADD_2027[cc] || [])
               .filter(function (h) { return !existingDates[h.date]; })
               .map(function (h) {
-                return { name: h.name, date: h.date, companyId: company.id };
+                var now = new Date();
+                return {
+                  name: h.name,
+                  date: h.date,
+                  companyId: company.id,
+                  createdAt: now,
+                  updatedAt: now,
+                };
               });
 
             if (toAdd.length) {
-              renameTasks.push(models.BankHoliday.bulkCreate(toAdd));
+              renameTasks.push(queryInterface.bulkInsert('BankHolidays', toAdd));
             }
 
             return Promise.all(renameTasks);
@@ -169,8 +213,7 @@ module.exports = {
   },
 
   down: function (queryInterface, Sequelize) {
-    return models.Company
-      .findAll({ where: { country: COUNTRIES } })
+    return findCompanies(queryInterface, Sequelize)
       .then(function (companies) {
         return companies.reduce(function (chain, company) {
           var cc = company.country;
@@ -180,28 +223,33 @@ module.exports = {
 
             // 1. Формат даты обратно.
             if (company.date_format === 'DD.MM.YYYY') {
-              company.date_format = 'YYYY-MM-DD';
-              tasks.push(company.save());
+              tasks.push(queryInterface.bulkUpdate(
+                'Companies',
+                { date_format: 'YYYY-MM-DD' },
+                { id: company.id }
+              ));
             }
 
             // 2. Отдел обратно.
-            tasks.push(models.Department.update(
+            tasks.push(queryInterface.bulkUpdate(
+              'Departments',
               { name: DEPARTMENT_RENAME.en },
-              { where: { companyId: company.id, name: DEPARTMENT_RENAME.ru } }
+              { companyId: company.id, name: DEPARTMENT_RENAME.ru }
             ));
 
             // 3. Типы отсутствий обратно.
             LEAVE_TYPE_RENAME.forEach(function (map) {
-              tasks.push(models.LeaveType.update(
+              tasks.push(queryInterface.bulkUpdate(
+                'LeaveTypes',
                 { name: map.en },
-                { where: { companyId: company.id, name: map.ru } }
+                { companyId: company.id, name: map.ru }
               ));
             });
 
             return Promise.all(tasks);
           })
           .then(function () {
-            return models.BankHoliday.findAll({ where: { companyId: company.id } });
+            return findBankHolidays(queryInterface, Sequelize, company.id);
           })
           .then(function (holidays) {
             var renameMap = RENAME_2026[cc] || {};
@@ -216,14 +264,17 @@ module.exports = {
               // Переименование 2026 обратно в английский.
               var expected = renameMap[key];
               if (expected && bh.name === expected.ru) {
-                bh.name = expected.en;
-                tasks.push(bh.save());
+                tasks.push(queryInterface.bulkUpdate(
+                  'BankHolidays',
+                  { name: expected.en },
+                  { id: bh.id }
+                ));
                 return;
               }
 
               // Удаление добавленных 2027 (по дате и имени).
               if (add2027Dates[key] && add2027Dates[key] === bh.name) {
-                tasks.push(bh.destroy());
+                tasks.push(queryInterface.bulkDelete('BankHolidays', { id: bh.id }));
               }
             });
 
