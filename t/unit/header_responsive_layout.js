@@ -30,7 +30,7 @@ describe('Responsive application header', function() {
   it('moves utility navigation below primary navigation before they overlap', function() {
     const intermediate = blockBody(
       stylesheet,
-      '@media (min-width: 769px) and (max-width: 1199px)'
+      '@media (min-width: 769px) and (max-width: 1719px)'
     );
     const collapse = blockBody(intermediate, '.navbar-default .navbar-collapse.collapse');
     const primary = blockBody(intermediate, '.navbar-default .primary-navigation');
@@ -43,11 +43,13 @@ describe('Responsive application header', function() {
   });
 
   it('restores the single-row layout only at the wide desktop breakpoint', function() {
-    const wide = blockBody(stylesheet, '@media (min-width: 1200px)');
+    const compactDesktop = blockBody(stylesheet, '@media (min-width: 1360px)');
+    const wide = blockBody(stylesheet, '@media (min-width: 1720px)');
     const container = blockBody(wide, '.navbar-default .container-fluid');
     const collapse = blockBody(wide, '.navbar-default .navbar-collapse.collapse');
     const navigation = blockBody(wide, '.navbar-default .navbar-nav');
 
+    expect(compactDesktop).not.to.match(/flex-wrap:\s*nowrap/);
     expect(container).to.match(/flex-wrap:\s*nowrap/);
     expect(collapse).to.match(/flex-wrap:\s*nowrap/);
     expect(navigation).to.match(/flex-wrap:\s*nowrap/);
