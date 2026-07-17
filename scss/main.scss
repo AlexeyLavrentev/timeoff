@@ -1846,7 +1846,7 @@ textarea.form-control {
   }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1200px) {
   .navbar-default .container-fluid {
     flex-wrap: nowrap;
     align-items: stretch;
@@ -1869,6 +1869,21 @@ textarea.form-control {
 
   .navbar-default .navbar-right {
     flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+  .navbar-default .navbar-collapse.collapse {
+    flex-wrap: wrap;
+  }
+
+  .navbar-default .primary-navigation {
+    flex: 1 1 100%;
+  }
+
+  .navbar-default .navbar-right {
+    flex: 0 0 100%;
+    justify-content: flex-end;
   }
 }
 
