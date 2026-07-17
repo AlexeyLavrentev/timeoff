@@ -14,6 +14,16 @@ const viewSource = fs.readFileSync(
   'utf8'
 );
 
+const requestsRouter = require('../../../lib/route/requests');
+
+function getRouteHandler(routePath) {
+  const layer = requestsRouter.stack.find(function(routerLayer) {
+    return routerLayer.route && routerLayer.route.path === routePath;
+  });
+
+  return layer.route.stack[0].handle;
+}
+
 describe('Bulk approve/reject requests', function() {
 
   it('registers POST routes for bulk approve and reject', function() {
@@ -53,5 +63,36 @@ describe('Bulk approve/reject requests', function() {
   it('bulk buttons target the dedicated bulk endpoints via formaction', function() {
     expect(viewSource).to.match(/formaction="\/requests\/bulk\/approve\/"/);
     expect(viewSource).to.match(/formaction="\/requests\/bulk\/reject\/"/);
+  });
+
+  it('redirects bulk actions back to the requests page', function() {
+    let redirectedTo;
+    const handler = getRouteHandler('/bulk/approve/');
+
+    handler({
+      body: {},
+      session: {
+        flash_error: function() {},
+      },
+      t: function(key) { return key; },
+    }, {
+      redirect_with_session: function(target) {
+        redirectedTo = target;
+      },
+    });
+
+    expect(redirectedTo).to.equal('/requests/');
+  });
+
+  it('uses the requests page redirect for every bulk outcome', function() {
+    const bulkHandlerStart = routeSource.indexOf('function leave_request_bulk_action');
+    const bulkHandlerEnd = routeSource.indexOf("router.post(\n  '/reject/'", bulkHandlerStart);
+    const bulkHandlerSource = routeSource.slice(bulkHandlerStart, bulkHandlerEnd);
+    const requestsRedirects = bulkHandlerSource.match(
+      /redirect_with_session\('\/requests\/'\)/g
+    ) || [];
+
+    expect(requestsRedirects.length).to.equal(3);
+    expect(bulkHandlerSource).to.not.match(/redirect_with_session\('\.\.\/'\)/);
   });
 });
