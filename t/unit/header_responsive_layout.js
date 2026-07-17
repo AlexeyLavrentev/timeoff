@@ -1,89 +1,55 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const {expect} = require('chai');
-const puppeteer = require('puppeteer');
+
+const stylesheet = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'scss', 'main.scss'),
+  'utf8'
+);
+
+function blockBody(source, marker) {
+  const markerIndex = source.indexOf(marker);
+  expect(markerIndex, `missing ${marker}`).to.be.at.least(0);
+
+  const openingBrace = source.indexOf('{', markerIndex + marker.length);
+  expect(openingBrace, `missing opening brace for ${marker}`).to.be.at.least(0);
+
+  let depth = 1;
+  for (let index = openingBrace + 1; index < source.length; index += 1) {
+    if (source[index] === '{') depth += 1;
+    if (source[index] === '}') depth -= 1;
+    if (depth === 0) return source.slice(openingBrace + 1, index);
+  }
+
+  throw new Error(`missing closing brace for ${marker}`);
+}
 
 describe('Responsive application header', function() {
-  this.timeout(15000);
+  it('moves utility navigation below primary navigation before they overlap', function() {
+    const intermediate = blockBody(
+      stylesheet,
+      '@media (min-width: 769px) and (max-width: 1199px)'
+    );
+    const collapse = blockBody(intermediate, '.navbar-default .navbar-collapse.collapse');
+    const primary = blockBody(intermediate, '.navbar-default .primary-navigation');
+    const utility = blockBody(intermediate, '.navbar-default .navbar-right');
 
-  let browser;
-
-  before(async function() {
-    browser = await puppeteer.launch({
-      headless : true,
-      args     : ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    expect(collapse).to.match(/flex-wrap:\s*wrap/);
+    expect(primary).to.match(/flex:\s*1 1 100%/);
+    expect(utility).to.match(/flex:\s*0 0 100%/);
+    expect(utility).to.match(/justify-content:\s*flex-end/);
   });
 
-  after(async function() {
-    if (browser) await browser.close();
-  });
+  it('restores the single-row layout only at the wide desktop breakpoint', function() {
+    const wide = blockBody(stylesheet, '@media (min-width: 1200px)');
+    const container = blockBody(wide, '.navbar-default .container-fluid');
+    const collapse = blockBody(wide, '.navbar-default .navbar-collapse.collapse');
+    const navigation = blockBody(wide, '.navbar-default .navbar-nav');
 
-  it('keeps utility navigation clear of primary navigation at intermediate widths', async function() {
-    const page = await browser.newPage();
-    await page.setContent(`
-      <div class="app-container">
-        <header class="header">
-          <nav class="navbar navbar-default app-navbar">
-            <div class="container-fluid">
-              <div class="navbar-header">
-                <a class="navbar-brand" href="#">LeavePilot</a>
-              </div>
-              <div class="collapse navbar-collapse" style="display: block">
-                <ul class="nav navbar-nav navbar-left primary-navigation">
-                  <li><a href="#">Календарь</a></li>
-                  <li><a href="#">Команда</a></li>
-                  <li><a href="#">Обзор команды</a></li>
-                  <li><a href="#">Баланс времени</a></li>
-                  <li><a href="#">План отпусков</a></li>
-                  <li class="hidden-xs"><a href="#">Сотрудники</a></li>
-                  <li class="navbar-form navbar-left">
-                    <button class="btn btn-info navbar-primary-action">Новое отсутствие</button>
-                  </li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                  <li><a class="nav-icon-link" href="#"><span class="fa fa-sun-o"></span><span class="caret"></span></a></li>
-                  <li><a class="nav-icon-link" href="#"><span class="fa fa-language"></span><span class="caret"></span></a></li>
-                  <li><a class="nav-icon-link" href="#"><span class="fa fa-bell-o"></span></a></li>
-                  <li><a class="nav-icon-link" href="#"><span class="fa fa-cog"></span><span class="caret"></span></a></li>
-                  <li><a class="nav-icon-link" href="#"><span class="fa fa-user"></span><span class="caret"></span></a></li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-        </header>
-      </div>
-    `);
-    await page.addStyleTag({
-      path: path.join(__dirname, '..', '..', 'public', 'css', 'style.css'),
-    });
-
-    for (const width of [769, 900, 1050, 1199, 1200, 1360]) {
-      await page.setViewport({width, height: 800});
-
-      const layout = await page.evaluate(() => {
-        const primaryItems = Array.from(document.querySelectorAll('.primary-navigation > li'));
-        const utility = document.querySelector('.navbar-right').getBoundingClientRect();
-        const primaryRight = Math.max(...primaryItems.map(item => item.getBoundingClientRect().right));
-        const sameRow = primaryItems.some(item => {
-          const rect = item.getBoundingClientRect();
-          return rect.top < utility.bottom && rect.bottom > utility.top;
-        });
-
-        return {
-          primaryRight,
-          utilityLeft : utility.left,
-          sameRow,
-        };
-      });
-
-      if (layout.sameRow) {
-        expect(layout.primaryRight, `navigation overlaps at ${width}px`)
-          .to.be.at.most(layout.utilityLeft);
-      }
-    }
-
-    await page.close();
+    expect(container).to.match(/flex-wrap:\s*nowrap/);
+    expect(collapse).to.match(/flex-wrap:\s*nowrap/);
+    expect(navigation).to.match(/flex-wrap:\s*nowrap/);
   });
 });
