@@ -373,6 +373,7 @@ app.use(function(req, res, next) {
 // appropriate response. Stack traces are never sent to clients in production.
 
 var structuredLogger = require('./lib/middleware/request_logger');
+var requestPath = require('./lib/util/request_path');
 
 function logError(err, req) {
   var meta = {
@@ -382,7 +383,7 @@ function logError(err, req) {
   if (req) {
     meta.requestId = req.requestId;
     meta.method    = req.method;
-    meta.path      = req.originalUrl || req.url;
+    meta.path      = requestPath.getSafeRequestPath(req);
     meta.ip        = req.ip;
   }
 
