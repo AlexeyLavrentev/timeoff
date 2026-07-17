@@ -164,4 +164,48 @@ describe('License active-user seat limit', function() {
       await sequelize.close();
     }
   });
+
+  it('does not allow concurrent creates to exceed the licensed limit', async function() {
+    const sequelize = new Sequelize('sqlite::memory:', {logging: false});
+    const Company = sequelize.define('ConcurrentSeatTestCompany', {name: Sequelize.STRING});
+    const User = defineUser(sequelize, Sequelize.DataTypes);
+    User.belongsTo(Company, {foreignKey: 'companyId'});
+
+    try {
+      await sequelize.sync({force: true});
+      const company = await Company.create({name: 'Concurrent Seat Test'});
+      const values = index => ({
+        email: 'concurrent-seat-' + index + '@test.com',
+        password: 'hash',
+        name: 'Seat',
+        lastname: String(index),
+        companyId: company.id,
+      });
+      await User.create(values(1));
+
+      const originalCount = User.count.bind(User);
+      let waiting = 0;
+      let releaseCounts;
+      const bothCountsFinished = new Promise(resolve => { releaseCounts = resolve; });
+
+      User.count = async function(options) {
+        const count = await originalCount(options);
+        waiting += 1;
+        if (waiting === 2) releaseCounts();
+        await bothCountsFinished;
+        return count;
+      };
+
+      const results = await Promise.allSettled([
+        User.create(values(2)),
+        User.create(values(3)),
+      ]);
+      User.count = originalCount;
+
+      expect(results.filter(result => result.status === 'fulfilled')).to.have.length(1);
+      expect(await User.count()).to.equal(2);
+    } finally {
+      await sequelize.close();
+    }
+  });
 });
