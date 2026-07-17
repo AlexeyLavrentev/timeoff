@@ -187,11 +187,17 @@ describe('License active-user seat limit', function() {
       let waiting = 0;
       let releaseCounts;
       const bothCountsFinished = new Promise(resolve => { releaseCounts = resolve; });
+      let releaseTimer;
 
       User.count = async function(options) {
         const count = await originalCount(options);
         waiting += 1;
-        if (waiting === 2) releaseCounts();
+        if (waiting === 1) {
+          releaseTimer = setTimeout(releaseCounts, 20);
+        } else if (waiting === 2) {
+          clearTimeout(releaseTimer);
+          releaseCounts();
+        }
         await bothCountsFinished;
         return count;
       };
@@ -204,6 +210,72 @@ describe('License active-user seat limit', function() {
 
       expect(results.filter(result => result.status === 'fulfilled')).to.have.length(1);
       expect(await User.count()).to.equal(2);
+    } finally {
+      await sequelize.close();
+    }
+  });
+
+  it('enforces the licensed limit through bulkCreate', async function() {
+    const sequelize = new Sequelize('sqlite::memory:', {logging: false});
+    const Company = sequelize.define('BulkSeatTestCompany', {name: Sequelize.STRING});
+    const User = defineUser(sequelize, Sequelize.DataTypes);
+    User.belongsTo(Company, {foreignKey: 'companyId'});
+
+    try {
+      await sequelize.sync({force: true});
+      const company = await Company.create({name: 'Bulk Seat Test'});
+      const values = index => ({
+        email: 'bulk-seat-' + index + '@test.com',
+        password: 'hash',
+        name: 'Seat',
+        lastname: String(index),
+        companyId: company.id,
+      });
+      await User.create(values(1));
+
+      let error;
+      try {
+        await User.bulkCreate([values(2), values(3)]);
+      } catch (caught) {
+        error = caught;
+      }
+
+      expect(error).to.have.property('code', 'LICENSE_SEAT_LIMIT_EXCEEDED');
+      expect(await User.count()).to.equal(1);
+    } finally {
+      await sequelize.close();
+    }
+  });
+
+  it('does not allow concurrent reactivations to exceed the licensed limit', async function() {
+    const sequelize = new Sequelize('sqlite::memory:', {logging: false});
+    const Company = sequelize.define('ReactivationSeatTestCompany', {name: Sequelize.STRING});
+    const User = defineUser(sequelize, Sequelize.DataTypes);
+    User.belongsTo(Company, {foreignKey: 'companyId'});
+
+    try {
+      await sequelize.sync({force: true});
+      const company = await Company.create({name: 'Reactivation Seat Test'});
+      const values = (index, endDate) => ({
+        email: 'reactivation-seat-' + index + '@test.com',
+        password: 'hash',
+        name: 'Seat',
+        lastname: String(index),
+        companyId: company.id,
+        end_date: endDate,
+      });
+      await User.create(values(1, null));
+      const inactiveTwo = await User.create(values(2, '2020-01-01'));
+      const inactiveThree = await User.create(values(3, '2020-01-01'));
+
+      const results = await Promise.allSettled([
+        inactiveTwo.update({end_date: null}),
+        inactiveThree.update({end_date: null}),
+      ]);
+
+      expect(results.filter(result => result.status === 'fulfilled')).to.have.length(1);
+      expect(results.filter(result => result.status === 'rejected')).to.have.length(1);
+      expect(await User.count({where: User.get_active_user_filter()})).to.equal(2);
     } finally {
       await sequelize.close();
     }
