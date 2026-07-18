@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "FIX_PROVEN",
+  "reason": "The same bulk redirect test changed from failing to passing and the full Core unit suite passed.",
+  "reproduction": "confirmed",
+  "full_suite": "passed",
+  "same_command": true,
+  "before": {
+    "schema_version": 1,
+    "label": "reproduced",
+    "captured_at": "2026-07-17T04:40:00Z",
+    "command": ["npx", "mocha", "t/unit/route/requests_bulk_action.js", "--timeout", "10000"],
+    "cwd": "/tmp/timeoff-log-redaction",
+    "runtime": "Node.js 22, macOS",
+    "duration_ms": 708,
+    "exit_code": 1,
+    "timed_out": false,
+    "stdout": "7 passing; 1 failing: expected '../' to equal '/requests/'.",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "secrets_redacted": true
+  },
+  "after": {
+    "schema_version": 1,
+    "label": "fixed",
+    "captured_at": "2026-07-17T04:42:00Z",
+    "command": ["npx", "mocha", "t/unit/route/requests_bulk_action.js", "--timeout", "10000"],
+    "cwd": "/tmp/timeoff-log-redaction",
+    "runtime": "Node.js 22, macOS",
+    "duration_ms": 376,
+    "exit_code": 0,
+    "timed_out": false,
+    "stdout": "9 passing.",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "secrets_redacted": true
+  }
+}
