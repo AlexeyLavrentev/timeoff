@@ -126,6 +126,68 @@ describe('Request ID + HTTP logging middleware', function() {
 
   describe('HTTP request logging on finish', function() {
 
+    it('does not log OIDC callback secrets', function() {
+      var originalStdout = process.stdout.write.bind(process.stdout);
+      var originalLevel = logger._getLevel();
+      var originalSilenceHttpLogs = process.env.SILENCE_HTTP_LOGS;
+      var captured = [];
+
+      function restore() {
+        process.stdout.write = originalStdout;
+        logger._setLevel(originalLevel);
+        if (originalSilenceHttpLogs === undefined) {
+          delete process.env.SILENCE_HTTP_LOGS;
+        } else {
+          process.env.SILENCE_HTTP_LOGS = originalSilenceHttpLogs;
+        }
+      }
+
+      return new Promise(function(resolve, reject) {
+        logger._setLevel(20);
+        delete process.env.SILENCE_HTTP_LOGS;
+        process.stdout.write = function(chunk) {
+          captured.push(chunk);
+          return true;
+        };
+
+        var app = express();
+        app.use(requestMiddleware);
+        app.get('/login/sso/callback', function(req, res) {
+          res.redirect('/calendar/');
+        });
+
+        var server = app.listen(0, function() {
+          httpRequest(server.address().port, {
+            path: '/login/sso/callback?code=secret-code&state=secret-state&session_state=secret-session',
+          }).then(function() {
+            setTimeout(function() {
+              restore();
+              server.close();
+
+              try {
+                var httpLogs = captured
+                  .map(function(c) { return c.toString(); })
+                  .filter(function(s) { return s.indexOf('http_request') !== -1; });
+                var parsed = JSON.parse(httpLogs[httpLogs.length - 1]);
+
+                expect(parsed.path).to.contain('/login/sso/callback');
+                expect(parsed.path).to.not.contain('secret-code');
+                expect(parsed.path).to.not.contain('secret-state');
+                expect(parsed.path).to.not.contain('secret-session');
+                resolve();
+              } catch(e) {
+                reject(e);
+              }
+            }, 50);
+          }).catch(function(error) {
+            restore();
+            server.close();
+            reject(error);
+          });
+        });
+      });
+    });
+
     it('logs request on res finish event', function() {
       var originalStdout = process.stdout.write.bind(process.stdout);
       var originalLevel = logger._getLevel();
