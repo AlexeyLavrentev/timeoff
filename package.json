@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "chai": "^6.2.2",
-    "chromedriver": "^146.0.5",
+    "chromedriver": "^151.0.0",
     "mocha": "^11.7.6",
     "nyc": "^18.0.0",
     "puppeteer": "^24.40.0",
