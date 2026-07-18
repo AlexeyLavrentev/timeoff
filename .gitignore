@@ -28,3 +28,7 @@ docker-compose.e2e.yml
 docker-compose.testing.yml
 .nyc_output/
 coverage/
+
+# Per-run audit/reproducer output belongs in CI artifacts, not source control
+/outputs/[0-9a-f]*/
+*.inspect.ndjson

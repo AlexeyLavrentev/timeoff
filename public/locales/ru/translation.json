@@ -835,6 +835,7 @@
     "leaveTypesTitle": "Типы отсутствий",
     "leaveTypeNameLabel": "Название типа отсутствия",
     "leaveTypeNameHelp": "Отметьте один, чтобы он всегда был вверху списка",
+    "leaveTypeColorAction": "Выбрать цвет",
     "leaveTypeLimitLabel": "Лимит",
     "leaveTypeLimitHelp": "Дней/год",
     "leaveTypeDeductionUnitLabel": "Считать как",
@@ -914,6 +915,7 @@
   "departments": {
     "title": "Отделы",
     "allDepartments": "Все отделы",
+    "editDepartment": "Редактировать отдел",
     "detailsTitle": "Детали отдела {{name}}",
     "detailsLead": "Детали отдела",
     "removeTooltip": "Удалить отдел",

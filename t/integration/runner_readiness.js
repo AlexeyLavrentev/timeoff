@@ -14,9 +14,12 @@ describe('Integration runner readiness', function() {
     driver = await buildDriver();
     await driver.manage().setTimeouts({pageLoad: 10000, script: 10000});
     await driver.get(config.get_application_host() + 'register/');
-    const heading = await driver.wait(until.elementLocated(By.css('h1')), 5000);
+    const companyName = await driver.wait(
+      until.elementLocated(By.id('company_name_inp')),
+      5000
+    );
 
-    expect(await heading.getText()).to.equal('New company');
+    expect(await companyName.getAttribute('name')).to.equal('company_name');
   });
 
   afterEach(async function() {
