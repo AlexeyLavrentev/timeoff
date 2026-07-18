@@ -228,9 +228,9 @@
 
             <div class="input-group">
               <span class="input-group-addon">
-                <input type="radio" name="first_record" value="{{ this.id }}" {{# if this.sort_order }}checked="checked"{{/ if}}>
+                <input type="radio" name="first_record" value="{{ this.id }}" {{# if this.sort_order }}checked="checked"{{/ if}} aria-label="{{t "generalSettings.leaveTypeNameHelp"}}: {{name}}">
               </span>
-              <input type="text" class="form-control" name="name__{{ this.id }}" value="{{name}}" data-tom-leave-type-order="name_{{@index}}">
+              <input type="text" class="form-control" name="name__{{ this.id }}" value="{{name}}" data-tom-leave-type-order="name_{{@index}}" aria-label="{{t "generalSettings.leaveTypeNameLabel"}}: {{name}}">
 
               <div class="input-group-btn" data-tom-color-picker="1" data-tom-leave-type-order="colour__{{@index}}">
                 <input type="hidden" name="color__{{ this.id }}" value="{{# with this }}{{ this.get_color_class }}{{/with}}">
@@ -255,16 +255,16 @@
             </div>
           </div>
           <div class="col-md-2 leave-types-limit-cell">
-            <input type="number" class="form-control" value="{{limit}}" name="limit__{{ this.id }}" data-tom-leave-type-order="limit_{{@index}}">
+            <input type="number" class="form-control" value="{{limit}}" name="limit__{{ this.id }}" data-tom-leave-type-order="limit_{{@index}}" aria-label="{{t "generalSettings.leaveTypeLimitLabel"}}: {{name}}">
           </div>
           <div class="col-md-2 leave-types-deduction-cell">
-            <select class="form-control" name="deduction_unit__{{ this.id }}" data-tom-leave-type-order="deduction_unit_{{@index}}">
+            <select class="form-control" name="deduction_unit__{{ this.id }}" data-tom-leave-type-order="deduction_unit_{{@index}}" aria-label="{{t "generalSettings.leaveTypeDeductionUnitLabel"}}: {{name}}">
               <option value="working_days" {{# if_equal deduction_unit "working_days" }}selected="selected"{{/if_equal}}>{{t "generalSettings.leaveTypeDeductionWorkingDays"}}</option>
               <option value="calendar_days" {{# if_equal deduction_unit "calendar_days" }}selected="selected"{{/if_equal}}>{{t "generalSettings.leaveTypeDeductionCalendarDays"}}</option>
             </select>
           </div>
           <div class="col-md-2 leave-types-min-cell">
-            <input type="number" class="form-control" value="{{minimum_consecutive_days}}" name="minimum_consecutive_days__{{ this.id }}" data-tom-leave-type-order="minimum_consecutive_days_{{@index}}">
+            <input type="number" class="form-control" value="{{minimum_consecutive_days}}" name="minimum_consecutive_days__{{ this.id }}" data-tom-leave-type-order="minimum_consecutive_days_{{@index}}" aria-label="{{t "generalSettings.leaveTypeMinConsecutiveLabel"}}: {{name}}">
           </div>
           <div class="col-md-1 leave-types-remove-cell">
             <button class="btn btn-default pull-right leavetype-remove-btn" value="{{ this.id }}" data-tom-leave-type-order="remove_{{@index}}" aria-label="{{t "common.remove"}}"><span class="fa fa-remove" aria-hidden="true"></span></button>

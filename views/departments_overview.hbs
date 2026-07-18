@@ -43,6 +43,7 @@
               data-placement="top"
               data-toggle="popover"
               data-trigger="focus hover"
+              aria-label="{{t "departments.publicHolidays"}}"
             >
               <span class="fa fa-question-circle" aria-hidden="true"> </span>
             </button>
@@ -54,6 +55,7 @@
               data-placement="top"
               data-toggle="popover"
               data-trigger="focus hover"
+              aria-label="{{t "departments.accruedAllowance"}}"
             >
               <span class="fa fa-question-circle" aria-hidden="true"> </span>
             </button>
@@ -72,7 +74,7 @@
           <td><a href="/users/?department={{ this.id }}">{{this.users.length}}</a></td>
           <td>{{# if this.include_public_holidays }}{{t "common.yes"}}{{/if}}</td>
           <td>{{# if this.is_accrued_allowance }}{{t "common.yes"}}{{/if}}</td>
-          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
+          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right" aria-label="{{t "departments.allDepartments"}}: {{this.name}}"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
         </tr>
         {{/each}}
       </tbody>

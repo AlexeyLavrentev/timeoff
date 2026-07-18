@@ -29,6 +29,9 @@ app.get('db_model').connect()
       db: app.get('db_model').sequelize,
       exit: function(code) { process.exit(code); },
     });
+    if (typeof process.send === 'function') {
+      process.send({type: 'test-server-ready'});
+    }
   })
   .catch(function(error) {
     require('../lib/middleware/request_logger').error('startup_failed', {error: error});
