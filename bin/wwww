@@ -4,20 +4,26 @@ var debug = require('debug')('vacation-tracker');
 var app   = require('../app');
 var edition = require('../lib/edition');
 var runtimeShutdown = require('../lib/runtime_shutdown');
+var serverListener = require('../lib/server_listener');
 
 app.set('port', process.env.PORT || 3000);
 app.set('host', process.env.HOST || undefined);
 
 app.get('db_model').connect()
   .then(function () {
+    return serverListener.listen({
+      app: app,
+      port: app.get('port'),
+      host: app.get('host'),
+    });
+  })
+  .then(function (server) {
     edition.startSchedulers({
       app    : app,
       models : app.get('db_model'),
     });
 
-    var server = app.listen(app.get('port'), app.get('host'), function() {
-      debug('Express server listening on port ' + server.address().port);
-    });
+    debug('Express server listening on port ' + server.address().port);
     runtimeShutdown.installProcessHandlers({
       server: server,
       db: app.get('db_model').sequelize,
