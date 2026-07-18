@@ -2,7 +2,6 @@
 
 'use strict';
 
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -23,6 +22,7 @@ const baseTestEnv = Object.assign({}, process.env, {
   SILENCE_HTTP_LOGS: 'true',
   LOG_LEVEL: 'error',
   TIMEOFF_FEATURES: 'all',
+  SE_SKIP_DRIVER_IN_PATH: 'true',
 });
 const serverEnv = Object.assign({}, baseTestEnv, {
   ALLOW_CREATE_NEW_ACCOUNTS: 'true',
@@ -80,36 +80,33 @@ const runMochaSuite = () => {
     .then(() => run(node, ['node_modules/mocha/bin/mocha', '--recursive', 't/unit']));
 };
 
-const waitForServer = () => new Promise((resolve, reject) => {
-  const deadline = Date.now() + 30000;
-
-  const attempt = () => {
-    const req = http.get(`${host}/login/`, res => {
-      res.resume();
-      if (res.statusCode >= 200 && res.statusCode < 500) {
-        resolve();
-        return;
-      }
-      retry();
-    });
-
-    req.on('error', retry);
-    req.setTimeout(1000, () => {
-      req.destroy();
-      retry();
-    });
-  };
-
-  const retry = () => {
-    if (Date.now() >= deadline) {
-      reject(new Error(`Timed out waiting for test server at ${host}`));
-      return;
+const waitForServer = server => new Promise((resolve, reject) => {
+  let settled = false;
+  const timeout = setTimeout(
+    () => finish(new Error(`Timed out waiting for test server at ${host}`)),
+    30000
+  );
+  const onMessage = message => {
+    if (message && message.type === 'test-server-ready') {
+      finish();
     }
-
-    setTimeout(attempt, 250);
+  };
+  const onError = error => finish(error);
+  const onExit = code => finish(new Error(`Test server exited before readiness with ${code}`));
+  const finish = error => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(timeout);
+    server.removeListener('message', onMessage);
+    server.removeListener('error', onError);
+    server.removeListener('exit', onExit);
+    if (error) reject(error);
+    else resolve();
   };
 
-  attempt();
+  server.on('message', onMessage);
+  server.on('error', onError);
+  server.on('exit', onExit);
 });
 
 const stopServer = server => new Promise(resolve => {
@@ -139,7 +136,7 @@ if (!process.env.KEEP_TEST_DB && fs.existsSync(dbStorage)) {
 run(node, ['bin/db_update.js'])
   .then(() => {
     server = spawn(node, ['bin/wwww'], {
-      stdio: 'inherit',
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       env: serverEnv,
     });
 
@@ -149,7 +146,7 @@ run(node, ['bin/db_update.js'])
       }
     });
 
-    return waitForServer();
+    return waitForServer(server);
   })
   .then(() => runMochaSuite())
   .then(() => stopServer(server))

@@ -1,0 +1,63 @@
+{
+  "title": "DEF-0002–DEF-0005: доступность, удаление компании и Selenium readiness",
+  "project": "LeavePilot (timeoff + timeoff-premium)",
+  "generated_at": "2026-07-18",
+  "mode": "prove-fix",
+  "original_report": "Пользователь разрешил исправить DEF-0002–DEF-0004, добавить сфокусированные регрессионные тесты и стабилизировать readiness полного Selenium-прогона.",
+  "discovery_scope": [
+    "/Users/aleksey/projects/timeoff/views/general_settings.hbs",
+    "/Users/aleksey/projects/timeoff/views/departments_overview.hbs",
+    "/Users/aleksey/projects/timeoff/views/partials/remove_company_modal.hbs",
+    "/Users/aleksey/projects/timeoff/bin/test.js",
+    "/Users/aleksey/projects/timeoff/bin/wwww",
+    "/Users/aleksey/projects/timeoff-premium/views/delegation.hbs",
+    "/Users/aleksey/projects/timeoff-premium/views/deputy_assignments.hbs"
+  ],
+  "candidates": [],
+  "expected": "Все интерактивные controls имеют уникальные локализованные accessible names; удаление компании попадает в зарегистрированный route; тестовый runner начинает Selenium только после готовности приложения и использует совместимый ChromeDriver.",
+  "actual": "До исправлений часть controls была без доступных имён, Remove company отправлял двойной slash и получал 404, а npm test выбирал ChromeDriver 151 для Chrome 148 и маскировал ошибку таймаутами.",
+  "environment": "macOS, Node.js/npm workspace, Express 5.2.1, Selenium WebDriver, Chrome 148, Asia/Yekaterinburg",
+  "reproduction": "Сфокусированные template/DOM contracts, company deletion Selenium-сценарий и отдельный browser readiness test были запущены до и после production-изменений.",
+  "failure_signal": "4 Core и 2 Premium accessibility failures; 404 и 3 Selenium timeouts в company deletion; SessionNotCreatedError для ChromeDriver 151/Chrome 148.",
+  "root_cause": "Шаблоны не связывали визуальные подписи с controls; action содержал лишний slash; runner не имел явного server-ready handshake, а npm PATH приоритизировал несовместимый chromedriver package.",
+  "fix_summary": "Добавлены локализованные aria-label/labels, исправлен route action, внедрён IPC-ready handshake и SE_SKIP_DRIVER_IN_PATH=true; добавлены сфокусированные regression contracts.",
+  "why_causal": "Каждое изменение непосредственно устраняет доказанный сигнал: accessibility tree получает имена, POST совпадает с Express route, Selenium стартует после IPC-ready и выбирает совместимый driver через Selenium Manager.",
+  "reproduction_files": [
+    {"path": "/Users/aleksey/projects/timeoff/t/unit/settings_accessibility_contract.js", "line": 1, "summary": "Core accessibility и route contracts."},
+    {"path": "/Users/aleksey/projects/timeoff-premium/test/accessibility_contract.test.js", "line": 1, "summary": "Premium accessibility contracts."},
+    {"path": "/Users/aleksey/projects/timeoff/t/integration/runner_readiness.js", "line": 1, "summary": "Реальная browser readiness проверка."},
+    {"path": "/Users/aleksey/projects/timeoff/t/integration/company/delete_account.js", "line": 1, "summary": "Существующий полный сценарий удаления компании."}
+  ],
+  "fix_files": [
+    {"path": "/Users/aleksey/projects/timeoff/views/general_settings.hbs", "line": 1, "summary": "Контекстные имена Leave Type controls."},
+    {"path": "/Users/aleksey/projects/timeoff/views/departments_overview.hbs", "line": 1, "summary": "Имена help и icon-only controls."},
+    {"path": "/Users/aleksey/projects/timeoff/views/partials/remove_company_modal.hbs", "line": 1, "summary": "Исправленный route удаления."},
+    {"path": "/Users/aleksey/projects/timeoff/bin/test.js", "line": 1, "summary": "IPC wait и driver selection environment."},
+    {"path": "/Users/aleksey/projects/timeoff/bin/wwww", "line": 1, "summary": "Явный IPC server-ready сигнал."},
+    {"path": "/Users/aleksey/projects/timeoff-premium/views/delegation.hbs", "line": 1, "summary": "Локализованное имя cancel control."},
+    {"path": "/Users/aleksey/projects/timeoff-premium/views/deputy_assignments.hbs", "line": 1, "summary": "Уникальные labels полей периода."}
+  ],
+  "checks": [
+    {"name": "Focused red-to-green", "status": "passed", "detail": "Core 5 passing; Premium 2 passing; company deletion 14 passing; readiness 1 passing."},
+    {"name": "Core full system suite", "status": "passed", "detail": "805 integration passing, 16 explicitly pending, 797 unit passing, exit 0."},
+    {"name": "Premium full suite", "status": "passed", "detail": "368 passing (13s), exit 0; npm run check exit 0."},
+    {"name": "Workbook verification", "status": "passed", "detail": "544/544 post-fix Pass, 0 open defects, 0 formula errors, 6 sheets visually inspected."}
+  ],
+  "reproduce": [
+    "npx mocha t/unit/settings_accessibility_contract.js t/unit/test_runner_logging.js",
+    "npx mocha test/accessibility_contract.test.js",
+    "npm test -- --grep 'Remove company account'",
+    "npm test"
+  ],
+  "limitations": [
+    "Evidence JSON агрегирует четыре точные сфокусированные команды в один red-to-green набор; это не один shell invocation.",
+    "16 integration tests имеют явный pending/skip в исходном suite и не являются failures."
+  ],
+  "residual_risks": [
+    "При будущем обновлении Chrome/npm chromedriver совместимость следует снова подтвердить readiness regression test."
+  ],
+  "notes": [
+    "Публичные API и схема данных не изменялись.",
+    "Существующие пользовательские изменения в Core сохранены без перезаписи."
+  ]
+}
