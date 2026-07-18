@@ -835,6 +835,7 @@
     "leaveTypesTitle": "Типи відсутності",
     "leaveTypeNameLabel": "Назва типу відсутності",
     "leaveTypeNameHelp": "Позначте один, щоб він завжди був зверху списку",
+    "leaveTypeColorAction": "Вибрати колір",
     "leaveTypeLimitLabel": "Ліміт",
     "leaveTypeLimitHelp": "Днів/рік",
     "leaveTypeDeductionUnitLabel": "Вважати як",
@@ -914,6 +915,7 @@
   "departments": {
     "title": "Відділи",
     "allDepartments": "Усі відділи",
+    "editDepartment": "Редагувати відділ",
     "detailsTitle": "Деталі відділу {{name}}",
     "detailsLead": "Деталі відділу",
     "removeTooltip": "Видалити відділ",

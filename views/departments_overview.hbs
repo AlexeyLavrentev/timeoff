@@ -74,7 +74,7 @@
           <td><a href="/users/?department={{ this.id }}">{{this.users.length}}</a></td>
           <td>{{# if this.include_public_holidays }}{{t "common.yes"}}{{/if}}</td>
           <td>{{# if this.is_accrued_allowance }}{{t "common.yes"}}{{/if}}</td>
-          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right" aria-label="{{t "departments.allDepartments"}}: {{this.name}}"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
+          <td><a href="/settings/departments/edit/{{this.id}}/" class="btn btn-link btn-xs pull-right" aria-label="{{t "departments.editDepartment"}}: {{this.name}}"><span class="fa fa-chevron-right" aria-hidden="true"></span></a></td>
         </tr>
         {{/each}}
       </tbody>

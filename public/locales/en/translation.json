@@ -833,6 +833,7 @@
     "leaveTypesTitle": "Leave Types",
     "leaveTypeNameLabel": "Leave Type Name",
     "leaveTypeNameHelp": "Tick one to always be on top of the list",
+    "leaveTypeColorAction": "Choose color",
     "leaveTypeLimitLabel": "Limit",
     "leaveTypeLimitHelp": "Days/year",
     "leaveTypeDeductionUnitLabel": "Count as",
@@ -912,6 +913,7 @@
   "departments": {
     "title": "Departments",
     "allDepartments": "All departments",
+    "editDepartment": "Edit department",
     "detailsTitle": "{{name}} details",
     "detailsLead": "Department details",
     "removeTooltip": "Remove department",

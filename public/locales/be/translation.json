@@ -835,6 +835,7 @@
     "leaveTypesTitle": "Тыпы адсутнасцяў",
     "leaveTypeNameLabel": "Назва тыпу адсутнасці",
     "leaveTypeNameHelp": "Адзначце адзін, каб ён заўсёды быў уверсе спісу",
+    "leaveTypeColorAction": "Абраць колер",
     "leaveTypeLimitLabel": "Ліміт",
     "leaveTypeLimitHelp": "Дзён/год",
     "leaveTypeDeductionUnitLabel": "Лічыць як",
@@ -914,6 +915,7 @@
   "departments": {
     "title": "Аддзелы",
     "allDepartments": "Усе аддзелы",
+    "editDepartment": "Рэдагаваць аддзел",
     "detailsTitle": "Дэталі аддзела {{name}}",
     "detailsLead": "Дэталі аддзела",
     "removeTooltip": "Выдаліць аддзел",

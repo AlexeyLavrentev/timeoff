@@ -835,6 +835,7 @@
     "leaveTypesTitle": "Жұмысқа келмеу түрлері",
     "leaveTypeNameLabel": "Жоқ түрінің атауы",
     "leaveTypeNameHelp": "Әрқашан тізімнің басында болу үшін біреуін белгілеңіз",
+    "leaveTypeColorAction": "Түсті таңдау",
     "leaveTypeLimitLabel": "Шектеу",
     "leaveTypeLimitHelp": "Күндер/жыл",
     "leaveTypeDeductionUnitLabel": "ретінде санау",
@@ -914,6 +915,7 @@
   "departments": {
     "title": "Бөлімдер",
     "allDepartments": "Барлық бөлімдер",
+    "editDepartment": "Бөлімді өңдеу",
     "detailsTitle": "Бөлім бөліктері {{name}}",
     "detailsLead": "Бөлім мәліметтері",
     "removeTooltip": "Бөлімді жою",
