@@ -19,7 +19,7 @@
     "express-session": "^1.19.0",
     "formidable": "~3.5.4",
     "handlebars": "^4.7.9",
-    "html-to-text": "^9.0.5",
+    "html-to-text": "^10.0.0",
     "i18next": "^26.3.6",
     "i18next-fs-backend": "^2.6.6",
     "i18next-http-middleware": "^3.9.7",
