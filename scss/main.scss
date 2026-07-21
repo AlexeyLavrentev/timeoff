@@ -55,12 +55,51 @@ $selected-item-background : #F5F7F8;
 
 $leave_cell_font_color : #61686b;
 
+/*
+  Design tokens (Stage 1 — UI foundation)
+  Semantic CSS custom properties. Light values mirror the raw hex/SCSS vars
+  previously inlined in the rules below, so computed appearance is unchanged.
+  Dark values are taken verbatim from the [data-theme="dark"] overrides that
+  already existed; selectors stay where they were and keep consuming these tokens.
+*/
+:root {
+  --color-text: #{$primary-font-color};
+  --color-bg: #{$page-background};
+  --color-heading: #243b53;
+  --color-heading-primary: #{$text-strong};
+  --color-text-muted: #{$text-muted};
+  --color-footer-text: #8293a3;
+  --color-border: #{$border-color};
+  --color-link: #{$link-color};
+  --color-link-hover: #{color.adjust($link-color, $lightness: -10%)};
+  --color-focus-ring: #{$focus-ring};
+  --color-focus-ring-strong: #4c9ad4;
+  --color-skip-link-bg: #ffffff;
+  --color-skip-link-text: #1f5f99;
+}
+
+[data-theme="dark"] {
+  --color-text: #e6e6e6;
+  --color-bg: #121417;
+  --color-heading: #f2f5f7;
+  --color-heading-primary: #f2f5f7;
+  --color-text-muted: #aebdca;
+  --color-footer-text: #8293a3;
+  --color-border: #2a2f34;
+  --color-link: #8abcf5;
+  --color-link-hover: #{color.adjust($link-color, $lightness: -10%)};
+  --color-focus-ring: #{$focus-ring};
+  --color-focus-ring-strong: #69a9d2;
+  --color-skip-link-bg: #20252a;
+  --color-skip-link-text: #d7eaf7;
+}
+
 // 5E5E5E
 
 body {
   font: $font-size-primary "Open Sans", Helvetica, Arial, sans-serif;
-  color: $primary-font-color;
-  background: $page-background;
+  color: var(--color-text);
+  background: var(--color-bg);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -126,17 +165,17 @@ body {
 }
 
 a {
-  color: $link-color;
+  color: var(--color-link);
   transition: color 0.18s ease;
 }
 
 a:hover,
 a:focus {
-  color: color.adjust($link-color, $lightness: -10%);
+  color: var(--color-link-hover);
 }
 
 :focus-visible {
-  outline: 3px solid $focus-ring;
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 3px;
 }
 
@@ -148,7 +187,7 @@ h1,
 h2,
 h3,
 h4 {
-  color: #243b53;
+  color: var(--color-heading);
   font-weight: 600;
   letter-spacing: 0;
 }
@@ -156,7 +195,7 @@ h4 {
 h1 {
   margin-top: 0;
   margin-bottom: $space-5;
-  color: $text-strong;
+  color: var(--color-heading-primary);
   font-size: 34px;
   line-height: 1.18;
 }
@@ -203,10 +242,10 @@ h1 {
   margin: 0;
   overflow: visible;
   clip: auto;
-  background: #ffffff;
-  border: 2px solid #4c9ad4;
+  background: var(--color-skip-link-bg);
+  border: 2px solid var(--color-focus-ring-strong);
   border-radius: $radius-md;
-  color: #1f5f99;
+  color: var(--color-skip-link-text);
   font-weight: 700;
   text-decoration: none;
   box-shadow: 0 8px 24px rgba(31, 45, 61, 0.16);
@@ -271,8 +310,8 @@ label.label-plain {
 .footer {
   margin-top  : 32px;
   padding-top : 20px;
-  border-top  : 1px solid $border-color;
-  color: #8293a3;
+  border-top  : 1px solid var(--color-border);
+  color: var(--color-footer-text);
 }
 
 .header, .marketing, .footer {
@@ -1178,6 +1217,19 @@ textarea.form-control {
 
 .email-audit-subject[aria-expanded="true"] .fa {
   transform: rotate(180deg);
+}
+
+/*
+  Reduced motion: disable the only transform-based transition in the app
+  (the email-audit chevron rotate). Color/background/border transitions on
+  links and buttons are short and non-vestibular, so they stay untouched.
+  Bootstrap 3 modal/collapse/dropdown transitions are intentionally not
+  targeted here.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .email-audit-subject .fa {
+    transition: none;
+  }
 }
 
 .email-audit-body {
@@ -3987,19 +4039,19 @@ td.current_day_cell.half_2nd {
 /* Dark theme overrides */
 [data-theme="dark"] {
   body {
-    background-color: #121417;
-    color: #e6e6e6;
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 
   h1,
   h2,
   h3,
   h4 {
-    color: #f2f5f7;
+    color: var(--color-heading);
   }
 
   a {
-    color: #8abcf5;
+    color: var(--color-link);
   }
 
   a.btn,
@@ -4037,9 +4089,9 @@ td.current_day_cell.half_2nd {
 
   .sr-only-focusable:focus,
   .sr-only-focusable:active {
-    background: #20252a;
-    border-color: #69a9d2;
-    color: #d7eaf7;
+    background: var(--color-skip-link-bg);
+    border-color: var(--color-focus-ring-strong);
+    color: var(--color-skip-link-text);
   }
 
   .text-muted,
@@ -4047,7 +4099,7 @@ td.current_day_cell.half_2nd {
   .form-control-static,
   small,
   .small {
-    color: #aebdca;
+    color: var(--color-text-muted);
   }
 
   hr {
@@ -4829,6 +4881,6 @@ td.current_day_cell.half_2nd {
   }
 
   .footer {
-    border-top-color: #2a2f34;
+    border-top-color: var(--color-border);
   }
 }
