@@ -3,6 +3,7 @@
 var config           = require('../../lib/config'),
     application_host = config.get_application_host(),
     By               = require('selenium-webdriver').By,
+    Key              = require('selenium-webdriver').Key,
     expect           = require('chai').expect,
     until            = require('selenium-webdriver').until,
     Promise          = require('bluebird'),
@@ -33,56 +34,48 @@ describe("Book leave modal keyboard focus management", function(){
     .then(function(){ done() });
   });
 
-  it("Move focus onto the New absence button", function(done){
+  it("Places focus on the New absence opener button", function(done){
     driver
-      .findElement(By.css('#book_time_off_btn'))
-      .then(function(el){ return el.click(); })
-      // The BS3 data-toggle opens the modal on click; focus should rest on the
-      // trigger until shown.bs.modal reassigns it inside the dialog.
-      .then(function(){ return driver.sleep(100); })
+      .executeScript('document.getElementById("book_time_off_btn").focus()')
+      .then(function(){
+        return driver.executeScript('return document.activeElement.id');
+      })
+      .then(function(activeId){
+        expect(activeId).to.equal('book_time_off_btn');
+      })
       .then(function(){ done() });
   });
 
-  it("Open the Book leave modal via the standard data-toggle", function(done){
-    // The modal is already opened by the previous click; wait for it to settle.
+  it("Opens the modal via keyboard (Enter on the opener)", function(done){
     driver
-      .wait(until.elementLocated(By.css('#book_leave_modal.in')), 2000)
-      .then(function(){ return driver.sleep(200); })
+      .switchTo().activeElement()
+      .then(function(el){ return el.sendKeys(Key.ENTER); })
+      .then(function(){
+        return driver.wait(
+          until.elementLocated(By.css('#book_leave_modal.in')),
+          2000
+        );
+      })
+      // let shown.bs.modal handlers run and focus settle
+      .then(function(){ return driver.sleep(300); })
       .then(function(){ done() });
   });
 
   it("Moves focus to the first form control after shown.bs.modal", function(done){
     // A newly registered user has no supervised users, so #employee is absent
-    // and the fallback order resolves to #leave_type.
+    // and the focus order resolves to #leave_type.
     driver
       .wait(function(){
-        return driver.switchTo().activeElement().getAttribute('id').then(function(id){
-          return id === 'leave_type';
-        });
+        return driver.executeScript('return document.activeElement.id')
+          .then(function(id){ return id === 'leave_type'; });
       }, 2000)
       .then(function(){ done() });
   });
 
-  it("Keeps Tab focus within the modal (Bootstrap focus trap)", function(done){
+  it("Closes the modal with Escape sent to the focused control", function(done){
     driver
       .switchTo().activeElement()
-      .then(function(){ return driver.switchTo().activeElement(); })
-      .then(function(el){ return el.getAttribute('id'); })
-      .then(function(id){
-        // Either the focused control is inside the modal, or the trap pulled it
-        // back. Both are acceptable; the key assertion is that focus did not
-        // escape to an element outside the modal.
-        expect(id).to.not.equal('book_time_off_btn');
-      })
-      .then(function(){ done() });
-  });
-
-  it("Closes the modal with Escape", function(done){
-    driver
-      .switchTo().activeElement()
-      .then(function(el){
-        return el.sendKeys('\uE00C'); // Key.ESCAPE
-      })
+      .then(function(el){ return el.sendKeys(Key.ESCAPE); })
       .then(function(){ return driver.sleep(400); })
       .then(function(){
         return driver.wait(until.elementIsNotVisible(
@@ -92,15 +85,14 @@ describe("Book leave modal keyboard focus management", function(){
       .then(function(){ done() });
   });
 
-  it("Restores focus to the opener after the modal is closed", function(done){
+  it("Restores focus to the opener (Bootstrap data API behavior)", function(done){
     // Bootstrap 3.3.4 data API restores focus to the element that opened the
     // modal via [data-toggle="modal"]. This test pins that built-in behavior;
-    // it does not add custom focus-restoration code.
+    // no custom focus-restoration code was added in this PR.
     driver
       .wait(function(){
-        return driver.switchTo().activeElement().getAttribute('id').then(function(id){
-          return id === 'book_time_off_btn';
-        });
+        return driver.executeScript('return document.activeElement.id')
+          .then(function(id){ return id === 'book_time_off_btn'; });
       }, 2000)
       .then(function(){ done() });
   });
