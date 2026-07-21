@@ -446,6 +446,36 @@ $(document).ready(function(){
   });
 });
 
+/*
+ * Book leave modal: move focus to the first usable form control once shown.
+ *
+ * Bootstrap 3.3.4 already manages aria-hidden, the focus trap (enforceFocus),
+ * Escape dismissal, and focus restoration to the opener, so this only chooses
+ * a meaningful initial focus inside the dialog instead of leaving focus on the
+ * modal container itself. Order matches the visible form: #employee (only
+ * present for supervisors), then #leave_type, then the first focusable control.
+ */
+$(document).ready(function(){
+  $('#book_leave_modal').on('shown.bs.modal', function() {
+    var $modal = $(this);
+    var $preferred = $modal.find('#employee').add($modal.find('#leave_type'));
+    var $target = $preferred.filter(':visible').filter(function() {
+      return !this.disabled;
+    }).first();
+
+    if (!$target.length) {
+      $target = $modal.find('button, a[href], input, select, textarea')
+        .filter(':visible').filter(function() {
+          return !this.disabled && this.type !== 'hidden';
+        }).first();
+    }
+
+    if ($target.length) {
+      $target.focus();
+    }
+  });
+});
+
 $(document).ready(function(){
   var currentPath = window.location.pathname;
 
