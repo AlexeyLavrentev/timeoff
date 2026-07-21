@@ -43,7 +43,7 @@
             <input type="checkbox" class="bulk-request-checkbox" name="request" value="{{this.id}}" form="bulk-action-form" aria-label="{{t "requests.selectRow"}}">
           </td>
           <td data-label="{{t 'requests.employee'}}"><span class="mobile-card-value">{{#with this.user}}{{this.full_name}}
-            <i class="fa fa-question-circle user-details-summary-trigger" data-user-id="{{this.id}}" aria-hidden="true"></i>{{/with}}</span>
+            <button type="button" class="user-details-summary-trigger details-trigger-button" data-user-id="{{this.id}}" aria-label="{{t 'user.employeeSummary'}}: {{this.full_name}}"><span class="fa fa-question-circle" aria-hidden="true"></span></button>{{/with}}</span>
           </td>
           <td data-label="{{t 'requests.department'}}">{{this.user.department.name}}</td>
           <td class="date_of_request" data-label="{{t 'requests.requestDate'}}">{{as_date_from_timestamp this.createdAt}}</td>
