@@ -28,9 +28,18 @@ describe('Employee summary popover trigger markup (requests page)', function() {
     );
   });
 
-  it('adds the details-trigger-button class (compact styling hook)', function() {
+  it('carries the requests-page marker class so the manual controller only drives this button', function() {
+    // The marker scopes the keyboard/click controller to the Requests trigger
+    // and prevents it from initialising on Team View <td> triggers that share
+    // user-details-summary-trigger.
     expect(source).to.match(
-      /<button[^>]*class="[^"]*details-trigger-button[^"]*"/
+      /<button[^>]*class="[^"]*\brequests-user-details-summary-trigger\b[^"]*"/
+    );
+  });
+
+  it('uses all three expected classes together', function() {
+    expect(source).to.match(
+      /<button[^>]*class="user-details-summary-trigger requests-user-details-summary-trigger details-trigger-button"/
     );
   });
 

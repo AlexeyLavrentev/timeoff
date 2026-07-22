@@ -261,22 +261,67 @@ $(document).ready(function(){
   }
 
   /*
-    Employee summary popover (requests page).
-    Bootstrap popover is initialized with trigger:'manual' and driven by a
-    per-trigger controller that keeps independent hover/focus/click state and
-    reuses Bootstrap's public .popover('show')/.popover('hide') API, so the
-    library keeps managing aria-describedby and the .popover[role=tooltip]
-    element. Only the user-details-summary popover is covered here; generic
-    [data-toggle="popover"] and leave-details are untouched.
-  */
-  var $userTriggers = $('.user-details-summary-trigger');
+    Employee summary popovers.
 
-  if ($userTriggers.length) {
+    Two separate initializations, keyed by marker class so the requests-page
+    trigger (a real <button>) is fully keyboard/click driven while every other
+    user-details trigger (Team View <td>, etc.) keeps its original hover-only
+    behaviour:
+
+      .requests-user-details-summary-trigger  -> manual controller (this page)
+      .user-details-summary-trigger (other)   -> Bootstrap hover popover
+
+    Bootstrap still owns aria-describedby and the .popover[role=tooltip]
+    element in both cases.
+  */
+
+  // --- Shared placement helper used by both branches above and below. ---
+  // (sidePopoverPlacement is already defined at the top of this ready block.)
+
+  /*
+    Other user-details triggers (Team View <td>, ...): original hover-only
+    behaviour. No manual state, no click/focus handlers, no pointerPinned.
+    The markup and selectors of those pages are intentionally untouched.
+  */
+  var $otherUserTriggers = $('.user-details-summary-trigger')
+    .not('.requests-user-details-summary-trigger');
+
+  if ($otherUserTriggers.length) {
+    $otherUserTriggers.popover({
+      title: translations.employeeSummary,
+      container: 'body',
+      html: true,
+      trigger: 'hover',
+      placement: sidePopoverPlacement,
+      viewport: { selector: 'body', padding: 12 },
+      delay: { show: 700, hide: 120 },
+      content: function(){
+        var $trigger = $(this);
+        var $content = $('<div>', {
+          'class': 'employee-summary-popover-content',
+          'text': translations.loading
+        });
+        $.ajax({
+          url: '/users/summary/' + $trigger.attr('data-user-id') + '/',
+          success: function(response){ $content.html(response); },
+          error: function(){ $content.text(translations.requestFailed); }
+        });
+        return $content[0];
+      }
+    });
+  }
+
+  /*
+    Requests-page employee summary trigger: manual controller.
+  */
+  var $reqTriggers = $('.requests-user-details-summary-trigger');
+
+  if ($reqTriggers.length) {
     var SHOW_DELAY_HOVER = 700;
     var HIDE_DELAY = 120;
 
-    // One shared document-level Escape handler for the whole trigger class.
-    var ESCAPE_NS = 'keydown.bs.userSummaryPopover';
+    // One shared document-level Escape handler for requests popovers only.
+    var ESCAPE_NS = 'keydown.userSummaryPopover';
     $(document).off(ESCAPE_NS).on(ESCAPE_NS, function(e){
       if (e.which !== 27) { return; }
       var current = currentOpen();
@@ -286,23 +331,20 @@ $(document).ready(function(){
       hideTrigger(current);
     });
 
-    // One shared document-level click handler for click-outside and toggle.
+    // One shared document-level click handler for click-outside.
     var CLICK_NS = 'click.userSummaryPopover';
     $(document).off(CLICK_NS).on(CLICK_NS, function(e){
-      $userTriggers.each(function(){
+      $reqTriggers.each(function(){
         var $t = $(this);
         var state = $t.data('userSummaryState');
-        if (!state) { return; }
+        if (!state || !state.pointerPinned) { return; }
         var insideTrigger = $.contains(this, e.target) || this === e.target;
         var tip = tipOf($t);
         var insidePopover = tip && ($.contains(tip, e.target) || tip === e.target);
-        if (state.pointerPinned) {
-          if (!insideTrigger && !insidePopover) {
-            // Click outside a pinned popover closes it.
-            hideTrigger($t);
-          }
-          // Click on the trigger itself is handled by the trigger's own
-          // click handler (toggle); do not double-process here.
+        // Click on the trigger itself is handled by the trigger's own
+        // click handler (toggle); do not double-process here.
+        if (!insideTrigger && !insidePopover) {
+          hideTrigger($t);
         }
       });
     });
@@ -319,7 +361,7 @@ $(document).ready(function(){
 
     function currentOpen() {
       var found = null;
-      $userTriggers.each(function(){
+      $reqTriggers.each(function(){
         if (isOpen($(this))) { found = $(this); }
       });
       return found;
@@ -343,6 +385,21 @@ $(document).ready(function(){
       return state.hovered || state.focused || state.pointerPinned || state.popoverHovered;
     }
 
+    // Centralised open routine: cancel any pending timers, close any other
+    // requests employee-summary popover, and show this one exactly once.
+    function showTrigger($trigger) {
+      var state = $trigger.data('userSummaryState');
+      cancelShow(state);
+      cancelHide(state);
+      var other = currentOpen();
+      if (other && !other.is($trigger)) {
+        hideTrigger(other);
+      }
+      if (!isOpen($trigger)) {
+        $trigger.popover('show');
+      }
+    }
+
     function scheduleShow($trigger, delay) {
       var state = $trigger.data('userSummaryState');
       cancelHide(state);
@@ -350,12 +407,7 @@ $(document).ready(function(){
       if (state.showTimer) { return; }
       state.showTimer = window.setTimeout(function(){
         state.showTimer = null;
-        // Close any other employee-summary popover before showing a new one.
-        var other = currentOpen();
-        if (other && !other.is($trigger)) {
-          hideTrigger(other);
-        }
-        $trigger.popover('show');
+        showTrigger($trigger);
       }, delay);
     }
 
@@ -379,7 +431,8 @@ $(document).ready(function(){
       state.popoverHovered = false;
       if (state.currentXhr) {
         state.currentXhr.abort();
-        state.currentXhr = null;
+        // state.currentXhr is cleared by the xhr's own complete callback,
+        // guarded by identity (see below).
       }
       if (isOpen($trigger)) {
         $trigger.popover('hide');
@@ -403,12 +456,11 @@ $(document).ready(function(){
         .data('userSummaryHoverBound', true);
     }
 
-    $userTriggers.each(function(){
+    $reqTriggers.each(function(){
       var $trigger = $(this);
       // AJAX content object lives on the trigger; response can only land here.
       var $content = $('<div>', {
         'class': 'employee-summary-popover-content',
-        'role': 'status',
         'aria-live': 'polite',
         'aria-atomic': 'true',
         'text': translations.loading
@@ -468,49 +520,58 @@ $(document).ready(function(){
           // keyboard; the popover is already open from focusin.
           var fromKeyboard = (e.detail === 0);
           if (fromKeyboard) {
-            // Keep focus-driven popover open; do not toggle.
+            // Keyboard click is NOT a toggle:
+            //  - if already open: keep it open (no change);
+            //  - if closed (e.g. after Escape, while focus is still here):
+            //    open immediately without a toggle that could hide it again.
+            e.preventDefault();
+            if (!isOpen($trigger)) {
+              showTrigger($trigger);
+            }
             return;
           }
           e.preventDefault();
           if (state.pointerPinned) {
             hideTrigger($trigger);
           } else {
-            cancelHide(state);
+            // A real pointer click on the button first fires focusin, which
+            // calls scheduleShow(0). Cancel both timers so the show happens
+            // exactly once, through showTrigger.
             state.pointerPinned = true;
-            // Close any other open employee-summary popover.
-            var other = currentOpen();
-            if (other && !other.is($trigger)) {
-              hideTrigger(other);
-            }
-            if (!isOpen($trigger)) {
-              $trigger.popover('show');
-            }
+            showTrigger($trigger);
           }
         });
 
       // Load AJAX content when the popover is first shown.
       $trigger.on('show.bs.popover', function(){
-        if (state.currentXhr) { return; }
+        // Abort a previous in-flight request for this trigger, if any.
+        if (state.currentXhr) {
+          state.currentXhr.abort();
+        }
         $content.text(translations.loading);
-        state.currentXhr = $.ajax({
+        // Capture this specific request and compare by identity in every
+        // callback so a late response from an older request can never
+        // overwrite the content of a newer popover.
+        var xhr = $.ajax({
           url: '/users/summary/' + $trigger.attr('data-user-id') + '/',
           success: function(response){
-            if (state.currentXhr) {
-              $content.html(response);
-            }
+            if (state.currentXhr !== xhr) { return; }
+            $content.html(response);
           },
-          error: function(xhr, textStatus){
+          error: function(jqXhr, textStatus){
             // textStatus === 'abort' happens when we intentionally cancel
             // a stale request — do not surface a failure message for that.
             if (textStatus === 'abort') { return; }
-            if (state.currentXhr) {
-              $content.text(translations.requestFailed);
-            }
+            if (state.currentXhr !== xhr) { return; }
+            $content.text(translations.requestFailed);
           },
           complete: function(){
-            state.currentXhr = null;
+            if (state.currentXhr === xhr) {
+              state.currentXhr = null;
+            }
           }
         });
+        state.currentXhr = xhr;
       });
     });
   }
