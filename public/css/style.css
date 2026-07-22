@@ -3557,8 +3557,19 @@ td.current_day_cell.half_2nd {
     align-items: center;
     gap: 0;
   }
+  .team-toolbar .period-navigation > [class*=col-xs-] {
+    width: 100%;
+    min-width: 0;
+  }
   .team-toolbar .period-navigation-side {
     display: flex;
+    width: 100%;
+  }
+  .team-toolbar .period-navigation-side:first-child {
+    justify-content: flex-start;
+  }
+  .team-toolbar .period-navigation-side:last-child {
+    justify-content: flex-end;
   }
   .team-toolbar .period-navigation-side .team-view-period-link {
     display: inline-flex;
@@ -3569,6 +3580,7 @@ td.current_day_cell.half_2nd {
     padding: 0;
   }
   .team-toolbar .calendar-section-caption {
+    width: 100%;
     min-width: 0;
   }
 }
@@ -3649,9 +3661,9 @@ td.current_day_cell.half_2nd {
 */
 .team-view-scroll-cue {
   position: absolute;
-  top: 50%;
-  right: 6px;
+  top: 84px;
   transform: translateY(-50%);
+  right: 6px;
   z-index: 5;
   display: inline-flex;
   align-items: center;
@@ -3661,6 +3673,7 @@ td.current_day_cell.half_2nd {
   padding: 0;
   border-radius: 999px;
   background: #ffffff;
+  border: 1px solid #e3e9ef;
   box-shadow: 0 1px 2px rgba(31, 45, 61, 0.06);
   color: #657789;
   font-size: 12px;
@@ -4622,6 +4635,12 @@ td.current_day_cell.half_2nd {
 }
 [data-theme=dark] .footer {
   border-top-color: var(--color-border);
+}
+[data-theme=dark] .team-view-scroll-cue {
+  background: #20252a;
+  border: 1px solid #3a4046;
+  color: #c4d0d9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 /*# sourceMappingURL=style.css.map */

@@ -3753,8 +3753,24 @@ td.current_day_cell.half_2nd {
     gap: 0;
   }
 
+  // Override the Bootstrap .col-xs-2 widths so the grid template above is
+  // honoured instead of the float-based column widths.
+  .team-toolbar .period-navigation > [class*="col-xs-"] {
+    width: 100%;
+    min-width: 0;
+  }
+
   .team-toolbar .period-navigation-side {
     display: flex;
+    width: 100%;
+  }
+
+  .team-toolbar .period-navigation-side:first-child {
+    justify-content: flex-start;
+  }
+
+  .team-toolbar .period-navigation-side:last-child {
+    justify-content: flex-end;
   }
 
   .team-toolbar .period-navigation-side .team-view-period-link {
@@ -3767,6 +3783,7 @@ td.current_day_cell.half_2nd {
   }
 
   .team-toolbar .calendar-section-caption {
+    width: 100%;
     min-width: 0;
   }
 }
@@ -3853,9 +3870,12 @@ td.current_day_cell.half_2nd {
 */
 .team-view-scroll-cue {
   position: absolute;
-  top: 50%;
-  right: 6px;
+  // Pin near the top of the table (just below the 56px header + half a row),
+  // not the vertical center of the shell: a department with many employees
+  // is much taller than the viewport, and a 50% cue would land below the fold.
+  top: 84px;
   transform: translateY(-50%);
+  right: 6px;
   z-index: 5;
   display: inline-flex;
   align-items: center;
@@ -3865,6 +3885,7 @@ td.current_day_cell.half_2nd {
   padding: 0;
   border-radius: $radius-pill;
   background: $surface-color;
+  border: 1px solid $border-color;
   box-shadow: $shadow-sm;
   color: $text-muted;
   font-size: 12px;
@@ -5004,5 +5025,12 @@ td.current_day_cell.half_2nd {
 
   .footer {
     border-top-color: var(--color-border);
+  }
+
+  .team-view-scroll-cue {
+    background: #20252a;
+    border: 1px solid #3a4046;
+    color: #c4d0d9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   }
 }

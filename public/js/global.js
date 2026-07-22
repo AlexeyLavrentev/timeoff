@@ -303,13 +303,11 @@ $(document).ready(function(){
 
     // When focus is on a nested interactive element (admin employee link,
     // dropdown, popover trigger, ...), do not drive the scroll ourselves.
-    // For the arrow/home/end keys the browser default would still scroll the
-    // nearest scrollable ancestor (this container), which would silently move
-    // the table while the user thinks they are operating the link. Suppress
-    // that default so the container stays put; the link's own keyboard
-    // behaviour (e.g. Enter to activate) is a different key and is unaffected.
+    // This controller only owns keyboard scrolling when the scroll region
+    // itself is focused. Whatever the browser does by default for a nested
+    // element (including native scrolling of an ancestor) is outside the
+    // responsibility of this controller.
     if (event.target !== container) {
-      event.preventDefault();
       return;
     }
 
