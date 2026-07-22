@@ -260,35 +260,335 @@ $(document).ready(function(){
     return elementRect.right + popoverWidth + 24 > viewportWidth ? 'left' : 'right';
   }
 
-  $('.user-details-summary-trigger').popover({
-    title: translations.employeeSummary,
-    container: 'body',
-    html: true,
-    trigger: 'hover',
-    placement: sidePopoverPlacement,
-    viewport: {
-      selector: 'body',
-      padding: 12,
-    },
-    delay: {show: 700, hide: 120},
-    content: function(){
-      var divId =  "tmp-id-" + $.now();
-      return detailsInPopup($(this).attr('data-user-id'), divId);
-    }
-  });
+  /*
+    Employee summary popovers.
 
-  function detailsInPopup(userId, divId){
-    $.ajax({
-      url: '/users/summary/'+userId+'/',
-      success: function(response){
-        $('#'+divId).html(response);
-      },
-      error: function(){
-        $('#'+divId).text(translations.requestFailed);
+    Two separate initializations, keyed by marker class so the requests-page
+    trigger (a real <button>) is fully keyboard/click driven while every other
+    user-details trigger (Team View <td>, etc.) keeps its original hover-only
+    behaviour:
+
+      .requests-user-details-summary-trigger  -> manual controller (this page)
+      .user-details-summary-trigger (other)   -> Bootstrap hover popover
+
+    Bootstrap still owns aria-describedby and the .popover[role=tooltip]
+    element in both cases.
+  */
+
+  // --- Shared placement helper used by both branches above and below. ---
+  // (sidePopoverPlacement is already defined at the top of this ready block.)
+
+  /*
+    Other user-details triggers (Team View <td>, ...): original hover-only
+    behaviour. No manual state, no click/focus handlers, no pointerPinned.
+    The markup and selectors of those pages are intentionally untouched.
+  */
+  var $otherUserTriggers = $('.user-details-summary-trigger')
+    .not('.requests-user-details-summary-trigger');
+
+  if ($otherUserTriggers.length) {
+    $otherUserTriggers.popover({
+      title: translations.employeeSummary,
+      container: 'body',
+      html: true,
+      trigger: 'hover',
+      placement: sidePopoverPlacement,
+      viewport: { selector: 'body', padding: 12 },
+      delay: { show: 700, hide: 120 },
+      content: function(){
+        var $trigger = $(this);
+        var $content = $('<div>', {
+          'class': 'employee-summary-popover-content',
+          'text': translations.loading
+        });
+        $.ajax({
+          url: '/users/summary/' + $trigger.attr('data-user-id') + '/',
+          success: function(response){ $content.html(response); },
+          error: function(){ $content.text(translations.requestFailed); }
+        });
+        return $content[0];
       }
     });
+  }
 
-    return '<div id="'+ divId +'">' + translations.loading + '</div>';
+  /*
+    Requests-page employee summary trigger: manual controller.
+  */
+  var $reqTriggers = $('.requests-user-details-summary-trigger');
+
+  if ($reqTriggers.length) {
+    var SHOW_DELAY_HOVER = 700;
+    var HIDE_DELAY = 120;
+
+    // One shared document-level Escape handler for requests popovers only.
+    var ESCAPE_NS = 'keydown.userSummaryPopover';
+    $(document).off(ESCAPE_NS).on(ESCAPE_NS, function(e){
+      if (e.which !== 27) { return; }
+      var current = currentOpen();
+      if (!current) { return; }
+      // Only act when our popover is the relevant one; let modal/dropdown
+      // handle Escape themselves otherwise.
+      hideTrigger(current);
+    });
+
+    // One shared document-level click handler for click-outside.
+    var CLICK_NS = 'click.userSummaryPopover';
+    $(document).off(CLICK_NS).on(CLICK_NS, function(e){
+      $reqTriggers.each(function(){
+        var $t = $(this);
+        var state = $t.data('userSummaryState');
+        if (!state || !state.pointerPinned) { return; }
+        var insideTrigger = $.contains(this, e.target) || this === e.target;
+        var tip = tipOf($t);
+        var insidePopover = tip && ($.contains(tip, e.target) || tip === e.target);
+        // Click on the trigger itself is handled by the trigger's own
+        // click handler (toggle); do not double-process here.
+        if (!insideTrigger && !insidePopover) {
+          hideTrigger($t);
+        }
+      });
+    });
+
+    function tipOf($trigger) {
+      var inst = $trigger.data('bs.popover');
+      return inst && inst.tip ? inst.tip() : null;
+    }
+
+    function isOpen($trigger) {
+      var tip = tipOf($trigger);
+      return !!(tip && tip.is(':visible'));
+    }
+
+    function currentOpen() {
+      var found = null;
+      $reqTriggers.each(function(){
+        if (isOpen($(this))) { found = $(this); }
+      });
+      return found;
+    }
+
+    function cancelShow(state) {
+      if (state.showTimer) {
+        window.clearTimeout(state.showTimer);
+        state.showTimer = null;
+      }
+    }
+
+    function cancelHide(state) {
+      if (state.hideTimer) {
+        window.clearTimeout(state.hideTimer);
+        state.hideTimer = null;
+      }
+    }
+
+    function shouldStayVisible(state) {
+      return state.hovered || state.focused || state.pointerPinned || state.popoverHovered;
+    }
+
+    // Deactivate every OTHER requests employee-summary trigger, including
+    // ones whose popover is still pending (showTimer set but not yet shown).
+    // hideTrigger already cancels showTimer/hideTimer, clears pointerPinned,
+    // aborts the trigger's in-flight XHR, and hides a visible popover, so it
+    // is safe to call on a trigger that has not become visible yet. We do
+    // NOT reset `hovered`/`focused` here: those reflect real pointer/keyboard
+    // state and must stay consistent with subsequent native events.
+    function hideOtherTriggers($activeTrigger) {
+      $reqTriggers.each(function(){
+        var $other = $(this);
+        if ($other.is($activeTrigger)) {
+          return;
+        }
+        hideTrigger($other);
+      });
+    }
+
+    // Centralised open routine: cancel any pending timers, deactivate every
+    // OTHER requests employee-summary trigger (visible or pending), and show
+    // this one exactly once.
+    function showTrigger($trigger) {
+      var state = $trigger.data('userSummaryState');
+      cancelShow(state);
+      cancelHide(state);
+      hideOtherTriggers($trigger);
+      if (!isOpen($trigger)) {
+        $trigger.popover('show');
+      }
+    }
+
+    function scheduleShow($trigger, delay) {
+      var state = $trigger.data('userSummaryState');
+      cancelHide(state);
+      if (isOpen($trigger)) { return; }
+      if (state.showTimer) { return; }
+      state.showTimer = window.setTimeout(function(){
+        state.showTimer = null;
+        showTrigger($trigger);
+      }, delay);
+    }
+
+    function scheduleHide($trigger) {
+      var state = $trigger.data('userSummaryState');
+      cancelShow(state);
+      if (state.hideTimer) { return; }
+      state.hideTimer = window.setTimeout(function(){
+        state.hideTimer = null;
+        if (!shouldStayVisible(state)) {
+          $trigger.popover('hide');
+        }
+      }, HIDE_DELAY);
+    }
+
+    function hideTrigger($trigger) {
+      var state = $trigger.data('userSummaryState');
+      cancelShow(state);
+      cancelHide(state);
+      state.pointerPinned = false;
+      state.popoverHovered = false;
+      if (state.currentXhr) {
+        state.currentXhr.abort();
+        // state.currentXhr is cleared by the xhr's own complete callback,
+        // guarded by identity (see below).
+      }
+      if (isOpen($trigger)) {
+        $trigger.popover('hide');
+      }
+    }
+
+    function bindPopoverHover($trigger) {
+      var $tip = tipOf($trigger);
+      if (!$tip || $tip.data('userSummaryHoverBound')) { return; }
+      $tip
+        .on('mouseenter.userSummaryPopover', function(){
+          var state = $trigger.data('userSummaryState');
+          state.popoverHovered = true;
+          cancelHide(state);
+        })
+        .on('mouseleave.userSummaryPopover', function(){
+          var state = $trigger.data('userSummaryState');
+          state.popoverHovered = false;
+          scheduleHide($trigger);
+        })
+        .data('userSummaryHoverBound', true);
+    }
+
+    $reqTriggers.each(function(){
+      var $trigger = $(this);
+      // AJAX content object lives on the trigger; response can only land here.
+      var $content = $('<div>', {
+        'class': 'employee-summary-popover-content',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        'text': translations.loading
+      });
+
+      var state = {
+        hovered: false,
+        focused: false,
+        pointerPinned: false,
+        popoverHovered: false,
+        showTimer: null,
+        hideTimer: null,
+        currentXhr: null,
+        content: $content
+      };
+      $trigger.data('userSummaryState', state);
+
+      $trigger.popover({
+        title: translations.employeeSummary,
+        container: 'body',
+        html: true,
+        trigger: 'manual',
+        placement: sidePopoverPlacement,
+        viewport: { selector: 'body', padding: 12 },
+        content: function(){ return $content[0]; }
+      });
+
+      // Once the popover element exists, attach hover handlers to its tip
+      // so the user can move the pointer onto the popover without losing it.
+      $trigger.on('shown.bs.popover', function(){
+        bindPopoverHover($trigger);
+      });
+
+      $trigger
+        .on('mouseenter.userSummaryPopover', function(){
+          state.hovered = true;
+          scheduleShow($trigger, SHOW_DELAY_HOVER);
+        })
+        .on('mouseleave.userSummaryPopover', function(){
+          state.hovered = false;
+          scheduleHide($trigger);
+        })
+        .on('focusin.userSummaryPopover', function(){
+          state.focused = true;
+          // Keyboard focus shows immediately: 700ms delay is tuned for
+          // accidental hover and is painful for keyboard users.
+          scheduleShow($trigger, 0);
+        })
+        .on('focusout.userSummaryPopover', function(){
+          state.focused = false;
+          scheduleHide($trigger);
+        })
+        .on('click.userSummaryPopover', function(e){
+          // Distinguish pointer activation (mouse/touch) from keyboard
+          // activation (Enter/Space synthesizes a click with detail=0 and,
+          // for Enter, without a preceding pointerdown). detail === 0 means
+          // keyboard; the popover is already open from focusin.
+          var fromKeyboard = (e.detail === 0);
+          if (fromKeyboard) {
+            // Keyboard click is NOT a toggle:
+            //  - if already open: keep it open (no change);
+            //  - if closed (e.g. after Escape, while focus is still here):
+            //    open immediately without a toggle that could hide it again.
+            e.preventDefault();
+            if (!isOpen($trigger)) {
+              showTrigger($trigger);
+            }
+            return;
+          }
+          e.preventDefault();
+          if (state.pointerPinned) {
+            hideTrigger($trigger);
+          } else {
+            // A real pointer click on the button first fires focusin, which
+            // calls scheduleShow(0). Cancel both timers so the show happens
+            // exactly once, through showTrigger.
+            state.pointerPinned = true;
+            showTrigger($trigger);
+          }
+        });
+
+      // Load AJAX content when the popover is first shown.
+      $trigger.on('show.bs.popover', function(){
+        // Abort a previous in-flight request for this trigger, if any.
+        if (state.currentXhr) {
+          state.currentXhr.abort();
+        }
+        $content.text(translations.loading);
+        // Capture this specific request and compare by identity in every
+        // callback so a late response from an older request can never
+        // overwrite the content of a newer popover.
+        var xhr = $.ajax({
+          url: '/users/summary/' + $trigger.attr('data-user-id') + '/',
+          success: function(response){
+            if (state.currentXhr !== xhr) { return; }
+            $content.html(response);
+          },
+          error: function(jqXhr, textStatus){
+            // textStatus === 'abort' happens when we intentionally cancel
+            // a stale request — do not surface a failure message for that.
+            if (textStatus === 'abort') { return; }
+            if (state.currentXhr !== xhr) { return; }
+            $content.text(translations.requestFailed);
+          },
+          complete: function(){
+            if (state.currentXhr === xhr) {
+              state.currentXhr = null;
+            }
+          }
+        });
+        state.currentXhr = xhr;
+      });
+    });
   }
 });
 
@@ -443,6 +743,36 @@ $(document).ready(function(){
     form.submit();
 
     return false;
+  });
+});
+
+/*
+ * Book leave modal: move focus to the first usable form control once shown.
+ *
+ * Bootstrap 3.3.4 already manages aria-hidden, the focus trap (enforceFocus),
+ * Escape dismissal, and focus restoration to the opener, so this only chooses
+ * a meaningful initial focus inside the dialog instead of leaving focus on the
+ * modal container itself. Order matches the visible form: #employee (only
+ * present for supervisors), then #leave_type, then the first focusable control.
+ */
+$(document).ready(function(){
+  $('#book_leave_modal').on('shown.bs.modal', function() {
+    var $modal = $(this);
+    var $preferred = $modal.find('#employee').add($modal.find('#leave_type'));
+    var $target = $preferred.filter(':visible').filter(function() {
+      return !this.disabled;
+    }).first();
+
+    if (!$target.length) {
+      $target = $modal.find('button, a[href], input, select, textarea')
+        .filter(':visible').filter(function() {
+          return !this.disabled && this.type !== 'hidden';
+        }).first();
+    }
+
+    if ($target.length) {
+      $target.focus();
+    }
   });
 });
 

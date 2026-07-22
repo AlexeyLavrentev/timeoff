@@ -40,16 +40,16 @@
 <div class="content-spacer" aria-hidden="true"></div>
 
 <div class="col-md-3 list-group all-departments">
-  <a href="/users/" class="list-group-item{{#unless department_id }} selected-item{{/unless}}">{{t "users.allDepartments"}}</a>
+  <a href="/users/" class="list-group-item{{#unless department_id }} selected-item{{/unless}}"{{#unless department_id }} aria-current="true"{{/unless}}>{{t "users.allDepartments"}}</a>
   {{#each company.departments}}
-    <a class="list-group-item {{#if_equal ../department_id this.id}} selected-item{{/if_equal}}" href="/users/?department={{this.id}}">{{this.name}}</a>
+    <a class="list-group-item {{#if_equal ../department_id this.id}} selected-item{{/if_equal}}"{{#if_equal ../department_id this.id}} aria-current="true"{{/if_equal}} href="/users/?department={{this.id}}">{{this.name}}</a>
   {{/each}}
 </div>
 
 <div class="col-md-3 list-group all-departments">
-  <a href="/users/" class="list-group-item{{#unless group_id }} selected-item{{/unless}}">{{t "users.allGroups"}}</a>
+  <a href="/users/" class="list-group-item{{#unless group_id }} selected-item{{/unless}}"{{#unless group_id }} aria-current="true"{{/unless}}>{{t "users.allGroups"}}</a>
   {{#each company.groups}}
-    <a class="list-group-item {{#if_equal ../group_id this.id}} selected-item{{/if_equal}}" href="/users/?group={{this.id}}">{{this.name}}</a>
+    <a class="list-group-item {{#if_equal ../group_id this.id}} selected-item{{/if_equal}}"{{#if_equal ../group_id this.id}} aria-current="true"{{/if_equal}} href="/users/?group={{this.id}}">{{this.name}}</a>
   {{/each}}
 </div>
 
