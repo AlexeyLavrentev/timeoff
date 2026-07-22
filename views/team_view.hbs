@@ -34,7 +34,7 @@
 <nav aria-label="{{t "teamView.monthsLabel"}}">
   <div class="row period-navigation">
     <div class="col-xs-2 period-navigation-side">
-      <a class="btn btn-link btn-lg" href="/calendar/teamview/?{{> team_view_url_parameters base_date = prev_date }}"><span aria-hidden="true" class="fa fa-chevron-left"></span> {{as_date_formatted prev_date 'MMM' }}</a>
+      <a class="btn btn-link btn-lg team-view-period-link" href="/calendar/teamview/?{{> team_view_url_parameters base_date = prev_date }}" aria-label="{{as_date_formatted prev_date 'MMMM, YYYY' }}"><span aria-hidden="true" class="fa fa-chevron-left"></span> <span class="team-view-period-link-label">{{as_date_formatted prev_date 'MMM' }}</span></a>
     </div>
 
     <div class="col-xs-8 calendar-section-caption">
@@ -49,7 +49,7 @@
     </div>
 
     <div class="col-xs-2 period-navigation-side">
-      <a class="btn btn-link btn-lg pull-right" href="/calendar/teamview/?{{> team_view_url_parameters base_date = next_date }}">{{as_date_formatted next_date 'MMM'}} <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
+      <a class="btn btn-link btn-lg pull-right team-view-period-link" href="/calendar/teamview/?{{> team_view_url_parameters base_date = next_date }}" aria-label="{{as_date_formatted next_date 'MMMM, YYYY' }}"><span class="team-view-period-link-label">{{as_date_formatted next_date 'MMM'}}</span> <span aria-hidden="true" class="fa fa-chevron-right"></span></a>
     </div>
   </div>
 </nav>

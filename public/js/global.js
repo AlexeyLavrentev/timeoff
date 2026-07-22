@@ -223,6 +223,120 @@ $(document).ready(function(){
 });
 
 
+/*
+ * Team View: horizontal scroll affordance + keyboard navigation.
+ *
+ * Each `.team-view-table-container` is a focusable scroll region (tabindex=0,
+ * role=region). This controller:
+ *   - tracks whether the table overflows horizontally and which ends are
+ *     reachable, reflecting that on the surrounding `.team-view-table-shell`
+ *     via the classes is-horizontally-scrollable / can-scroll-left /
+ *     can-scroll-right (the CSS shows/hides the scroll cue accordingly);
+ *   - lets a keyboard user move the scroll position with ArrowLeft/ArrowRight
+ *     and jump to either end with Home/End, but ONLY when focus is directly
+ *     on the scroll container — never when it is on a link, dropdown,
+ *     popover trigger or any other nested interactive element.
+ *
+ * The implementation is intentionally framework-free: a single rAF-batched
+ * refresh on load/scroll/resize plus a namespaced keydown handler.
+ */
+$(document).ready(function(){
+  var SCROLL_TOLERANCE_PX = 2;
+  var $containers = $('.team-view-table-container');
+  if (!$containers.length) { return; }
+
+  function shellOf(container) {
+    // The shell is the positioned ancestor that hosts the cue and state
+    // classes. It wraps the scroll container in the markup.
+    return container.parentNode && container.parentNode.classList &&
+      container.parentNode.classList.contains('team-view-table-shell')
+      ? container.parentNode : null;
+  }
+
+  function maxScrollLeft(container) {
+    return container.scrollWidth - container.clientWidth;
+  }
+
+  function refreshContainer(container) {
+    var shell = shellOf(container);
+    if (!shell) { return; }
+    var max = maxScrollLeft(container);
+    var horizontallyScrollable = max > SCROLL_TOLERANCE_PX;
+    var left = container.scrollLeft;
+    var canLeft = horizontallyScrollable && left > SCROLL_TOLERANCE_PX;
+    var canRight = horizontallyScrollable && (max - left) > SCROLL_TOLERANCE_PX;
+
+    shell.classList.toggle('is-horizontally-scrollable', horizontallyScrollable);
+    shell.classList.toggle('can-scroll-left', canLeft);
+    shell.classList.toggle('can-scroll-right', canRight);
+  }
+
+  var refreshScheduled = false;
+  function scheduleRefreshAll() {
+    if (refreshScheduled) { return; }
+    refreshScheduled = true;
+    // rAF batches multiple events (scroll + resize) into one paint-friendly pass.
+    (window.requestAnimationFrame || function(cb){ window.setTimeout(cb, 16); })(function(){
+      refreshScheduled = false;
+      $containers.each(function(){ refreshContainer(this); });
+    });
+  }
+
+  // Initial state, after layout settles.
+  scheduleRefreshAll();
+
+  // Per-container scroll updates its own shell classes.
+  $containers.on('scroll.teamViewNavigation', function(){
+    refreshContainer(this);
+  });
+
+  // One shared resize handler refreshes every container.
+  $(window).on('resize.teamViewNavigation', scheduleRefreshAll);
+
+  // Keyboard horizontal scrolling, only when focus is directly on the region.
+  $containers.on('keydown.teamViewNavigation', function(event){
+    var container = this;
+    var key = event.key;
+    var supported = (key === 'ArrowLeft' || key === 'ArrowRight' ||
+                     key === 'Home' || key === 'End');
+    if (!supported) { return; }
+
+    // When focus is on a nested interactive element (admin employee link,
+    // dropdown, popover trigger, ...), do not drive the scroll ourselves.
+    // For the arrow/home/end keys the browser default would still scroll the
+    // nearest scrollable ancestor (this container), which would silently move
+    // the table while the user thinks they are operating the link. Suppress
+    // that default so the container stays put; the link's own keyboard
+    // behaviour (e.g. Enter to activate) is a different key and is unaffected.
+    if (event.target !== container) {
+      event.preventDefault();
+      return;
+    }
+
+    var max = maxScrollLeft(container);
+    // Only consume the key when there is actual horizontal overflow to move.
+    if (max <= SCROLL_TOLERANCE_PX) { return; }
+
+    var before = container.scrollLeft;
+    var step = Math.max(80, Math.round(container.clientWidth * 0.25));
+
+    if (key === 'ArrowRight') {
+      container.scrollLeft = before + step;
+    } else if (key === 'ArrowLeft') {
+      container.scrollLeft = before - step;
+    } else if (key === 'Home') {
+      container.scrollLeft = 0;
+    } else if (key === 'End') {
+      container.scrollLeft = max;
+    }
+    // Instant scroll (no smooth behaviour) for predictability and for
+    // compatibility with prefers-reduced-motion.
+    event.preventDefault();
+    // Focus stays on the container; refreshContainer runs on the scroll event.
+  });
+});
+
+
 $(document).ready(function(){
 
   $('[data-tom-color-picker] a')

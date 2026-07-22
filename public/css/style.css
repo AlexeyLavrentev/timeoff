@@ -1190,6 +1190,9 @@ textarea.form-control {
   .email-audit-subject .fa {
     transition: none;
   }
+  .team-view-scroll-cue {
+    transition: none;
+  }
 }
 .email-audit-body {
   max-height: 320px;
@@ -3537,6 +3540,38 @@ td.current_day_cell.half_2nd {
   text-align: left;
 }
 
+/*
+  Mobile period navigation (≤480px): the abbreviated month labels on the
+  previous/next links are hidden, leaving just the chevrons, so the central
+  month picker gets the full remaining width. The two side cells become
+  fixed 48px tap targets (≥44px WCAG 2.5.5 AAA target) and the center takes
+  all the rest, preventing horizontal page overflow.
+*/
+@media (max-width: 480px) {
+  .team-view-period-link-label {
+    display: none;
+  }
+  .team-toolbar .period-navigation {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 0;
+  }
+  .team-toolbar .period-navigation-side {
+    display: flex;
+  }
+  .team-toolbar .period-navigation-side .team-view-period-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+  .team-toolbar .calendar-section-caption {
+    min-width: 0;
+  }
+}
 .team-view-filter-grid .left-column-cell {
   width: 100%;
 }
@@ -3588,6 +3623,55 @@ td.current_day_cell.half_2nd {
   margin: 0;
   color: #1f2d3d;
   font-size: 20px;
+}
+
+/*
+  Team View table shell: a positioned wrapper around the scrollable table
+  container. It hosts the scroll-state classes (is-horizontally-scrollable,
+  can-scroll-left, can-scroll-right) set by global.js and the visual scroll
+  cue. It must not add its own scroll/overflow so the inner container keeps
+  owning the scrollbar.
+*/
+.team-view-table-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: flow-root;
+}
+
+/*
+  Scroll cue: a small translucent pill pinned to the right edge of the shell.
+  Purely decorative (aria-hidden, pointer-events: none). It does NOT change
+  layout width and does NOT intercept pointer events. It only fades in/out
+  via opacity depending on the can-scroll-right state class on the shell.
+  Positioned with right/bottom so it sits clear of the scrollbar gutter and
+  of the last visible date column without covering meaningful content.
+*/
+.team-view-scroll-cue {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(31, 45, 61, 0.06);
+  color: #657789;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.team-view-table-shell.can-scroll-right .team-view-scroll-cue {
+  opacity: 1;
 }
 
 .team-view-table-container {
