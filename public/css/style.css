@@ -223,6 +223,35 @@ label.label-plain {
   font-weight: normal;
 }
 
+/*
+  Compact icon-only button used for non-modal info popovers (e.g. employee
+  summary in the requests list). It is a real <button> (keyboard-accessible
+  by default) but intentionally does NOT look like a Bootstrap .btn: no
+  border, no background, inline with surrounding text. The global
+  :focus-visible rule keeps keyboard focus visible.
+*/
+.details-trigger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 24px;
+  min-height: 24px;
+  margin-left: 4px;
+  padding: 0;
+  vertical-align: middle;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-muted);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.details-trigger-button:hover {
+  color: var(--color-text);
+}
+
 /* Make breadcrumbs to be transparant */
 .breadcrumb {
   background: none;
