@@ -1,45 +1,51 @@
 <div class="row clearfix">
-  <div class="col-md-12 team-view-table-container" role="region" aria-label="{{department.departmentName}}" tabindex="0">
-    <table class="team-view-table table-hover">
-      <caption class="sr-only">{{department.departmentName}}</caption>
-      <thead>
-      <tr>
-        <th class="team-view-header team-view-name-header" colspan="2" scope="colgroup">
-          <div>
-            <h3>{{department.departmentName}}</h3>
-          </div>
-        </th>
+  <div class="team-view-table-shell">
+    <div class="col-md-12 team-view-table-container" role="region" aria-label="{{department.departmentName}}" tabindex="0">
+      <table class="team-view-table table-hover">
+        <caption class="sr-only">{{department.departmentName}}</caption>
+        <thead>
+        <tr>
+          <th class="team-view-header team-view-name-header" colspan="2" scope="colgroup">
+            <div>
+              <h3>{{department.departmentName}}</h3>
+            </div>
+          </th>
 
-      {{#each department.header_days }}
-        <th colspan="2" scope="col" class="team-view-header{{#if (is_calendar_weekend this.moment)}} calendar_weekend_header{{/if}}">
-          <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
-        </th>
-      {{/each}}
-      </tr>
-      </thead>
-
-      <tbody>
-      {{#each department.users_and_leaves}}
-        <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
-          <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
-          <td class="team-view-deducted-cell">
-            <span class="teamview-deducted-days"
-              {{#if statistics }}
-              data-content="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name this.user) days=../statistics.deducted_days }}"
-              data-placement="right"
-              data-toggle="popover"
-              data-trigger="focus hover"
-              {{/if}}
-            >
-            {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
-            </span>
-          </td>
-          {{#each this.days}}
-            {{> team_view_calendar_cell day = this}}
-          {{/each}}
+        {{#each department.header_days }}
+          <th colspan="2" scope="col" class="team-view-header{{#if (is_calendar_weekend this.moment)}} calendar_weekend_header{{/if}}">
+            <div class="team-view-weekday">{{as_date_formatted this.moment 'ddd'}}</div>
+          </th>
+        {{/each}}
         </tr>
-      {{/each}}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+        {{#each department.users_and_leaves}}
+          <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
+            <td class="left-column-cell cross-link user-details-summary-trigger" data-user-id={{this.user.id}}>{{#if ../logged_user.admin}} {{#with this.user }}<a href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span>{{ this.full_name }}</span>{{/with}}{{/if}}</td>
+            <td class="team-view-deducted-cell">
+              <span class="teamview-deducted-days"
+                {{#if statistics }}
+                data-content="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name this.user) days=../statistics.deducted_days }}"
+                data-placement="right"
+                data-toggle="popover"
+                data-trigger="focus hover"
+                {{/if}}
+              >
+              {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
+              </span>
+            </td>
+            {{#each this.days}}
+              {{> team_view_calendar_cell day = this}}
+            {{/each}}
+          </tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <span class="team-view-scroll-cue" aria-hidden="true">
+      <span class="fa fa-chevron-right" aria-hidden="true"></span>
+    </span>
   </div>
 </div>

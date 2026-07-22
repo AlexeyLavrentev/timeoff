@@ -1258,6 +1258,9 @@ textarea.form-control {
   .email-audit-subject .fa {
     transition: none;
   }
+  .team-view-scroll-cue {
+    transition: none;
+  }
 }
 
 .email-audit-body {
@@ -3731,6 +3734,60 @@ td.current_day_cell.half_2nd {
   text-align: left;
 }
 
+/*
+  Mobile period navigation (≤480px): the abbreviated month labels on the
+  previous/next links are hidden, leaving just the chevrons, so the central
+  month picker gets the full remaining width. The two side cells become
+  fixed 48px tap targets (≥44px WCAG 2.5.5 AAA target) and the center takes
+  all the rest, preventing horizontal page overflow.
+*/
+@media (max-width: 480px) {
+  .team-view-period-link-label {
+    display: none;
+  }
+
+  .team-toolbar .period-navigation {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 0;
+  }
+
+  // Override the Bootstrap .col-xs-2 widths so the grid template above is
+  // honoured instead of the float-based column widths.
+  .team-toolbar .period-navigation > [class*="col-xs-"] {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .team-toolbar .period-navigation-side {
+    display: flex;
+    width: 100%;
+  }
+
+  .team-toolbar .period-navigation-side:first-child {
+    justify-content: flex-start;
+  }
+
+  .team-toolbar .period-navigation-side:last-child {
+    justify-content: flex-end;
+  }
+
+  .team-toolbar .period-navigation-side .team-view-period-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .team-toolbar .calendar-section-caption {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 .team-view-filter-grid .left-column-cell {
   width: 100%;
 }
@@ -3782,6 +3839,64 @@ td.current_day_cell.half_2nd {
   margin: 0;
   color: $text-strong;
   font-size: 20px;
+}
+
+/*
+  Team View table shell: a positioned wrapper around the scrollable table
+  container. It hosts the scroll-state classes (is-horizontally-scrollable,
+  can-scroll-left, can-scroll-right) set by global.js and the visual scroll
+  cue. It must not add its own scroll/overflow so the inner container keeps
+  owning the scrollbar.
+*/
+.team-view-table-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  // Establish a block formatting context so the floated Bootstrap column
+  // (.team-view-table-container uses .col-md-12 = float:left) is contained
+  // and the shell actually takes the table's height. Without this the shell
+  // collapses to height:0 and the absolutely-positioned scroll cue is placed
+  // at the top edge instead of vertically centered against the table.
+  display: flow-root;
+}
+
+/*
+  Scroll cue: a small translucent pill pinned to the right edge of the shell.
+  Purely decorative (aria-hidden, pointer-events: none). It does NOT change
+  layout width and does NOT intercept pointer events. It only fades in/out
+  via opacity depending on the can-scroll-right state class on the shell.
+  Positioned with right/bottom so it sits clear of the scrollbar gutter and
+  of the last visible date column without covering meaningful content.
+*/
+.team-view-scroll-cue {
+  position: absolute;
+  // Pin near the top of the table (just below the 56px header + half a row),
+  // not the vertical center of the shell: a department with many employees
+  // is much taller than the viewport, and a 50% cue would land below the fold.
+  top: 84px;
+  transform: translateY(-50%);
+  right: 6px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: $radius-pill;
+  background: $surface-color;
+  border: 1px solid $border-color;
+  box-shadow: $shadow-sm;
+  color: $text-muted;
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.team-view-table-shell.can-scroll-right .team-view-scroll-cue {
+  opacity: 1;
 }
 
 .team-view-table-container {
@@ -4910,5 +5025,12 @@ td.current_day_cell.half_2nd {
 
   .footer {
     border-top-color: var(--color-border);
+  }
+
+  .team-view-scroll-cue {
+    background: #20252a;
+    border: 1px solid #3a4046;
+    color: #c4d0d9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   }
 }
