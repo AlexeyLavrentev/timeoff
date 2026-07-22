@@ -286,6 +286,125 @@ describe('Team View employee summary popover (separated trigger)', function(){
       .then(function(){ done(); });
   });
 
+  it('Admin link click navigates to /users/edit/:id/ without opening summary', function(done){
+    // Reload Team View as admin, find the first employee edit link, confirm
+    // the summary popover is closed, focus the link, press Enter, and verify
+    // real navigation happened (not a popover open).
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){
+        return driver.executeScript(function(){
+          var link = document.querySelector('.team-view-employee-link');
+          if (!link) { return null; }
+          // Ensure no popover is open.
+          var btn = document.querySelector('.team-view-user-details-summary-trigger');
+          var inst = btn && window.jQuery(btn).data('bs.popover');
+          var tip = inst && inst.tip();
+          return {
+            href: link.getAttribute('href'),
+            popoverClosed: !(tip && tip.is(':visible'))
+          };
+        });
+      })
+      .then(function(info){
+        expect(info, 'expected an admin employee link').to.not.be.null;
+        expect(info.href).to.match(/\/users\/edit\/\d+\//);
+        expect(info.popoverClosed, 'popover should be closed before navigation').to.equal(true);
+      })
+      .then(function(){
+        return driver.executeScript(function(){
+          document.querySelector('.team-view-employee-link').focus();
+        });
+      })
+      .then(function(){ return driver.sleep(100); })
+      .then(function(){ return driver.switchTo().activeElement(); })
+      .then(function(el){ return el.sendKeys(Key.ENTER); })
+      .then(function(){ return driver.sleep(800); })
+      .then(function(){ return driver.getCurrentUrl(); })
+      .then(function(url){
+        expect(url, 'should navigate to edit page').to.match(/\/users\/edit\/\d+\//);
+        // Confirm the summary popover did NOT open during navigation.
+        return driver.executeScript(function(){
+          var btn = document.querySelector('.team-view-user-details-summary-trigger');
+          // On the edit page there are no Team View triggers, so this is null.
+          return btn === null;
+        });
+      })
+      .then(function(noTrigger){
+        // Being on the edit page proves navigation, not popover.
+        expect(noTrigger, 'should be on edit page, not team view').to.equal(true);
+      })
+      // Return to Team View for any subsequent scenarios.
+      .then(function(){
+        return open_page_func({ url: application_host + 'calendar/teamview/', driver: driver });
+      })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){ done(); })
+      .catch(function(err){ done(err); });
+  });
+
+  it('Pending hover timer on one Team View button does not steal another\'s open popover', function(done){
+    // Reload for clean state, then use real pointer move on button A to
+    // schedule a 700ms hover show, then keyboard-focus button B before A opens.
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){ return buttonAt(0); })
+      .then(function(btnA){
+        return driver.actions().move({origin: btnA}).perform();
+      })
+      // Wait briefly (less than the 700ms hover delay).
+      .then(function(){ return driver.sleep(150); })
+      // Verify A has a pending show timer but is not yet visible.
+      .then(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+          var s = window.jQuery(t).data('userSummaryState');
+          var inst = window.jQuery(t).data('bs.popover');
+          var tip = inst && inst.tip();
+          return { showTimerSet: !!(s && s.showTimer), visible: !!(tip && tip.is(':visible')) };
+        });
+      })
+      .then(function(a){
+        expect(a.showTimerSet, 'button A should have pending showTimer').to.equal(true);
+        expect(a.visible, 'button A should not be visible yet').to.equal(false);
+      })
+      // Focus button B immediately (keyboard show is instant).
+      .then(function(){
+        return driver.executeScript(function(){
+          document.querySelectorAll('.team-view-user-details-summary-trigger')[1].focus();
+        });
+      })
+      .then(function(){ return driver.wait(function(){ return isVisibleViaState(1); }, 1500); })
+      // Wait beyond the full hover delay so any stale timer on A would fire.
+      .then(function(){ return driver.sleep(800); })
+      .then(function(){ return isVisibleViaState(1); })
+      .then(function(vB){ expect(vB, 'B should still be visible').to.equal(true); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(vA){ expect(vA, 'A should not have opened').to.equal(false); })
+      .then(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+          var s = window.jQuery(t).data('userSummaryState');
+          return s ? !!s.showTimer : 'no-state';
+        });
+      })
+      .then(function(timerA){
+        expect(timerA, 'A should have no pending showTimer').to.not.be.ok;
+      })
+      .then(function(){ return describedBy(1); })
+      .then(function(idB){
+        expect(idB.length, 'B should have aria-describedby').to.be.greaterThan(0);
+      })
+      .then(function(){ return describedBy(0); })
+      .then(function(idA){
+        expect(idA, 'A should not have aria-describedby').to.equal('');
+      })
+      .then(visibleTeamViewPopoverCount)
+      .then(function(n){ expect(n, 'exactly one popover visible').to.equal(1); })
+      .then(function(){ done(); })
+      .catch(function(err){ done(err); });
+  });
+
   after(function(done){
     driver.quit().then(function(){ done(); });
   });
