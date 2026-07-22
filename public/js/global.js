@@ -385,16 +385,31 @@ $(document).ready(function(){
       return state.hovered || state.focused || state.pointerPinned || state.popoverHovered;
     }
 
-    // Centralised open routine: cancel any pending timers, close any other
-    // requests employee-summary popover, and show this one exactly once.
+    // Deactivate every OTHER requests employee-summary trigger, including
+    // ones whose popover is still pending (showTimer set but not yet shown).
+    // hideTrigger already cancels showTimer/hideTimer, clears pointerPinned,
+    // aborts the trigger's in-flight XHR, and hides a visible popover, so it
+    // is safe to call on a trigger that has not become visible yet. We do
+    // NOT reset `hovered`/`focused` here: those reflect real pointer/keyboard
+    // state and must stay consistent with subsequent native events.
+    function hideOtherTriggers($activeTrigger) {
+      $reqTriggers.each(function(){
+        var $other = $(this);
+        if ($other.is($activeTrigger)) {
+          return;
+        }
+        hideTrigger($other);
+      });
+    }
+
+    // Centralised open routine: cancel any pending timers, deactivate every
+    // OTHER requests employee-summary trigger (visible or pending), and show
+    // this one exactly once.
     function showTrigger($trigger) {
       var state = $trigger.data('userSummaryState');
       cancelShow(state);
       cancelHide(state);
-      var other = currentOpen();
-      if (other && !other.is($trigger)) {
-        hideTrigger(other);
-      }
+      hideOtherTriggers($trigger);
       if (!isOpen($trigger)) {
         $trigger.popover('show');
       }

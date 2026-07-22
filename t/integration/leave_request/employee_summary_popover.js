@@ -143,7 +143,7 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
       .then(function(){ done(); });
   });
 
-  it('Each trigger is a real <button> reachable with Tab and has a non-empty accessible name', function(done){
+  it('Each trigger is a real button with a non-empty accessible name', function(done){
     driver.executeScript(function(){
         var triggers = document.querySelectorAll('.requests-user-details-summary-trigger');
         var info = [];
@@ -302,6 +302,73 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
       .then(function(){ done(); });
   });
 
+  it('Keyboard focus cancels another trigger\'s pending hover show', function(done){
+    // Reload so every trigger starts from a clean state.
+    open_page_func({ url: application_host + 'requests/', driver: driver })
+      .then(function(){ return driver.sleep(150); })
+      .then(function(){ return triggerEl(0); })
+      .then(function(el0){
+        // Step 2: hover trigger #0 via a real Selenium pointer move. This is
+        // dispatched as a native pointer event and correctly triggers the
+        // jQuery mouseenter handler, scheduling a 700ms show.
+        return driver.actions().move({origin: el0}).perform()
+          .then(function(){ return el0; });
+      })
+      // Step 3: #0 should have a pending showTimer but popover still hidden.
+      .then(function(){ return driver.sleep(50); })
+      .then(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.requests-user-details-summary-trigger')[0];
+          var s = window.jQuery(t).data('userSummaryState');
+          var inst = window.jQuery(t).data('bs.popover');
+          var tip = inst && inst.tip();
+          return {
+            showTimerSet: !!(s && s.showTimer),
+            visible: !!(tip && tip.is(':visible'))
+          };
+        });
+      })
+      .then(function(info0){
+        expect(info0.showTimerSet, '#0 should have a pending showTimer after mouseenter').to.equal(true);
+        expect(info0.visible, '#0 popover should NOT be visible before the hover delay').to.equal(false);
+      })
+      // Step 4: focus trigger #1 before #0's 700ms hover delay elapses.
+      .then(function(){
+        return driver.executeScript(function(){
+          document.querySelectorAll('.requests-user-details-summary-trigger')[1].focus();
+        });
+      })
+      // Step 5: wait for #1 to open (focus shows immediately).
+      .then(function(){ return driver.wait(function(){ return isVisibleViaState(1); }, 1500); })
+      // Step 6: wait beyond the full hover delay (700ms) so any stale timer
+      // on #0 would have fired by now.
+      .then(function(){ return driver.sleep(800); })
+      // Step 7: assertions.
+      .then(function(){ return isVisibleViaState(1); })
+      .then(function(v1){
+        expect(v1, '#1 should still be visible after hover delay elapsed').to.equal(true);
+      })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v0){
+        expect(v0, '#0 popover should NOT have opened after #1 took over').to.equal(false);
+      })
+      .then(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.requests-user-details-summary-trigger')[0];
+          var s = window.jQuery(t).data('userSummaryState');
+          return s ? !!s.showTimer : 'no-state';
+        });
+      })
+      .then(function(timer0){
+        expect(timer0, '#0 should have no pending showTimer after #1 opened').to.not.be.ok;
+      })
+      .then(visibleRequestsPopoverCount)
+      .then(function(n){
+        expect(n, 'exactly one requests popover visible').to.equal(1);
+      })
+      .then(function(){ done(); });
+  });
+
   it('A real Selenium click opens the popover exactly once (no duplicate show)', function(done){
     // Reload for a clean state, then instrument the show event once.
     open_page_func({ url: application_host + 'requests/', driver: driver })
@@ -385,10 +452,12 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
       .then(function(){ done(); });
   });
 
-  it('Team View employee-summary trigger is NOT driven by the manual controller (regression)', function(done){
-    // Open Team View and confirm the <td> trigger has no manual state and
-    // still opens via hover-only Bootstrap popover. This guards against the
-    // controller leaking onto Team View now that it is scoped by marker class.
+  it('Team View trigger keeps Bootstrap hover-only initialization without manual state', function(done){
+    // The Team View <td> shares the user-details-summary-trigger class but
+    // must NOT receive the manual controller: it keeps Bootstrap's original
+    // hover-only initialization (trigger option === 'hover') and no manual
+    // state is attached. The admin employee-name link inside the cell must
+    // keep its normal navigation href.
     open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
       .then(function(){
         return driver.executeScript(function(){
@@ -397,13 +466,14 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
           var $td = window.jQuery(td);
           var hasState = !!$td.data('userSummaryState');
           var inst = $td.data('bs.popover');
-          // Bootstrap hover-only stores its own internal state; our manual
-          // state is absent.
+          var adminLink = td.querySelector('a[href*="/users/edit/"]');
           return {
             found: true,
             tag: td.tagName.toLowerCase(),
             hasManualState: hasState,
-            hasBsPopover: !!inst
+            hasBsPopover: !!inst,
+            bsTriggerOption: inst && inst.options ? inst.options.trigger : null,
+            adminLinkHref: adminLink ? adminLink.getAttribute('href') : null
           };
         });
       })
@@ -412,6 +482,9 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
         expect(info.tag).to.equal('td');
         expect(info.hasManualState, 'manual state must NOT be attached to Team View').to.equal(false);
         expect(info.hasBsPopover, 'Team View trigger should still have a Bootstrap popover').to.equal(true);
+        expect(info.bsTriggerOption, 'Bootstrap popover must be initialized as hover-only').to.equal('hover');
+        expect(info.adminLinkHref, 'admin employee-name link should keep its edit href')
+          .to.match(/\/users\/edit\/\d+\//);
       })
       .then(function(){ done(); });
   });
