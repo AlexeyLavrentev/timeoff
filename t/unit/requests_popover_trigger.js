@@ -37,9 +37,18 @@ describe('Employee summary popover trigger markup (requests page)', function() {
     );
   });
 
-  it('uses all three expected classes together', function() {
+  it('carries the shared interactive marker that the generalized manual controller selects', function() {
+    // The interactive marker is what the manual controller actually selects;
+    // both the Requests button and the Team View button carry it so the
+    // controller serves them uniformly.
     expect(source).to.match(
-      /<button[^>]*class="user-details-summary-trigger requests-user-details-summary-trigger details-trigger-button"/
+      /<button[^>]*class="[^"]*\binteractive-user-details-summary-trigger\b[^"]*"/
+    );
+  });
+
+  it('uses all expected classes together', function() {
+    expect(source).to.match(
+      /<button[^>]*class="user-details-summary-trigger interactive-user-details-summary-trigger requests-user-details-summary-trigger details-trigger-button"/
     );
   });
 

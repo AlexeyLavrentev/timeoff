@@ -35,10 +35,25 @@ module.exports = bluebird.promisify( function(args, callback){
   })
 
   .then(function(data){
+    // After Stage 5 the employee name lives inside .team-view-employee-cell.
+    // Admin sees .team-view-employee-link (real /users/edit/ anchors);
+    // non-admin sees .team-view-employee-name (plain spans).
+    var selector = is_link
+      ? 'tr.teamview-user-list-row td.cross-link .team-view-employee-link'
+      : 'tr.teamview-user-list-row td.cross-link .team-view-employee-name';
+
+    var oppositeSelector = is_link
+      ? 'tr.teamview-user-list-row td.cross-link .team-view-employee-name'
+      : 'tr.teamview-user-list-row td.cross-link .team-view-employee-link';
+
     return data.driver
-      .findElements(By.css( 'tr.teamview-user-list-row > td.cross-link > ' + (is_link ? 'a' : 'span') ))
+      .findElements(By.css(selector))
       .then(function(elements){
-        expect(elements.length).to.be.equal( emails.length );
+        expect(elements.length).to.be.equal(emails.length);
+        return data.driver.findElements(By.css(oppositeSelector));
+      })
+      .then(function(opposite){
+        expect(opposite.length, 'opposite name type must not be present').to.be.equal(0);
         return bluebird.resolve(data);
       });
   })

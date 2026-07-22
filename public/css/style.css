@@ -3755,6 +3755,37 @@ td.current_day_cell.half_2nd {
   box-shadow: 1px 0 0 #e3e9ef;
 }
 
+/*
+  Team View employee cell: lays out the employee name (admin link or plain
+  text) and the compact employee-summary button on one row. The name flexes
+  and ellipsises on overflow; the button is fixed-size and never wraps.
+*/
+.team-view-employee-cell {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+}
+
+.team-view-employee-link,
+.team-view-employee-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-view-employee-link {
+  color: var(--color-link);
+  font-weight: normal;
+}
+
+.team-view-user-details-summary-trigger {
+  flex: 0 0 auto;
+  margin-left: 4px;
+}
+
 .team-view-table .team-view-deducted-cell {
   position: sticky;
   left: 180px;

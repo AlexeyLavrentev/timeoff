@@ -452,37 +452,44 @@ describe('Employee summary popover on the requests page (keyboard accessible)', 
       .then(function(){ done(); });
   });
 
-  it('Team View trigger keeps Bootstrap hover-only initialization without manual state', function(done){
-    // The Team View <td> shares the user-details-summary-trigger class but
-    // must NOT receive the manual controller: it keeps Bootstrap's original
-    // hover-only initialization (trigger option === 'hover') and no manual
-    // state is attached. The admin employee-name link inside the cell must
-    // keep its normal navigation href.
+  it('Team View separates the employee cell from the summary trigger (regression)', function(done){
+    // After Stage 5 the <td> no longer carries the popover trigger: the
+    // summary trigger is a dedicated <button> inside the cell, driven by the
+    // interactive manual controller. The admin edit link keeps its href.
     open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
       .then(function(){
         return driver.executeScript(function(){
-          var td = document.querySelector('.user-details-summary-trigger:not(.requests-user-details-summary-trigger)');
-          if (!td) { return {found: false}; }
+          var td = document.querySelector('.team-view-table .left-column-cell.cross-link');
+          var btn = document.querySelector('.team-view-table .team-view-user-details-summary-trigger');
+          if (!td || !btn) { return {found: false}; }
           var $td = window.jQuery(td);
-          var hasState = !!$td.data('userSummaryState');
-          var inst = $td.data('bs.popover');
+          var $btn = window.jQuery(btn);
+          var tdInst = $td.data('bs.popover');
+          var btnInst = $btn.data('bs.popover');
           var adminLink = td.querySelector('a[href*="/users/edit/"]');
           return {
             found: true,
-            tag: td.tagName.toLowerCase(),
-            hasManualState: hasState,
-            hasBsPopover: !!inst,
-            bsTriggerOption: inst && inst.options ? inst.options.trigger : null,
+            tdHasTriggerClass: td.classList.contains('user-details-summary-trigger'),
+            tdHasPopover: !!tdInst,
+            tdHasManualState: !!$td.data('userSummaryState'),
+            btnHasPopover: !!btnInst,
+            btnTriggerOption: btnInst && btnInst.options ? btnInst.options.trigger : null,
+            btnHasManualState: !!$btn.data('userSummaryState'),
             adminLinkHref: adminLink ? adminLink.getAttribute('href') : null
           };
         });
       })
       .then(function(info){
-        expect(info.found, 'expected a Team View user-details trigger').to.equal(true);
-        expect(info.tag).to.equal('td');
-        expect(info.hasManualState, 'manual state must NOT be attached to Team View').to.equal(false);
-        expect(info.hasBsPopover, 'Team View trigger should still have a Bootstrap popover').to.equal(true);
-        expect(info.bsTriggerOption, 'Bootstrap popover must be initialized as hover-only').to.equal('hover');
+        expect(info.found, 'expected a Team View employee cell and button').to.equal(true);
+        // The <td> must no longer be a popover trigger.
+        expect(info.tdHasTriggerClass, 'td must not carry user-details-summary-trigger').to.equal(false);
+        expect(info.tdHasPopover, 'td must not have a Bootstrap popover').to.equal(false);
+        expect(info.tdHasManualState, 'td must not carry manual controller state').to.equal(false);
+        // The dedicated button is driven by the manual controller.
+        expect(info.btnHasPopover, 'button should have a Bootstrap popover').to.equal(true);
+        expect(info.btnTriggerOption, 'button popover must be manual').to.equal('manual');
+        expect(info.btnHasManualState, 'button should carry manual controller state').to.equal(true);
+        // Admin edit link keeps its href.
         expect(info.adminLinkHref, 'admin employee-name link should keep its edit href')
           .to.match(/\/users\/edit\/\d+\//);
       })
