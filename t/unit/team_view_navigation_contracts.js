@@ -43,7 +43,9 @@ describe('Team View horizontal navigation contracts', function() {
     it('keeps the existing row, cell and data contracts intact', function() {
       expect(source).to.contain('teamview-user-list-row');
       expect(source).to.contain('data-vpp-user-list-row');
-      expect(source).to.contain('cross-link user-details-summary-trigger');
+      // The <td> keeps the sticky-cell contract classes; the popover trigger
+      // class now lives on the dedicated button inside the cell (Stage 5).
+      expect(source).to.contain('left-column-cell cross-link');
       expect(source).to.contain('data-user-id');
       expect(source).to.contain('team-view-deducted-cell');
       expect(source).to.contain('teamview-deducted-days');

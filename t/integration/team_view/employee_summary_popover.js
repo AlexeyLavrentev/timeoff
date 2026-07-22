@@ -1,0 +1,293 @@
+'use strict';
+
+var config           = require('../../lib/config'),
+    application_host = config.get_application_host(),
+    By               = require('selenium-webdriver').By,
+    Key              = require('selenium-webdriver').Key,
+    until            = require('selenium-webdriver').until,
+    expect           = require('chai').expect,
+
+    register_new_user_func = require('../../lib/register_new_user'),
+    add_new_user_func      = require('../../lib/add_new_user'),
+    open_page_func         = require('../../lib/open_page');
+
+describe('Team View employee summary popover (separated trigger)', function(){
+
+  this.timeout( config.get_execution_timeout() );
+
+  var driver;
+  var adminEmail;
+  var employeeEmail = 'employee_' + Date.now() + '@test.com';
+
+  function buttonAt(idx) {
+    return driver.findElements(By.css('.team-view-user-details-summary-trigger'))
+      .then(function(els){ return els[idx]; });
+  }
+  function buttonCount() {
+    return driver.findElements(By.css('.team-view-user-details-summary-trigger'))
+      .then(function(els){ return els.length; });
+  }
+  function isVisibleViaState(idx) {
+    return driver.executeScript(function(i){
+      var triggers = document.querySelectorAll('.team-view-user-details-summary-trigger');
+      var t = triggers[i];
+      if (!t) { return false; }
+      var inst = window.jQuery(t).data('bs.popover');
+      var tip = inst && inst.tip();
+      return !!(tip && tip.is(':visible'));
+    }, idx);
+  }
+  function describedBy(idx) {
+    return driver.executeScript(function(i){
+      var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[i];
+      return t ? (t.getAttribute('aria-describedby') || '') : '';
+    }, idx);
+  }
+  function visibleTeamViewPopoverCount() {
+    return driver.executeScript(function(){
+      var triggers = document.querySelectorAll('.team-view-user-details-summary-trigger');
+      var n = 0;
+      for (var i = 0; i < triggers.length; i++) {
+        var inst = window.jQuery(triggers[i]).data('bs.popover');
+        var tip = inst && inst.tip();
+        if (tip && tip.is(':visible')) { n++; }
+      }
+      return n;
+    });
+  }
+
+  it('Registers a new company (admin) and adds an employee', function(done){
+    register_new_user_func({ application_host: application_host })
+      .then(function(data){
+        driver = data.driver;
+        adminEmail = data.email;
+      })
+      .then(function(){
+        return add_new_user_func({
+          driver: driver, application_host: application_host, email: employeeEmail,
+        });
+      })
+      .then(function(){ done(); });
+  });
+
+  it('Opens Team View with at least two employee rows', function(done){
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.wait(until.elementLocated(By.css('.team-view-table')), 5000); })
+      .then(function(){ return buttonCount(); })
+      .then(function(n){
+        // admin + employee = 2 rows with summary buttons
+        expect(n, 'expected at least two Team View summary buttons').to.be.at.least(2);
+      })
+      .then(function(){ done(); });
+  });
+
+  it('Employee cell contains a separate admin edit link and summary button', function(done){
+    driver.executeScript(function(){
+      var cells = document.querySelectorAll('.team-view-employee-cell');
+      if (!cells.length) { return {found: false}; }
+      var cell = cells[0];
+      return {
+        found: true,
+        hasCell: true,
+        hasButton: !!cell.querySelector('button.team-view-user-details-summary-trigger'),
+        hasAdminLink: !!cell.querySelector('a.team-view-employee-link[href*="/users/edit/"]'),
+        buttonIsButton: cell.querySelector('.team-view-user-details-summary-trigger').tagName.toLowerCase() === 'button',
+        tdHasTriggerClass: cell.parentElement.classList.contains('user-details-summary-trigger')
+      };
+    })
+      .then(function(info){
+        expect(info.found).to.equal(true);
+        expect(info.hasButton).to.equal(true);
+        expect(info.hasAdminLink).to.equal(true);
+        expect(info.buttonIsButton).to.equal(true);
+        expect(info.tdHasTriggerClass, 'td must not carry user-details-summary-trigger').to.equal(false);
+      })
+      .then(function(){ done(); });
+  });
+
+  it('The <td> itself has no Bootstrap popover instance', function(done){
+    driver.executeScript(function(){
+      var td = document.querySelector('.team-view-table .left-column-cell.cross-link');
+      return td ? !!window.jQuery(td).data('bs.popover') : null;
+    })
+      .then(function(hasPopover){
+        expect(hasPopover, 'td must not have a popover instance').to.equal(false);
+      })
+      .then(function(){ done(); });
+  });
+
+  it('The summary button has a manual Bootstrap popover', function(done){
+    driver.executeScript(function(){
+      var btn = document.querySelector('.team-view-user-details-summary-trigger');
+      var inst = btn && window.jQuery(btn).data('bs.popover');
+      return inst ? inst.options.trigger : null;
+    })
+      .then(function(triggerOpt){
+        expect(triggerOpt, 'button popover must be manual').to.equal('manual');
+      })
+      .then(function(){ done(); });
+  });
+
+  it('Keyboard focus shows the popover immediately', function(done){
+    driver.executeScript(function(){
+      document.querySelectorAll('.team-view-user-details-summary-trigger')[0].focus();
+    })
+      .then(function(){ return driver.wait(function(){ return isVisibleViaState(0); }, 1500); })
+      .then(function(){ done(); });
+  });
+
+  it('aria-describedby points at a visible .popover[role=tooltip]', function(done){
+    driver.executeScript(function(){
+      var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+      var id = t.getAttribute('aria-describedby') || '';
+      var pop = id ? document.getElementById(id) : null;
+      return { id: id, exists: !!pop, role: pop ? pop.getAttribute('role') : null };
+    })
+      .then(function(info){
+        expect(info.id.length).to.be.greaterThan(0);
+        expect(info.exists).to.equal(true);
+        expect(info.role).to.equal('tooltip');
+      })
+      .then(function(){ done(); });
+  });
+
+  it('Replaces AJAX loading text with real summary content', function(done){
+    driver.wait(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+          var id = t.getAttribute('aria-describedby') || '';
+          var pop = id ? document.getElementById(id) : null;
+          if (!pop) { return false; }
+          var txt = (pop.textContent || '').trim();
+          return txt.length > 0 && !/loading/i.test(txt);
+        });
+      }, 4000)
+      .then(function(){ done(); });
+  });
+
+  it('Escape closes the popover and leaves focus on the button', function(done){
+    driver.switchTo().activeElement()
+      .then(function(el){ return el.sendKeys(Key.ESCAPE); })
+      .then(function(){ return driver.sleep(250); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v){ expect(v).to.equal(false); })
+      .then(function(){
+        return driver.executeScript(function(){
+          var t = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+          return document.activeElement === t;
+        });
+      })
+      .then(function(onBtn){ expect(onBtn).to.equal(true); })
+      .then(function(){ done(); });
+  });
+
+  it('Enter re-opens the popover after Escape', function(done){
+    driver.switchTo().activeElement()
+      .then(function(el){ return el.sendKeys(Key.ENTER); })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v){ expect(v, 'popover should re-open on Enter').to.equal(true); })
+      .then(function(){ done(); });
+  });
+
+  it('A real Selenium click on the button opens then closes the popover', function(done){
+    // Reload for a clean controller state before the pointer scenario.
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){ return buttonAt(0); })
+      .then(function(btn){
+        return driver.executeScript('document.body.focus();')
+          .then(function(){ return driver.sleep(100); })
+          .then(function(){ return btn.click(); });
+      })
+      .then(function(){ return driver.sleep(250); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v){ expect(v, 'first click opens').to.equal(true); })
+      // Second click via dispatched MouseEvent: once the popover is open it can
+      // overlap the trigger, and a native Selenium click on the underlying
+      // button would be intercepted. Dispatching the event reaches the button
+      // regardless of the popover layer.
+      .then(function(){
+        return driver.executeScript(function(){
+          var el = document.querySelectorAll('.team-view-user-details-summary-trigger')[0];
+          el.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1}));
+        });
+      })
+      .then(function(){ return driver.sleep(250); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v){ expect(v, 'second click closes').to.equal(false); })
+      .then(function(){ done(); });
+  });
+
+  it('Click outside closes a pinned popover', function(done){
+    buttonAt(0)
+      .then(function(btn){
+        return driver.executeScript('document.body.focus();')
+          .then(function(){ return driver.sleep(100); })
+          .then(function(){ return btn.click(); });
+      })
+      .then(function(){ return driver.sleep(250); })
+      .then(function(){
+        return driver.executeScript(function(){
+          document.body.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1}));
+        });
+      })
+      .then(function(){ return driver.sleep(250); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v){ expect(v, 'click outside closes').to.equal(false); })
+      .then(function(){ done(); });
+  });
+
+  it('Single-open: opening button #1 hides button #0 popover', function(done){
+    // Reload for clean state, open #0 by focus, then open #1.
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(150); })
+      .then(function(){
+        return driver.executeScript(function(){
+          document.querySelectorAll('.team-view-user-details-summary-trigger')[0].focus();
+        });
+      })
+      .then(function(){ return driver.wait(function(){ return isVisibleViaState(0); }, 1500); })
+      .then(function(){ return describedBy(0); })
+      .then(function(id0){ expect(id0.length).to.be.greaterThan(0); })
+      .then(function(){
+        return driver.executeScript(function(){
+          document.querySelectorAll('.team-view-user-details-summary-trigger')[1].focus();
+        });
+      })
+      .then(function(){ return driver.sleep(300); })
+      .then(function(){ return isVisibleViaState(1); })
+      .then(function(v1){ expect(v1, '#1 visible').to.equal(true); })
+      .then(function(){ return isVisibleViaState(0); })
+      .then(function(v0){ expect(v0, '#0 hidden after #1 opened').to.equal(false); })
+      .then(function(){ return describedBy(0); })
+      .then(function(id0After){ expect(id0After, '#0 aria-describedby removed').to.equal(''); })
+      .then(visibleTeamViewPopoverCount)
+      .then(function(n){ expect(n, 'exactly one popover visible').to.equal(1); })
+      .then(function(){ done(); });
+  });
+
+  it('Summary button click does not navigate to /users/edit/', function(done){
+    // Reload, click the button, and confirm the URL stays on teamview.
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(150); })
+      .then(function(){ return buttonAt(0); })
+      .then(function(btn){
+        return driver.executeScript('document.body.focus();')
+          .then(function(){ return driver.sleep(100); })
+          .then(function(){ return btn.click(); });
+      })
+      .then(function(){ return driver.sleep(300); })
+      .then(function(){ return driver.getCurrentUrl(); })
+      .then(function(url){
+        expect(url, 'summary click must not navigate').to.match(/\/calendar\/teamview\/?(\?.*)?$/);
+        expect(url).to.not.contain('/users/edit/');
+      })
+      .then(function(){ done(); });
+  });
+
+  after(function(done){
+    driver.quit().then(function(){ done(); });
+  });
+
+});

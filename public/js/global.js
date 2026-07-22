@@ -375,13 +375,14 @@ $(document).ready(function(){
   /*
     Employee summary popovers.
 
-    Two separate initializations, keyed by marker class so the requests-page
-    trigger (a real <button>) is fully keyboard/click driven while every other
-    user-details trigger (Team View <td>, etc.) keeps its original hover-only
+    Two separate initializations, keyed by marker class so every interactive
+    employee-summary trigger (a real <button> on Requests and Team View) is
+    fully keyboard/click driven, while any remaining legacy user-details
+    trigger that has not been migrated yet keeps the original hover-only
     behaviour:
 
-      .requests-user-details-summary-trigger  -> manual controller (this page)
-      .user-details-summary-trigger (other)   -> Bootstrap hover popover
+      .interactive-user-details-summary-trigger  -> manual controller
+      .user-details-summary-trigger (legacy)     -> Bootstrap hover popover
 
     Bootstrap still owns aria-describedby and the .popover[role=tooltip]
     element in both cases.
@@ -391,15 +392,16 @@ $(document).ready(function(){
   // (sidePopoverPlacement is already defined at the top of this ready block.)
 
   /*
-    Other user-details triggers (Team View <td>, ...): original hover-only
-    behaviour. No manual state, no click/focus handlers, no pointerPinned.
-    The markup and selectors of those pages are intentionally untouched.
+    Legacy user-details triggers that have not been migrated to the manual
+    controller yet: original hover-only behaviour. No manual state, no
+    click/focus handlers, no pointerPinned. Any element carrying the
+    interactive marker is excluded so it is not double-initialised.
   */
-  var $otherUserTriggers = $('.user-details-summary-trigger')
-    .not('.requests-user-details-summary-trigger');
+  var $legacyUserTriggers = $('.user-details-summary-trigger')
+    .not('.interactive-user-details-summary-trigger');
 
-  if ($otherUserTriggers.length) {
-    $otherUserTriggers.popover({
+  if ($legacyUserTriggers.length) {
+    $legacyUserTriggers.popover({
       title: translations.employeeSummary,
       container: 'body',
       html: true,
@@ -424,15 +426,16 @@ $(document).ready(function(){
   }
 
   /*
-    Requests-page employee summary trigger: manual controller.
+    Interactive employee-summary triggers (Requests button, Team View
+    button): manual controller.
   */
-  var $reqTriggers = $('.requests-user-details-summary-trigger');
+  var $interactiveUserTriggers = $('.interactive-user-details-summary-trigger');
 
-  if ($reqTriggers.length) {
+  if ($interactiveUserTriggers.length) {
     var SHOW_DELAY_HOVER = 700;
     var HIDE_DELAY = 120;
 
-    // One shared document-level Escape handler for requests popovers only.
+    // One shared document-level Escape handler for interactive popovers only.
     var ESCAPE_NS = 'keydown.userSummaryPopover';
     $(document).off(ESCAPE_NS).on(ESCAPE_NS, function(e){
       if (e.which !== 27) { return; }
@@ -446,7 +449,7 @@ $(document).ready(function(){
     // One shared document-level click handler for click-outside.
     var CLICK_NS = 'click.userSummaryPopover';
     $(document).off(CLICK_NS).on(CLICK_NS, function(e){
-      $reqTriggers.each(function(){
+      $interactiveUserTriggers.each(function(){
         var $t = $(this);
         var state = $t.data('userSummaryState');
         if (!state || !state.pointerPinned) { return; }
@@ -473,7 +476,7 @@ $(document).ready(function(){
 
     function currentOpen() {
       var found = null;
-      $reqTriggers.each(function(){
+      $interactiveUserTriggers.each(function(){
         if (isOpen($(this))) { found = $(this); }
       });
       return found;
@@ -505,7 +508,7 @@ $(document).ready(function(){
     // NOT reset `hovered`/`focused` here: those reflect real pointer/keyboard
     // state and must stay consistent with subsequent native events.
     function hideOtherTriggers($activeTrigger) {
-      $reqTriggers.each(function(){
+      $interactiveUserTriggers.each(function(){
         var $other = $(this);
         if ($other.is($activeTrigger)) {
           return;
@@ -583,7 +586,7 @@ $(document).ready(function(){
         .data('userSummaryHoverBound', true);
     }
 
-    $reqTriggers.each(function(){
+    $interactiveUserTriggers.each(function(){
       var $trigger = $(this);
       // AJAX content object lives on the trigger; response can only land here.
       var $content = $('<div>', {
