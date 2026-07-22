@@ -3777,7 +3777,7 @@ td.current_day_cell.half_2nd {
 }
 
 .team-view-employee-link {
-  color: #2878c8;
+  color: var(--color-link);
   font-weight: normal;
 }
 

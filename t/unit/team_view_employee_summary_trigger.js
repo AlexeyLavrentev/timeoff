@@ -85,3 +85,25 @@ describe('Team View employee-summary trigger markup', function() {
     expect(source).to.contain('{{> team_view_calendar_cell');
   });
 });
+
+describe('Team View employee-link colour contract', function() {
+  const scss = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'scss', 'main.scss'),
+    'utf8'
+  );
+
+  it('uses the semantic --color-link token for .team-view-employee-link', function() {
+    const block = scss.match(/\.team-view-employee-link\s*\{[^}]*\}/);
+    expect(block, 'expected a .team-view-employee-link rule').to.not.be.null;
+    expect(block[0]).to.contain('var(--color-link)');
+    // Must not pin a raw hex or the legacy SCSS variable.
+    expect(block[0]).to.not.contain('#2878c8');
+    expect(block[0]).to.not.contain('$link-color');
+  });
+
+  it('keeps font-weight normal on the link', function() {
+    const block = scss.match(/\.team-view-employee-link\s*\{[^}]*\}/);
+    expect(block, 'expected a .team-view-employee-link rule').to.not.be.null;
+    expect(block[0]).to.contain('font-weight: normal');
+  });
+});

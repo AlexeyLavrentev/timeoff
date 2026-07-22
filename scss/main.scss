@@ -3991,7 +3991,7 @@ td.current_day_cell.half_2nd {
 // Keep the admin edit link readable as a link (BS3 anchor colour), without
 // inheriting the bold weight of the employee cell.
 .team-view-employee-link {
-  color: $link-color;
+  color: var(--color-link);
   font-weight: normal;
 }
 

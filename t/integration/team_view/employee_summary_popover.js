@@ -405,6 +405,113 @@ describe('Team View employee summary popover (separated trigger)', function(){
       .catch(function(err){ done(err); });
   });
 
+  it('Admin employee link keeps semantic contrast in dark theme', function(done){
+    // Verify computed styles in dark theme, not just SCSS text.
+    var originalTheme = null;
+    open_page_func({ url: application_host + 'calendar/teamview/', driver: driver })
+      .then(function(){ return driver.sleep(200); })
+      // Remember the current theme so we can restore it even on failure.
+      .then(function(){
+        return driver.executeScript(function(){
+          originalTheme = document.documentElement.getAttribute('data-theme') || 'light';
+          return originalTheme;
+        });
+      })
+      .then(function(theme){
+        originalTheme = theme;
+        // Enable dark theme the same way the app does.
+        return driver.executeScript(function(){
+          document.documentElement.setAttribute('data-theme', 'dark');
+        });
+      })
+      .then(function(){ return driver.sleep(200); })
+      .then(function(){
+        return driver.executeScript(function(){
+          var link = document.querySelector('.team-view-employee-link');
+          var cell = document.querySelector('.left-column-cell');
+          if (!link || !cell) { return {missing: true}; }
+          var linkColor = getComputedStyle(link).color;
+          var bgColor = getComputedStyle(cell).backgroundColor;
+          // Resolve the semantic token value from the theme root.
+          var tokenColor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--color-link').trim();
+          return {
+            linkColor: linkColor,
+            bgColor: bgColor,
+            tokenColor: tokenColor
+          };
+        });
+      })
+      .then(function(info){
+        expect(info.missing, 'expected an admin link and a cell').to.not.be.true;
+        // The computed link colour must resolve to the semantic token value.
+        // getComputedStyle returns rgb(...), getPropertyValue returns the raw
+        // token string (e.g. #8abcf5). Normalise both to 'r,g,b' for comparison.
+        function normaliseColour(str) {
+          var m = str.match(/rgba?\(([^)]+)\)/);
+          if (m) { return m[1].split(',').map(function(v){return v.trim();}).slice(0,3).join(','); }
+          // Hex form like #8abcf5
+          var h = str.match(/^#([0-9a-f]{3,6})$/i);
+          if (h) {
+            var hex = h[1];
+            if (hex.length === 3) { hex = hex.split('').map(function(c){return c+c;}).join(''); }
+            var r = parseInt(hex.substr(0,2), 16);
+            var g = parseInt(hex.substr(2,2), 16);
+            var b = parseInt(hex.substr(4,2), 16);
+            return [r,g,b].join(',');
+          }
+          return str.trim();
+        }
+        var linkNorm = normaliseColour(info.linkColor);
+        var tokenNorm = normaliseColour(info.tokenColor);
+        expect(linkNorm, 'link colour should use --color-link').to.equal(tokenNorm);
+        function parseRgb(str) {
+          var m = str.match(/rgba?\(([^)]+)\)/);
+          if (!m) { return [0, 0, 0]; }
+          return m[1].split(',').map(function(v) {
+            return parseFloat(v.trim()) / 255;
+          });
+        }
+        function lum(rgb) {
+          return rgb.map(function(c) {
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+          }).reduce(function(acc, c, i) {
+            return acc + c * [0.2126, 0.7152, 0.0722][i];
+          }, 0);
+        }
+        function ratio(fg, bg) {
+          var l1 = lum(parseRgb(fg));
+          var l2 = lum(parseRgb(bg));
+          var hi = Math.max(l1, l2);
+          var lo = Math.min(l1, l2);
+          return (hi + 0.05) / (lo + 0.05);
+        }
+        var r = ratio(info.linkColor, info.bgColor);
+        expect(r, 'link contrast must be >= 4.5 in dark theme').to.be.at.least(4.5);
+      })
+      .then(function(){
+        // Restore the original theme.
+        return driver.executeScript(function(t){
+          if (t === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        }, originalTheme);
+      })
+      .then(function(){ done(); })
+      .catch(function(err){
+        // Ensure theme restoration even on assertion failure.
+        driver.executeScript(function(t){
+          if (t === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        }, originalTheme || 'light').then(function(){ done(err); });
+      });
+  });
+
   after(function(done){
     driver.quit().then(function(){ done(); });
   });
