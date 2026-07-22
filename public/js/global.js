@@ -715,37 +715,299 @@ $(document).ready(function(){
     var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
     var popoverWidth = tip && tip.offsetWidth ? tip.offsetWidth : 320;
 
+    if (tip && tip.style) {
+      tip.style.width = '';
+      tip.style.minWidth = '';
+      tip.style.maxWidth = '';
+      tip.style.maxHeight = '';
+      tip.style.overflowY = '';
+    }
+    if (viewportWidth < 560) {
+      var leftSpace = Math.max(0, elementRect.left - 12);
+      var rightSpace = Math.max(0, viewportWidth - elementRect.right - 12);
+      var availableSideSpace = Math.max(leftSpace, rightSpace);
+      if (tip && tip.style) {
+        var mobilePopoverWidth = Math.max(72, availableSideSpace) + 'px';
+        tip.style.width = mobilePopoverWidth;
+        tip.style.minWidth = mobilePopoverWidth;
+        tip.style.maxWidth = mobilePopoverWidth;
+        tip.style.maxHeight = Math.max(120, window.innerHeight - 24) + 'px';
+        tip.style.overflowY = 'auto';
+      }
+      return rightSpace >= leftSpace ? 'right' : 'left';
+    }
     return elementRect.right + popoverWidth + 24 > viewportWidth ? 'left' : 'right';
   }
 
-  $('.leave-details-summary-trigger').popover({
-    title: translations.leaveSummary,
-    container: 'body',
-    html: true,
-    trigger: 'hover',
-    placement: sidePopoverPlacement,
-    viewport: {
-      selector: 'body',
-      padding: 12,
-    },
-    delay: {show: 700, hide: 120},
-    content: function(){
-      var divId =  "tmp-id-" + $.now();
-      return detailsInPopup($(this).attr('data-leave-id'), divId);
-    }
-  });
+  var $interactiveLeaveTriggers = $('.interactive-leave-details-summary-trigger');
 
-  function detailsInPopup(leaveId, divId){
-    $.ajax({
-      url: '/calendar/leave-summary/'+leaveId+'/',
-      success: function(response){
-        $('#'+divId).html(response);
-      },
-      error: function(){
-        $('#'+divId).text(translations.requestFailed);
-      }
+  if ($interactiveLeaveTriggers.length) {
+    var SHOW_DELAY_HOVER = 700;
+    var HIDE_DELAY = 120;
+    var ESCAPE_NS = 'keydown.leaveSummaryPopover';
+    var CLICK_NS = 'click.leaveSummaryPopover';
+
+    $(document).off(ESCAPE_NS).on(ESCAPE_NS, function(e){
+      if (e.which !== 27) { return; }
+      var current = currentOpen();
+      if (!current) { return; }
+      hideTrigger(current);
     });
-    return '<div id="'+ divId +'">' + translations.loading + '</div>';
+
+    $(document).off(CLICK_NS).on(CLICK_NS, function(e){
+      $interactiveLeaveTriggers.each(function(){
+        var $trigger = $(this);
+        var state = $trigger.data('leaveSummaryState');
+        if (!state || !state.pointerPinned) { return; }
+        var insideTrigger = this === e.target || $.contains(this, e.target);
+        var tip = tipOf($trigger);
+        var tipElement = tip && tip[0];
+        var insidePopover = tipElement && (
+          tipElement === e.target || $.contains(tipElement, e.target)
+        );
+
+        if (!insideTrigger && !insidePopover) {
+          hideTrigger($trigger);
+        }
+      });
+    });
+
+    function tipOf($trigger) {
+      var instance = $trigger.data('bs.popover');
+      return instance && instance.tip ? instance.tip() : null;
+    }
+
+    function isOpen($trigger) {
+      var tip = tipOf($trigger);
+      return !!(tip && tip.is(':visible'));
+    }
+
+    function currentOpen() {
+      var found = null;
+      $interactiveLeaveTriggers.each(function(){
+        if (isOpen($(this))) { found = $(this); }
+      });
+      return found;
+    }
+
+    function cancelShow(state) {
+      if (!state.showTimer) { return; }
+      window.clearTimeout(state.showTimer);
+      state.showTimer = null;
+    }
+
+    function cancelHide(state) {
+      if (!state.hideTimer) { return; }
+      window.clearTimeout(state.hideTimer);
+      state.hideTimer = null;
+    }
+
+    function shouldStayVisible(state) {
+      return state.hovered || state.focused || state.pointerPinned || state.popoverHovered;
+    }
+
+    function hideOtherTriggers($activeTrigger) {
+      $interactiveLeaveTriggers.each(function(){
+        var $other = $(this);
+        if (!$other.is($activeTrigger)) {
+          hideTrigger($other);
+        }
+      });
+    }
+
+    function showTrigger($trigger) {
+      var state = $trigger.data('leaveSummaryState');
+      cancelShow(state);
+      cancelHide(state);
+      hideOtherTriggers($trigger);
+      if (!isOpen($trigger)) {
+        $trigger.popover('show');
+      }
+    }
+
+    function scheduleShow($trigger, delay) {
+      var state = $trigger.data('leaveSummaryState');
+      cancelHide(state);
+      if (isOpen($trigger) || state.showTimer) { return; }
+      state.showTimer = window.setTimeout(function(){
+        state.showTimer = null;
+        showTrigger($trigger);
+      }, delay);
+    }
+
+    function scheduleHide($trigger) {
+      var state = $trigger.data('leaveSummaryState');
+      cancelShow(state);
+      if (state.hideTimer) { return; }
+      state.hideTimer = window.setTimeout(function(){
+        state.hideTimer = null;
+        if (!shouldStayVisible(state)) {
+          hideTrigger($trigger);
+        }
+      }, HIDE_DELAY);
+    }
+
+    function hideTrigger($trigger) {
+      var state = $trigger.data('leaveSummaryState');
+      if (!state) { return; }
+      cancelShow(state);
+      cancelHide(state);
+      state.pointerPinned = false;
+      state.popoverHovered = false;
+      if (state.currentXhr) {
+        state.currentXhr.abort();
+      }
+      if (isOpen($trigger)) {
+        $trigger.popover('hide');
+      }
+    }
+
+    function bindPopoverHover($trigger) {
+      var $tip = tipOf($trigger);
+      if (!$tip || $tip.data('leaveSummaryHoverBound')) { return; }
+      $tip
+        .on('mouseenter.leaveSummaryPopover', function(){
+          var state = $trigger.data('leaveSummaryState');
+          state.popoverHovered = true;
+          cancelHide(state);
+        })
+        .on('mouseleave.leaveSummaryPopover', function(){
+          var state = $trigger.data('leaveSummaryState');
+          state.popoverHovered = false;
+          scheduleHide($trigger);
+        })
+        .data('leaveSummaryHoverBound', true);
+    }
+
+    $interactiveLeaveTriggers.each(function(){
+      var $trigger = $(this);
+      if (
+        $trigger.hasClass('calendar-leave-details-trigger')
+        && !$trigger.hasClass('team-view-leave-details-trigger')
+      ) {
+        var calendarLabel = $.trim(
+          $trigger.closest('.calendar_month').attr('aria-label') || ''
+        );
+        var originalLabel = $trigger.attr('aria-label') || '';
+        var yearMatch = originalLabel.match(/\b\d{4}\b/);
+        var dateLabel = $.trim($trigger.text()) + ' ' + calendarLabel;
+        if (!/\b\d{4}\b/.test(calendarLabel) && yearMatch) {
+          dateLabel += ' ' + yearMatch[0];
+        }
+        $trigger.attr(
+          'aria-label',
+          translations.leaveSummary + ': ' + $.trim(dateLabel)
+        );
+      } else if ($trigger.hasClass('team-view-leave-details-trigger')) {
+        var $employeeName = $trigger
+          .closest('.teamview-user-list-row')
+          .find('.team-view-employee-link, .team-view-employee-name')
+          .first();
+        var teamLabel = $trigger.attr('aria-label') || '';
+        var dateSeparator = teamLabel.indexOf(',');
+        var teamDate = dateSeparator === -1
+          ? ''
+          : $.trim(teamLabel.slice(dateSeparator + 1));
+        $trigger.attr(
+          'aria-label',
+          translations.leaveSummary + ': '
+            + $.trim($employeeName.text()) + ', ' + teamDate
+        );
+      }
+      var $content = $('<div>', {
+        'class': 'leave-summary-popover-content',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        'text': translations.loading
+      });
+      var state = {
+        hovered: false,
+        focused: false,
+        pointerPinned: false,
+        popoverHovered: false,
+        showTimer: null,
+        hideTimer: null,
+        currentXhr: null,
+        content: $content
+      };
+
+      $trigger.data('leaveSummaryState', state);
+      $trigger.popover({
+        title: translations.leaveSummary,
+        container: 'body',
+        html: true,
+        trigger: 'manual',
+        placement: sidePopoverPlacement,
+        viewport: { selector: 'body', padding: 12 },
+        content: function(){ return $content[0]; }
+      });
+
+      $trigger
+        .on('shown.bs.popover.leaveSummaryPopover', function(){
+          $trigger.attr('aria-expanded', 'true');
+          bindPopoverHover($trigger);
+        })
+        .on('hidden.bs.popover.leaveSummaryPopover', function(){
+          $trigger.attr('aria-expanded', 'false');
+        })
+        .on('mouseenter.leaveSummaryPopover', function(){
+          state.hovered = true;
+          scheduleShow($trigger, SHOW_DELAY_HOVER);
+        })
+        .on('mouseleave.leaveSummaryPopover', function(){
+          state.hovered = false;
+          scheduleHide($trigger);
+        })
+        .on('focusin.leaveSummaryPopover', function(){
+          state.focused = true;
+          scheduleShow($trigger, 0);
+        })
+        .on('focusout.leaveSummaryPopover', function(){
+          state.focused = false;
+          scheduleHide($trigger);
+        })
+        .on('click.leaveSummaryPopover', function(e){
+          var fromKeyboard = e.detail === 0;
+          e.preventDefault();
+
+          if (fromKeyboard) {
+            if (!isOpen($trigger)) {
+              showTrigger($trigger);
+            }
+            return;
+          }
+
+          if (state.pointerPinned) {
+            hideTrigger($trigger);
+          } else {
+            state.pointerPinned = true;
+            showTrigger($trigger);
+          }
+        })
+        .on('show.bs.popover.leaveSummaryPopover', function(){
+          if (state.currentXhr) {
+            state.currentXhr.abort();
+          }
+          $content.text(translations.loading);
+          var xhr = $.ajax({
+            url: '/calendar/leave-summary/' + $trigger.attr('data-leave-id') + '/',
+            success: function(response){
+              if (state.currentXhr !== xhr) { return; }
+              $content.html(response);
+            },
+            error: function(jqXhr, textStatus){
+              if (state.currentXhr !== xhr || textStatus === 'abort') { return; }
+              $content.text(translations.requestFailed);
+            },
+            complete: function(){
+              if (state.currentXhr === xhr) {
+                state.currentXhr = null;
+              }
+            }
+          });
+          state.currentXhr = xhr;
+        });
+    });
   }
 });
 

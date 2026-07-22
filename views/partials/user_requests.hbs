@@ -28,7 +28,7 @@
 
       <tr class="leave-request-row">
         <td data-tom-leave-dates="1">
-          <a class="leave-details-summary-trigger" data-leave-id="{{this.id}}" href="#">{{> leave_dates leave=this}}</a>
+          <button type="button" class="leave-details-summary-trigger interactive-leave-details-summary-trigger leave-details-date-trigger" data-leave-id="{{this.id}}" aria-expanded="false"><span class="sr-only">{{t "leave.leaveSummary"}}: </span>{{> leave_dates leave=this}}</button>
         </td>
         <td>{{ this.leave_type.name }}{{#if this.is_pended_revoke_leave}}<br>({{t "requests.pendedRevoke"}}){{/if}}</td>
         <td>{{ this.get_deducted_days_number }}</td>

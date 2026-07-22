@@ -20,7 +20,7 @@
         </thead>
 
         <tbody>
-        {{#each department.users_and_leaves}}
+        {{#each department.users_and_leaves as |employeeRow|}}
           <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
             <td class="left-column-cell cross-link" data-user-id={{this.user.id}}>
               <span class="team-view-employee-cell">
@@ -40,8 +40,8 @@
               {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
               </span>
             </td>
-            {{#each this.days}}
-              {{> team_view_calendar_cell day = this}}
+            {{#each employeeRow.days}}
+              {{> team_view_calendar_cell day=this employee=employeeRow.user}}
             {{/each}}
           </tr>
         {{/each}}

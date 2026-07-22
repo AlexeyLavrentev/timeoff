@@ -47,7 +47,7 @@
           </td>
           <td data-label="{{t 'requests.department'}}">{{this.user.department.name}}</td>
           <td class="date_of_request" data-label="{{t 'requests.requestDate'}}">{{as_date_from_timestamp this.createdAt}}</td>
-          <td data-label="{{t 'requests.leaveDates'}}" data-tom-leave-dates="1"><a class="leave-details-summary-trigger" data-leave-id="{{this.id}}" href="#">{{> leave_dates leave=this}}</a></td>
+          <td data-label="{{t 'requests.leaveDates'}}" data-tom-leave-dates="1"><button type="button" class="leave-details-summary-trigger interactive-leave-details-summary-trigger leave-details-date-trigger" data-leave-id="{{this.id}}" aria-expanded="false"><span class="sr-only">{{t "leave.leaveSummary"}}: </span>{{> leave_dates leave=this}}</button></td>
           <td data-label="{{t 'requests.type'}}"><span class="mobile-card-value">
             {{#if this.is_pended_revoke_leave}}{{t "requests.revokeLabel"}} {{/if}}{{this.leave_type.name}}
             {{#if this.minimum_leave_warning}}
