@@ -22,6 +22,8 @@
  * */
 
 var By                     = require('selenium-webdriver').By,
+  Key                    = require('selenium-webdriver').Key,
+  until                  = require('selenium-webdriver').until,
   Promise                = require("bluebird"),
   expect                 = require('chai').expect,
   add_new_user_func      = require('../../lib/add_new_user'),
@@ -43,6 +45,37 @@ describe('Case when holidays spans through more then one month and is devided by
   let driver,
     email_A, user_id_A,
     email_B, user_id_B;
+
+  async function assertDeductedButton(userId, expectedDays, expectedPeriod, openPopover) {
+    const row = await driver.findElement(By.css(`tr[data-vpp-user-list-row="${userId}"]`));
+    const employee = await row.findElement(
+      By.css('.team-view-employee-link, .team-view-employee-name')
+    );
+    const employeeName = (await employee.getText()).trim();
+    const button = await row.findElement(By.css('button.team-view-deducted-days-trigger'));
+    const visible = (await button.getText()).trim();
+    const content = await button.getAttribute('data-content');
+    const label = await button.getAttribute('aria-label');
+
+    expect(await button.getTagName()).to.equal('button');
+    expect(await button.getAttribute('type')).to.equal('button');
+    expect(visible).to.equal(expectedDays);
+    [content, label].forEach(function(value) {
+      expect(value).to.contain(expectedDays);
+      expect(value).to.contain(employeeName);
+      expect(value).to.contain(expectedPeriod);
+    });
+
+    if (openPopover) {
+      await button.sendKeys(Key.ENTER);
+      await driver.wait(until.elementIsVisible(
+        await driver.findElement(By.css('.popover.in[role="tooltip"]'))
+      ), 2000);
+      const tip = await driver.findElement(By.css('.popover.in[role="tooltip"]'));
+      expect((await tip.getText()).trim()).to.equal(content);
+      await button.sendKeys(Key.ESCAPE);
+    }
+  }
 
   it("Register new company as admin user A", function(done){
     register_new_user_func({
@@ -340,49 +373,34 @@ describe('Case when holidays spans through more then one month and is devided by
     .then(() => done());
   });
 
-  it('Navigate to team view and ensure that it shows 9 days were deducted for Aug 2016', function(done){
-    open_page_func({
+  it('Navigate to team view and ensure that it shows 9 days were deducted for Aug 2016', async function(){
+    await open_page_func({
       url    : application_host + 'calendar/teamview/?date=2016-08',
       driver : driver,
-    })
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt, 'Ensure that system shows 9 days as deducted')
-        .to.be.eql('9');
-      done();
     });
+    await assertDeductedButton(user_id_B, '9', 'August, 2016', true);
   });
 
-  it('1.5 days deducted for July 2016', function(done){
-    open_page_func({
+  it('1.5 days deducted for July 2016', async function(){
+    await open_page_func({
       url    : application_host + 'calendar/teamview/?date=2016-07',
       driver : driver,
-    })
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt, 'Ensure that system shows 1.5 days as deducted')
-        .to.be.eql('1.5');
-      done();
     });
+    await assertDeductedButton(user_id_B, '1.5', 'July, 2016', false);
   });
 
-  it('2 days deducted for Sept 2016', function(done){
-    open_page_func({
+  it('2 days deducted for Sept 2016', async function(){
+    await open_page_func({
       url    : application_host + 'calendar/teamview/?date=2016-09',
       driver : driver,
-    })
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt, 'Ensure that system shows 2 days as deducted')
-        .to.be.eql('2');
-      done();
     });
+    await assertDeductedButton(user_id_B, '2', 'September, 2016', false);
   });
 
-  after(function(done){
-    driver.quit().then(() => done());
+  after(async function(){
+    if (driver) {
+      await driver.quit();
+      driver = null;
+    }
   });
 });

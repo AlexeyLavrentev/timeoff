@@ -27,7 +27,6 @@
 
 const
   By                     = require('selenium-webdriver').By,
-  Promise                = require("bluebird"),
   expect                 = require('chai').expect,
   add_new_user_func      = require('../../lib/add_new_user'),
   check_elements_func    = require('../../lib/check_elements'),
@@ -50,6 +49,28 @@ describe('Check that values for new columns are shown only for employess current
     email_A, user_id_A,
     email_B, user_id_B,
     email_C, user_id_C;
+
+  async function assertDeductedVisibility(userId, allowed) {
+    const row = await driver.findElement(By.css(`tr[data-vpp-user-list-row="${userId}"]`));
+    const cell = await row.findElement(By.css('.team-view-deducted-cell'));
+    const buttons = await cell.findElements(By.css('.team-view-deducted-days-trigger'));
+    const cellText = (await cell.getText()).trim();
+    const cellHtml = await cell.getAttribute('innerHTML');
+
+    if (allowed) {
+      expect(buttons).to.have.length(1);
+      expect(cellText).to.equal('0');
+      expect(await buttons[0].getAttribute('data-content')).to.contain('0');
+      expect(await buttons[0].getAttribute('aria-label')).to.contain('0');
+      return;
+    }
+
+    expect(buttons).to.have.length(0);
+    expect(cellText).to.equal('');
+    expect(cellHtml).not.to.contain('data-content');
+    expect(cellHtml).not.to.contain('aria-label');
+    expect(cellHtml).not.to.contain('teamview-deducted-days');
+  }
 
   it("Register new company as admin user A", function(done){
     register_new_user_func({
@@ -210,34 +231,14 @@ describe('Check that values for new columns are shown only for employess current
     .then(function(){ done() });
   });
 
-  it('As user A ensure team view shows deducted values for all three users', function(done){
-    open_page_func({
+  it('As user A ensure team view shows deducted values for all three users', async function(){
+    await open_page_func({
       url    : `${ application_host }calendar/teamview/`,
       driver : driver,
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_A}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_C}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(function(){ done() });
+    });
+    await assertDeductedVisibility(user_id_A, true);
+    await assertDeductedVisibility(user_id_B, true);
+    await assertDeductedVisibility(user_id_C, true);
   });
 
   it("Logout from user A (admin)", function(done){
@@ -257,34 +258,14 @@ describe('Check that values for new columns are shown only for employess current
     .then(() => done());
   });
 
-  it('Login as user B and ensure she sees deducted days only for user B (self) and user C but not for user A', function(done){
-    open_page_func({
+  it('Login as user B and ensure she sees deducted days only for user B (self) and user C but not for user A', async function(){
+    await open_page_func({
       url    : `${ application_host }calendar/teamview/`,
       driver : driver,
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_A}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_C}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(function(){ done() });
+    });
+    await assertDeductedVisibility(user_id_A, false);
+    await assertDeductedVisibility(user_id_B, true);
+    await assertDeductedVisibility(user_id_C, true);
   });
 
   it("Logout from user B", function(done){
@@ -304,37 +285,20 @@ describe('Check that values for new columns are shown only for employess current
     .then(() => done());
   });
 
-  it('Login as user C and ensure she sees only values for her account', function(done){
-    open_page_func({
+  it('Login as user C and ensure she sees only values for her account', async function(){
+    await open_page_func({
       url    : `${ application_host }calendar/teamview/`,
       driver : driver,
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_A}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_B}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('');
-      return Promise.resolve(1);
-    })
-
-    .then(() => driver.findElement(By.css(`tr[data-vpp-user-list-row="${user_id_C}"] span.teamview-deducted-days`)))
-    .then(el => el.getText())
-    .then(txt => {
-      expect(txt).to.be.eql('0');
-      return Promise.resolve(1);
-    })
-
-    .then(function(){ done() });
+    });
+    await assertDeductedVisibility(user_id_A, false);
+    await assertDeductedVisibility(user_id_B, false);
+    await assertDeductedVisibility(user_id_C, true);
   });
 
-  after(function(done){
-    driver.quit().then(() => done());
+  after(async function(){
+    if (driver) {
+      await driver.quit();
+      driver = null;
+    }
   });
 });
