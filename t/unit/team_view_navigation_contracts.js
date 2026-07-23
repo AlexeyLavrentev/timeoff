@@ -49,8 +49,10 @@ describe('Team View horizontal navigation contracts', function() {
       expect(source).to.contain('data-user-id');
       expect(source).to.contain('team-view-deducted-cell');
       expect(source).to.contain('teamview-deducted-days');
-      expect(source).to.contain('data-toggle="popover"');
-      expect(source).to.contain('data-trigger="focus hover"');
+      expect(source).to.contain('interactive-teamview-deducted-days-trigger');
+      expect(source).to.match(/<button[\s\S]*type="button"[\s\S]*team-view-deducted-days-trigger/);
+      expect(source).not.to.contain('data-toggle="popover"');
+      expect(source).not.to.contain('data-trigger="focus hover"');
       // Calendar cells are still rendered via the shared partial.
       expect(source).to.contain('{{> team_view_calendar_cell');
     });

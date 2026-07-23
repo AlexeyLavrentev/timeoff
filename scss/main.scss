@@ -4079,6 +4079,24 @@ td.current_day_cell.half_2nd {
   text-align: center;
 }
 
+.team-view-deducted-days-trigger {
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  border-radius: $radius-sm;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .teamview-deducted-days {
   display: inline-flex;
   align-items: center;
@@ -4091,6 +4109,10 @@ td.current_day_cell.half_2nd {
   color: $brand-blue-hover;
   font-size: 11px;
   font-weight: 700;
+}
+
+.team-view-deducted-days-trigger:focus-visible {
+  outline-offset: 1px;
 }
 
 @media (max-width: 1199px) {

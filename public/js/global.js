@@ -739,6 +739,241 @@ $(document).ready(function(){
     return elementRect.right + popoverWidth + 24 > viewportWidth ? 'left' : 'right';
   }
 
+  (function initInteractiveDeductedDaysPopovers() {
+    var $interactiveDeductedDaysTriggers = $('.interactive-teamview-deducted-days-trigger');
+
+    if (!$interactiveDeductedDaysTriggers.length) {
+      return;
+    }
+
+    var SHOW_DELAY_HOVER = 700;
+    var HIDE_DELAY = 120;
+    var ESCAPE_NS = 'keydown.deductedDaysPopover';
+    var CLICK_NS = 'click.deductedDaysPopover';
+
+    function tipOf($trigger) {
+      var instance = $trigger.data('bs.popover');
+      return instance && instance.tip ? instance.tip() : null;
+    }
+
+    function isOpen($trigger) {
+      var tip = tipOf($trigger);
+      return !!(tip && tip.is(':visible'));
+    }
+
+    function currentOpen() {
+      var found = null;
+      $interactiveDeductedDaysTriggers.each(function() {
+        if (isOpen($(this))) {
+          found = $(this);
+        }
+      });
+      return found;
+    }
+
+    function cancelShow(state) {
+      if (!state.showTimer) {
+        return;
+      }
+      window.clearTimeout(state.showTimer);
+      state.showTimer = null;
+    }
+
+    function cancelHide(state) {
+      if (!state.hideTimer) {
+        return;
+      }
+      window.clearTimeout(state.hideTimer);
+      state.hideTimer = null;
+    }
+
+    function shouldStayVisible(state) {
+      return state.hovered
+        || state.focused
+        || state.pointerPinned
+        || state.popoverHovered;
+    }
+
+    function hideTrigger($trigger) {
+      var state = $trigger.data('deductedDaysPopoverState');
+      if (!state) {
+        return;
+      }
+      cancelShow(state);
+      cancelHide(state);
+      state.pointerPinned = false;
+      state.popoverHovered = false;
+      if (isOpen($trigger)) {
+        $trigger.popover('hide');
+      }
+    }
+
+    function hideOtherTriggers($activeTrigger) {
+      $interactiveDeductedDaysTriggers.each(function() {
+        var $other = $(this);
+        if (!$other.is($activeTrigger)) {
+          hideTrigger($other);
+        }
+      });
+    }
+
+    function showTrigger($trigger) {
+      var state = $trigger.data('deductedDaysPopoverState');
+      cancelShow(state);
+      cancelHide(state);
+      hideOtherTriggers($trigger);
+      if (!isOpen($trigger)) {
+        $trigger.popover('show');
+      }
+    }
+
+    function scheduleShow($trigger, delay) {
+      var state = $trigger.data('deductedDaysPopoverState');
+      cancelHide(state);
+      if (isOpen($trigger) || state.showTimer) {
+        return;
+      }
+      state.showTimer = window.setTimeout(function() {
+        state.showTimer = null;
+        showTrigger($trigger);
+      }, delay);
+    }
+
+    function scheduleHide($trigger) {
+      var state = $trigger.data('deductedDaysPopoverState');
+      cancelShow(state);
+      if (state.hideTimer) {
+        return;
+      }
+      state.hideTimer = window.setTimeout(function() {
+        state.hideTimer = null;
+        if (!shouldStayVisible(state)) {
+          hideTrigger($trigger);
+        }
+      }, HIDE_DELAY);
+    }
+
+    function bindPopoverHover($trigger) {
+      var $tip = tipOf($trigger);
+      if (!$tip || $tip.data('deductedDaysPopoverHoverBound')) {
+        return;
+      }
+      $tip
+        .on('mouseenter.deductedDaysPopover', function() {
+          var state = $trigger.data('deductedDaysPopoverState');
+          state.popoverHovered = true;
+          cancelHide(state);
+        })
+        .on('mouseleave.deductedDaysPopover', function() {
+          var state = $trigger.data('deductedDaysPopoverState');
+          state.popoverHovered = false;
+          scheduleHide($trigger);
+        })
+        .data('deductedDaysPopoverHoverBound', true);
+    }
+
+    $(document).off(ESCAPE_NS).on(ESCAPE_NS, function(e) {
+      if (e.which !== 27) {
+        return;
+      }
+      var current = currentOpen();
+      if (current) {
+        hideTrigger(current);
+      }
+    });
+
+    $(document).off(CLICK_NS).on(CLICK_NS, function(e) {
+      $interactiveDeductedDaysTriggers.each(function() {
+        var $trigger = $(this);
+        var state = $trigger.data('deductedDaysPopoverState');
+        if (!state || !state.pointerPinned) { return; }
+
+        var insideTrigger = this === e.target || $.contains(this, e.target);
+        var tip = tipOf($trigger);
+        var tipElement = tip && tip[0];
+        var insidePopover = tipElement && (
+          tipElement === e.target || $.contains(tipElement, e.target)
+        );
+
+        if (!insideTrigger && !insidePopover) {
+          hideTrigger($trigger);
+        }
+      });
+    });
+
+    $interactiveDeductedDaysTriggers.each(function() {
+      var $trigger = $(this);
+      var state = {
+        hovered: false,
+        focused: false,
+        pointerPinned: false,
+        popoverHovered: false,
+        showTimer: null,
+        hideTimer: null
+      };
+
+      $trigger.data('deductedDaysPopoverState', state);
+      $trigger.popover({
+        container: 'body',
+        html: false,
+        trigger: 'manual',
+        placement: sidePopoverPlacement,
+        viewport: { selector: 'body', padding: 12 },
+        content: function() {
+          return $trigger.attr('data-content') || '';
+        }
+      });
+
+      $trigger
+        .on('shown.bs.popover.deductedDaysPopover', function() {
+          $trigger.attr('aria-expanded', 'true');
+          bindPopoverHover($trigger);
+        })
+        .on('hidden.bs.popover.deductedDaysPopover', function() {
+          $trigger.attr('aria-expanded', 'false');
+        })
+        .on('mouseenter.deductedDaysPopover', function() {
+          state.hovered = true;
+          scheduleShow($trigger, SHOW_DELAY_HOVER);
+        })
+        .on('mouseleave.deductedDaysPopover', function() {
+          state.hovered = false;
+          scheduleHide($trigger);
+        })
+        .on('focusin.deductedDaysPopover', function() {
+          state.focused = true;
+          scheduleShow($trigger, 0);
+        })
+        .on('focusout.deductedDaysPopover', function() {
+          state.focused = false;
+          state.pointerPinned = false;
+          scheduleHide($trigger);
+        })
+        .on('pointerdown.deductedDaysPopover', function() {
+          state.pointerDown = true;
+        })
+        .on('click.deductedDaysPopover', function(e) {
+          var fromKeyboard = e.detail === 0 || !state.pointerDown;
+          state.pointerDown = false;
+          e.preventDefault();
+
+          if (fromKeyboard) {
+            if (!isOpen($trigger)) {
+              showTrigger($trigger);
+            }
+            return;
+          }
+
+          if (state.pointerPinned) {
+            hideTrigger($trigger);
+          } else {
+            state.pointerPinned = true;
+            showTrigger($trigger);
+          }
+        });
+    });
+  })();
+
   var $interactiveLeaveTriggers = $('.interactive-leave-details-summary-trigger');
 
   if ($interactiveLeaveTriggers.length) {

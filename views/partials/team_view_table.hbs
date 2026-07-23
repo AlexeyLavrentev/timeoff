@@ -21,24 +21,25 @@
 
         <tbody>
         {{#each department.users_and_leaves as |employeeRow|}}
-          <tr class="teamview-user-list-row" data-vpp-user-list-row={{this.user.id}}>
-            <td class="left-column-cell cross-link" data-user-id={{this.user.id}}>
+          <tr class="teamview-user-list-row" data-vpp-user-list-row={{employeeRow.user.id}}>
+            <td class="left-column-cell cross-link" data-user-id={{employeeRow.user.id}}>
               <span class="team-view-employee-cell">
-                {{#if ../logged_user.admin}} {{#with this.user }}<a class="team-view-employee-link" href="/users/edit/{{this.id}}/">{{ this.full_name }}</a>{{/with}}{{else}}{{#with this.user }}<span class="team-view-employee-name">{{ this.full_name }}</span>{{/with}}{{/if}}
-                <button type="button" class="user-details-summary-trigger interactive-user-details-summary-trigger team-view-user-details-summary-trigger details-trigger-button" data-user-id="{{this.user.id}}" aria-label="{{t 'user.employeeSummary'}}: {{this.user.full_name}}"><span class="fa fa-question-circle" aria-hidden="true"></span></button>
+                {{#if ../logged_user.admin}}<a class="team-view-employee-link" href="/users/edit/{{employeeRow.user.id}}/">{{full_name employeeRow.user}}</a>{{else}}<span class="team-view-employee-name">{{full_name employeeRow.user}}</span>{{/if}}
+                <button type="button" class="user-details-summary-trigger interactive-user-details-summary-trigger team-view-user-details-summary-trigger details-trigger-button" data-user-id="{{employeeRow.user.id}}" aria-label="{{t 'user.employeeSummary'}}: {{full_name employeeRow.user}}"><span class="fa fa-question-circle" aria-hidden="true"></span></button>
               </span>
             </td>
             <td class="team-view-deducted-cell">
-              <span class="teamview-deducted-days"
-                {{#if statistics }}
-                data-content="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name this.user) days=../statistics.deducted_days }}"
-                data-placement="right"
-                data-toggle="popover"
-                data-trigger="focus hover"
-                {{/if}}
+              {{#if employeeRow.statistics}}
+              <button
+                type="button"
+                class="teamview-deducted-days interactive-teamview-deducted-days-trigger team-view-deducted-days-trigger"
+                data-content="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name employeeRow.user) days=employeeRow.statistics.deducted_days}}"
+                aria-label="{{t 'teamView.deductedDays' period=../deducted_period name=(full_name employeeRow.user) days=employeeRow.statistics.deducted_days}}"
+                aria-expanded="false"
               >
-              {{#if statistics }}{{ statistics.deducted_days }}{{/if}}
-              </span>
+                <span aria-hidden="true">{{employeeRow.statistics.deducted_days}}</span>
+              </button>
+              {{/if}}
             </td>
             {{#each employeeRow.days}}
               {{> team_view_calendar_cell day=this employee=employeeRow.user}}

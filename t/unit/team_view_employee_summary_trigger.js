@@ -30,11 +30,11 @@ describe('Team View employee-summary trigger markup', function() {
   });
 
   it('keeps the admin edit link as a real anchor with /users/edit/:id/', function() {
-    expect(source).to.match(/<a class="team-view-employee-link" href="\/users\/edit\/\{\{this\.id\}\}\/">/);
+    expect(source).to.match(/<a class="team-view-employee-link" href="\/users\/edit\/\{\{employeeRow\.user\.id\}\}\/">/);
   });
 
   it('renders the non-admin name as plain text, not a link', function() {
-    expect(source).to.match(/<span class="team-view-employee-name">\s*\{\{\s*this\.full_name\s*\}\}\s*<\/span>/);
+    expect(source).to.match(/<span class="team-view-employee-name">\{\{full_name employeeRow\.user\}\}<\/span>/);
   });
 
   it('adds a real <button type="button"> as the summary trigger', function() {
@@ -51,13 +51,13 @@ describe('Team View employee-summary trigger markup', function() {
 
   it('keeps data-user-id on the summary button', function() {
     expect(source).to.match(
-      /<button[^>]*class="[^"]*team-view-user-details-summary-trigger[^"]*"[^>]*data-user-id="\{\{this\.user\.id\}\}"/
+      /<button[^>]*class="[^"]*team-view-user-details-summary-trigger[^"]*"[^>]*data-user-id="\{\{employeeRow\.user\.id\}\}"/
     );
   });
 
   it('exposes an accessible name built from the localised label + user name', function() {
     expect(source).to.match(
-      /aria-label="\{\{t 'user\.employeeSummary'\}\}: \{\{this\.user\.full_name\}\}"/
+      /aria-label="\{\{t 'user\.employeeSummary'\}\}: \{\{full_name employeeRow\.user\}\}"/
     );
   });
 
@@ -77,11 +77,10 @@ describe('Team View employee-summary trigger markup', function() {
     expect(linkCloseIdx, 'button must not be nested inside the admin link').to.be.lessThan(buttonIdx);
   });
 
-  it('keeps the deducted-days and calendar-cell contracts unchanged', function() {
+  it('keeps the deducted cell and calendar-cell contracts while allowing its dedicated button', function() {
     expect(source).to.contain('team-view-deducted-cell');
     expect(source).to.contain('teamview-deducted-days');
-    expect(source).to.contain('data-toggle="popover"');
-    expect(source).to.contain('data-trigger="focus hover"');
+    expect(source).to.contain('interactive-teamview-deducted-days-trigger');
     expect(source).to.contain('{{> team_view_calendar_cell');
   });
 });
