@@ -35,6 +35,8 @@ describe('Interactive leave details popover trigger contract', function() {
   it('passes the Team View employee into the calendar partial explicitly', function() {
     expect(read('views/partials/team_view_table.hbs'))
       .to.contain('{{> team_view_calendar_cell day=this employee=employeeRow.user}}');
+    expect(read('views/partials/team_view_calendar_cell.hbs'))
+      .to.contain("{{full_name employee}}, {{as_date_formatted day.moment 'D MMMM YYYY'}}");
   });
 
   it('uses semantic color tokens and minimum target sizes', function() {
@@ -104,6 +106,18 @@ describe('Interactive leave details popover trigger contract', function() {
       expect(controller).to.contain('hidden.bs.popover.leaveSummaryPopover');
       expect(controller).to.contain("attr('aria-expanded', 'false')");
       expect(controller).to.contain('e.detail === 0');
+    });
+
+    it('does not reconstruct accessible names from surrounding DOM', function() {
+      [
+        'calendarLabel',
+        'yearMatch',
+        'dateSeparator',
+        'teamLabel',
+        "closest('.calendar_month')",
+        "find('.team-view-employee-link",
+        "attr('aria-label'",
+      ].forEach(fragment => expect(controller).not.to.contain(fragment));
     });
 
     it('removes the legacy leave implementation', function() {

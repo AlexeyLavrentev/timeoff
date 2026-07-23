@@ -881,39 +881,6 @@ $(document).ready(function(){
 
     $interactiveLeaveTriggers.each(function(){
       var $trigger = $(this);
-      if (
-        $trigger.hasClass('calendar-leave-details-trigger')
-        && !$trigger.hasClass('team-view-leave-details-trigger')
-      ) {
-        var calendarLabel = $.trim(
-          $trigger.closest('.calendar_month').attr('aria-label') || ''
-        );
-        var originalLabel = $trigger.attr('aria-label') || '';
-        var yearMatch = originalLabel.match(/\b\d{4}\b/);
-        var dateLabel = $.trim($trigger.text()) + ' ' + calendarLabel;
-        if (!/\b\d{4}\b/.test(calendarLabel) && yearMatch) {
-          dateLabel += ' ' + yearMatch[0];
-        }
-        $trigger.attr(
-          'aria-label',
-          translations.leaveSummary + ': ' + $.trim(dateLabel)
-        );
-      } else if ($trigger.hasClass('team-view-leave-details-trigger')) {
-        var $employeeName = $trigger
-          .closest('.teamview-user-list-row')
-          .find('.team-view-employee-link, .team-view-employee-name')
-          .first();
-        var teamLabel = $trigger.attr('aria-label') || '';
-        var dateSeparator = teamLabel.indexOf(',');
-        var teamDate = dateSeparator === -1
-          ? ''
-          : $.trim(teamLabel.slice(dateSeparator + 1));
-        $trigger.attr(
-          'aria-label',
-          translations.leaveSummary + ': '
-            + $.trim($employeeName.text()) + ', ' + teamDate
-        );
-      }
       var $content = $('<div>', {
         'class': 'leave-summary-popover-content',
         'aria-live': 'polite',

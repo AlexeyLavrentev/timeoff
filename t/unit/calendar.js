@@ -69,9 +69,14 @@ describe('Check calendar month object', function(){
     it('Knows how to generate data structure for template', function(){
         var january = new CalendarMonth('2015-01-11', { schedule : schedule, today : moment.utc() }),
           object_to_test = january.as_for_template();
+        expect(object_to_test.weeks[0][3].moment.format('YYYY-MM-DD')).to.equal('2015-01-01');
+        expect(object_to_test.weeks[4][5].moment.format('YYYY-MM-DD')).to.equal('2015-01-31');
         delete object_to_test['moment'];
         object_to_test.weeks.forEach(function(week){
-          week.forEach(function(day){ delete day.leave_obj });
+          week.forEach(function(day){
+            delete day.moment;
+            delete day.leave_obj;
+          });
         });
         expect( object_to_test ).to.be.eql(
             {"month":"January","weeks":[[{"val":""},{"val":""},{"val":""},{"val":1},{"val":2},{"val":3,"is_calendar_weekend":true,"is_weekend":true},{"val":4,"is_calendar_weekend":true,"is_weekend":true}],[{"val":5},{"val":6},{"val":7},{"val":8},{"val":9},{"val":10,"is_calendar_weekend":true,"is_weekend":true},{"val":11,"is_calendar_weekend":true,"is_weekend":true}],[{"val":12},{"val":13},{"val":14},{"val":15},{"val":16},{"val":17,"is_calendar_weekend":true,"is_weekend":true},{"val":18,"is_calendar_weekend":true,"is_weekend":true}],[{"val":19},{"val":20},{"val":21},{"val":22},{"val":23},{"val":24,"is_calendar_weekend":true,"is_weekend":true},{"val":25,"is_calendar_weekend":true,"is_weekend":true}],[{"val":26},{"val":27},{"val":28},{"val":29},{"val":30},{"val":31,"is_calendar_weekend":true,"is_weekend":true},{"val":""}]]}
@@ -82,7 +87,10 @@ describe('Check calendar month object', function(){
         object_to_test = apr.as_for_template();
         delete object_to_test['moment'];
         object_to_test.weeks.forEach(function(week){
-          week.forEach(function(day){ delete day.leave_obj });
+          week.forEach(function(day){
+            delete day.moment;
+            delete day.leave_obj;
+          });
         });
         expect( object_to_test ).to.be.eql(
             {"month":"April","weeks":[[{"val":""},{"val":""},{"val":1},{"val":2},{"val":3},{"val":4,"is_calendar_weekend":true,"is_weekend":true},{"val":5,"is_calendar_weekend":true,"is_weekend":true}],[{"val":6},{"val":7},{"val":8},{"val":9},{"val":10},{"val":11,"is_calendar_weekend":true,"is_weekend":true},{"val":12,"is_calendar_weekend":true,"is_weekend":true}],[{"val":13},{"val":14},{"val":15},{"val":16},{"val":17},{"val":18,"is_calendar_weekend":true,"is_weekend":true},{"val":19,"is_calendar_weekend":true,"is_weekend":true}],[{"val":20},{"val":21},{"val":22},{"val":23},{"val":24},{"val":25,"is_calendar_weekend":true,"is_weekend":true},{"val":26,"is_calendar_weekend":true,"is_weekend":true}],[{"val":27},{"val":28},{"val":29},{"val":30},{"val":""},{"val":""},{"val":""}]]}

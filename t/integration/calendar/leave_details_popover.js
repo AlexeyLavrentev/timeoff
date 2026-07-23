@@ -29,6 +29,14 @@ describe('Interactive leave details popover — all first-party surfaces', funct
   let rangeEnd;
   let testYear;
 
+  after(async function() {
+    if (driver) {
+      await driver.quit();
+      driver = null;
+      process.stdout.write('\n[leave-popover] WebDriver closed after suite\n');
+    }
+  });
+
   function nextFriday() {
     const date = moment().tz('Europe/London').add(10, 'days').startOf('day');
     while (date.isoWeekday() !== 5) {
@@ -149,6 +157,8 @@ describe('Interactive leave details popover — all first-party surfaces', funct
 
     admin = await models.User.findOne({where: {email: adminEmail}});
     employee = await models.User.findOne({where: {email: employeeEmail}});
+    await employee.update({name: 'Lovelace,', lastname: 'Ada'});
+    await employee.reload();
     const leaveType = await models.LeaveType.findOne({where: {companyId: admin.companyId}});
     expect(admin).to.not.equal(null);
     expect(employee).to.not.equal(null);
@@ -218,6 +228,7 @@ describe('Interactive leave details popover — all first-party surfaces', funct
     expect(tag).to.equal('button');
     expect(name).to.match(/leave summary/i);
     expect(name).to.contain(String(testYear));
+    expect(name).to.match(new RegExp(`\\d{1,2} \\S+ ${testYear}`));
 
     await driver.executeScript(function(element) { element.focus(); }, trigger);
     await waitVisible(trigger, true, 1500);
@@ -294,6 +305,26 @@ describe('Interactive leave details popover — all first-party surfaces', funct
       expect(item.label).to.contain(item.name);
       expect(item.label).to.contain(String(testYear));
     });
+    const commaLabel = labelEvidence.find(item => item.name === 'Lovelace, Ada');
+    expect(commaLabel).to.not.equal(undefined);
+    expect((commaLabel.label.match(/Lovelace, Ada/g) || [])).to.have.length(1);
+    expect(commaLabel.label).to.match(/Lovelace, Ada, \d{1,2} \S+ \d{4}/);
+    expect(commaLabel.label).not.to.contain('Ada, Ada');
+
+    let commaTrigger;
+    for (const trigger of triggers) {
+      const label = await trigger.getAttribute('aria-label');
+      if (label.includes('Lovelace, Ada')) {
+        commaTrigger = trigger;
+        break;
+      }
+    }
+    expect(commaTrigger).to.not.equal(undefined);
+    await driver.executeScript(function(element) { element.focus(); }, commaTrigger);
+    await waitVisible(commaTrigger, true);
+    await commaTrigger.sendKeys(Key.ESCAPE);
+    await waitVisible(commaTrigger, false);
+    await commaTrigger.sendKeys(Key.TAB);
   });
 
   it('Team View honors the 700ms hover delay and keeps the tip hoverable', async function() {
@@ -391,17 +422,12 @@ describe('Interactive leave details popover — all first-party surfaces', funct
 
     const tipId = await approve.getAttribute('aria-describedby');
     const tip = await driver.findElement(By.id(tipId));
-    await driver.executeScript(function(element) {
-      element.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1}));
-    }, tip);
+    await driver.actions().move({origin: tip}).click().perform();
     await driver.sleep(180);
     expect(await triggerVisible(approve), 'inside click keeps pinned popover open').to.equal(true);
 
-    await driver.executeScript(function() {
-      document.querySelector('h1').dispatchEvent(
-        new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1})
-      );
-    });
+    const heading = await driver.findElement(By.css('h1'));
+    await driver.actions().move({origin: heading}).click().perform();
     await waitVisible(approve, false);
     expect(await driver.executeScript(function() { return window.__leaveFormSubmitCount; })).to.equal(0);
 
@@ -706,11 +732,8 @@ describe('Interactive leave details popover — all first-party surfaces', funct
       await waitVisible(trigger, false);
       await trigger.click();
       await waitVisible(trigger, true);
-      await driver.executeScript(function() {
-        document.querySelector('h1').dispatchEvent(
-          new MouseEvent('click', {bubbles: true, cancelable: true, detail: 1})
-        );
-      });
+      const heading = await driver.findElement(By.css('h1'));
+      await driver.actions().move({origin: heading}).click().perform();
       await waitVisible(trigger, false);
 
       const scrollEvidence = await driver.executeScript(function() {
